@@ -1,0 +1,7 @@
+package com.app.tddtm4iots.enums;{$s} 
+{$s}
+public enum {$nameClass} { {$s}
+	{$params}
+	{$s}
+}
+ 

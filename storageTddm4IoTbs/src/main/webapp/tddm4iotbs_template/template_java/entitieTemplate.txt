@@ -1,0 +1,49 @@
+package com.app.tddtm4iots.entities;{$s} 
+{$s}
+import com.app.tddtm4iots.enums.*;{$s}
+import lombok.Data;{$s} 
+import lombok.NoArgsConstructor;{$s} 
+{$s}
+import javax.persistence.*;{$s} 
+${imports} 
+{$s}
+@Entity{$s} 
+@Table(name = "{$nameClass}"){$s} 
+@Data{$s} 
+@NoArgsConstructor{$s} 
+public class {$nameClass} {{$s} 
+    {$s}
+    @Id{$s} 
+    @GeneratedValue(strategy = GenerationType.AUTO){$s} 
+    private Long {$idClass};{$s} 
+    {$s}
+{$attrs}
+    {$s}
+    @Override{$s}
+    public int hashCode() {{$s}
+        final int prime = 31;{$s}
+        int result = 1;{$s}
+        result = prime * result + ((this.{$idClass} == null ) ? 0 : this.{$idClass}.hashCode());{$s}
+        return result;{$s}
+    }{$s}
+    {$s}
+    @Override{$s}
+    public boolean equals(Object object) {{$s}
+        // TODO: Warning - this method won't work in the case the id fields are not set{$s}
+        if (!(object instanceof {$nameClass})) {{$s}
+            return false;{$s}
+        }{$s}
+        {$nameClass} other = ({$nameClass}) object;{$s}
+        if ((this.{$idClass} == null && other.{$idClass} != null) || (this.{$idClass} != null && !this.{$idClass}.equals(other.{$idClass}))) {{$s}
+            return false;{$s}
+        }{$s}
+        return true;{$s}
+    }{$s}
+    {$s}
+    @Override{$s}
+    public String toString() {{$s}
+        return "com.app.tddtm4iots.entities.{$nameClass}[ {$idClass}=" + {$idClass} + " ]";{$s}
+    }{$s}
+
+}
+    

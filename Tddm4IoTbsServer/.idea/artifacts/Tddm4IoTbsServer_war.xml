@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Tddm4IoTbsServer:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>Tddm4IoTbsServer</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="Tddm4IoTbsServer-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="Tddm4IoTbsServer:war exploded" />
+    </root>
+  </artifact>
+</component>

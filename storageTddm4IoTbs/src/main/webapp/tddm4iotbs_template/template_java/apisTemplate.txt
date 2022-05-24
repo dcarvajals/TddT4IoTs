@@ -1,0 +1,47 @@
+package com.app.tddtm4iots.apis;{$s}
+{$s}
+import com.app.tddtm4iots.entities.{$nameClass};{$s}
+import com.app.tddtm4iots.dao.{$nameClass}Dao;{$s}
+import org.springframework.beans.factory.annotation.Autowired;{$s}
+import org.springframework.http.ResponseEntity;{$s}
+import org.springframework.web.bind.annotation.*;{$s}
+{$s}
+import java.util.List;{$s}
+import java.util.Optional;{$s}
+{$s}
+@RestController{$s}
+@RequestMapping("/{$nameClassMinuscula}"){$s}
+public class {$nameClass}Api {{$s}
+{$s}
+    @Autowired{$s}
+    private {$nameClass}Dao {$nameClassMinuscula}DAO;{$s}
+{$s}
+    @GetMapping{$s}
+    public ResponseEntity<List<{$nameClass}>> get{$nameClass}() {{$s}
+        List<{$nameClass}> list{$nameClass} = {$nameClassMinuscula}DAO.findAll();{$s}
+        return ResponseEntity.ok(list{$nameClass});{$s}
+    }{$s}
+{$s}
+    @PostMapping{$s}
+    public ResponseEntity<{$nameClass}> insert{$nameClass}(@RequestBody {$nameClass} {$nameClassMinuscula}) {{$s}
+        {$nameClass} new{$nameClass} = {$nameClassMinuscula}DAO.save({$nameClassMinuscula});{$s}
+        return ResponseEntity.ok(new{$nameClass});{$s}
+    }{$s}
+{$s}
+    @PutMapping{$s}
+    public ResponseEntity<{$nameClass}> update{$nameClass}(@RequestBody {$nameClass} {$nameClassMinuscula}) {{$s}
+        {$nameClass} up{$nameClass} = {$nameClassMinuscula}DAO.save({$nameClassMinuscula});{$s}
+        if (up{$nameClass} != null) {{$s}
+            return ResponseEntity.ok(up{$nameClass});{$s}
+        } else {{$s}
+            return ResponseEntity.notFound().build();{$s}
+        }{$s}
+    }{$s}
+{$s}
+    @DeleteMapping(value = "{id}"){$s}
+    public ResponseEntity<{$nameClass}> deletePersons(@PathVariable("id") Long {$idClass}) {{$s}
+        {$nameClassMinuscula}DAO.deleteById({$idClass});{$s}
+        return ResponseEntity.ok(null);{$s}
+    }{$s}
+{$s}
+}
