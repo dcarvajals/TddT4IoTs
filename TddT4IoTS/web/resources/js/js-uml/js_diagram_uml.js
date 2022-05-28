@@ -89,6 +89,8 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.initCode();
             // conectar los usuarios por websocket
             $scope.webSocketInit(id_project);
+            // verificar si existe un proyecto maven a descargar
+            $scope.downloadPrjMav();
         }
     });
 
@@ -133,7 +135,7 @@ controller = app.controller("workAreaController", function ($scope) {
                 }
             });
         } else {
-            location.href = "index";
+            location.href = "index.html";
         }
     };
 

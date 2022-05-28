@@ -273,12 +273,12 @@ public class MakerProjects {
 
     public static void MaketarMaven(String contextPath, String relPath) {
 
-        String demo = "MavenApplication";
-        String path = contextPath + relPath + demo;
+        String demo = "ProjectMvnSpr";
+        String path = contextPath + relPath;
         Thread th = new Thread(() -> {
             FileAccess fac = new FileAccess();
-            fac.makeZipFromFolder(path, path + ".zip");
-            System.out.println("PathZip: " + contextPath + relPath);
+            fac.makeZipFromFolder(path, path + "ProjectMvnSpr.zip");
+            System.out.println("CREAR ZIP PathZip: " + contextPath + relPath);
         });
         th.start();
     }

@@ -47,7 +47,7 @@ function getDataSession() {
     {
         if (currentPage() !== "index")
         {
-            location.href = "index"; // si no existe sesion inicada lo bota al login
+            location.href = "index.html"; // si no existe sesion inicada lo bota al login
         }
     }
     return dataUser;

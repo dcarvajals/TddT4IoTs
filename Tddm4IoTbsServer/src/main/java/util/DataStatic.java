@@ -61,7 +61,7 @@ public class DataStatic {
     public static String folderUml = "UmlDiagram/";
     public static String folderEasy = "EasyIoT/";
     public static String folderMvmSpring = "/ProjectMvnSpr/";
-    public static String pathTemp = "D:\\REPOSITORIOS\\umleasyiotrep\\storageTddm4IoTbs\\src\\main\\webapp\\";
+    public static String pathTemp = "D:\\REPOSITORIOS\\TddT4IoTs\\storageTddm4IoTbs\\src\\main\\webapp\\";
 
     public static String folderTemplate = "tddm4iotbs_template/";
     public static String folderMvn = "mvn_config/";

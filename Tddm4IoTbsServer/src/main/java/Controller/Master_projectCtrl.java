@@ -441,7 +441,7 @@ public class Master_projectCtrl {
                     MakerProjects.createMavenProject(path, relpath, resp[1], info);
                 } else if (params.equals("2")) {
                     MakerProjects.MaketarMaven(path, relpath);
-                    data = "{\"MavenApplication\":\"" + resp[1] + "/" + DataStatic.folderUml + "MavenApplication.zip\"}";
+                    data = "{\"MavenApplication\":\"" + resp[1] + "/ProjectMvnSpr/ProjectMvnSpr.zip\"}";
                     System.out.println(data);
                 } else {
                     if (!info.equals("")) {
