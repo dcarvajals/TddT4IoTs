@@ -9,6 +9,21 @@ app.expandControllerMavenProject = function ($scope) {
      * DESCARGAR Y ENCAPSULAR PROYECTO
      * ##############################################################################################################
      * */
+
+    // descargar proyecto
+    $scope.downloadPrjMav = () => {
+        let urlParams = new URLSearchParams(window.location.search);
+        let id_project = urlParams.get('identifiquer');
+        let api_data = {
+            "user_token": $scope.DatoUsuario.user_token,
+            "idProj": id_project,
+            "info": JSON.stringify($scope.jsonMavenProject),
+            "module": 'ZipMvn'
+        };
+        apiencapsulateProject(api_data);
+    };
+
+    // crear proyecto maven
     $scope.encapsulateProject = () => {
         let urlParams = new URLSearchParams(window.location.search);
         let id_project = urlParams.get('identifiquer');
@@ -36,8 +51,18 @@ app.expandControllerMavenProject = function ($scope) {
                 console.log(data);
                 alertAll(data);
                 $scope.$apply(() => {
-                    $scope.mavenProject = rutasStorage.projects + data.data.MavenApplication;
-                    console.log($scope.mavenProject);
+                    /*$scope.mavenProject = rutasStorage.projects + data.data.MavenApplication;
+                    console.log($scope.mavenProject);*/
+                    if(api_param.module === "CreateMvn") {
+                        $("#modal_class_conecction").modal("hide");
+                        $("#modal_download_maven").modal("show");
+                        //$scope.downloadPrjMav();
+                        $scope.mavenProject = data.MavenApplication;
+                    } else if (api_param.module === "ZipMvn") {
+                        console.log(data);
+                        $scope.mavenProject = data.MavenApplication;
+                        download("ProjectMvnSpr.zip", $scope.mavenProject);
+                    }
                 });
             },
             error: (objXMLHttpRequest) => {
@@ -45,6 +70,15 @@ app.expandControllerMavenProject = function ($scope) {
             }
         });
     };
+
+    function download(filename, textInput) {
+        var element = document.createElement('a');
+        element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
+        element.setAttribute('download', filename);
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 
     $scope.openModalCreateMavenProject = () => {
         // abrir modal
@@ -55,13 +89,31 @@ app.expandControllerMavenProject = function ($scope) {
         // aumentar los nuevos parametros
         $scope.addNewParams($scope.jsonMavenProject.entities);
         // validar campos de la tabla de los atributos
-
+        $scope.addClassFront( $scope.jsonMavenProject.entities);
         console.log("JSON MANVE PROJEECT", $scope.jsonMavenProject);
+    };
+    
+    $scope.addClassFront = (entities) => {
+        for(let i = 0; i < entities.length; i++){
+            entities[i]["classFront"] = "btn btn-sm button-dt mr-2 mt-1";
+        }
+    };
+    
+    $scope.removeClassFront = (entities, index) => {
+        for(let i = 0; i < entities.length; i++){
+            entities[i]["classFront"] = index === i ? "btn btn-sm button-active mr-2 mt-1" : "btn btn-sm button-dt mr-2 mt-1";
+        }
+    };
+    
+    $scope.cancelDownload = () => {
+        $('#modal_download_maven').modal('hide');
     };
 
     // funcion para obtener los atributos de la clase seleccionada
-    $scope.selectedEntitie = (entitie) => {
+    $scope.selectedEntitie = (entitie, index) => {
         console.log(entitie);
+        entitie.classFront = "btn btn-sm button-active mr-2 mt-1";
+        $scope.removeClassFront($scope.jsonMavenProject.entities, index);
         $scope.selectedEntitieObj = entitie;
     };
 

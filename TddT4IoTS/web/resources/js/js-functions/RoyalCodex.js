@@ -124,7 +124,7 @@ function packages(text) {
     return [superText, datas];
 }
 
-function enums (text) {
+function enums(text) {
     var enums = [];
     var parts = manualPartition("¿", "?", unsupportedCharacters(text, 3)); // ¿?
     var parts2 = manualPartition("¿", "?", unsupportedCharacters(text, 2));
@@ -132,7 +132,13 @@ function enums (text) {
     for (var row = 0; row < parts.length; row++) {
 
         var str = new String(parts2[row]);
-        var str2 = new String(textNatural(parts2[row]));
+        let txtNatural = textNatural(parts2[row]);
+        var str2;
+        if (typeof txtNatural === "object")
+            str2 = txtNatural.join(" ");
+        else
+            str2 = txtNatural;
+
         text2 = text2.toString().replace(str, str2);
 
         var namet = parts[row].toString().replace(/[\*¿]/g, "");
@@ -150,7 +156,7 @@ function enums (text) {
     return [text2, enums];
 }
 
-function getElementsEnum (text) {
+function getElementsEnum(text) {
     text = text.toString().replace(/[\/\\\)\(\{\}\[\]]/g, "");
     var elements = [], elementsEnum = [];
     elements = text.split("»");
@@ -164,6 +170,19 @@ function getElementsEnum (text) {
     return elementsEnum;
 }
 
+/**
+ * Funcion para aumentar datos a una clase que ya existe en la misma descricpion del caso de uso
+ * @param {array} classObject
+ * @param {array} objects 
+ * */
+function increadingClassData(classObject, objects) {
+    if (objects.length > 0) {
+        for (let x = 0; x < objects.length; x++) {
+            classObject.push(objects[x]);
+        }
+    }
+}
+
 function classx(text) {
     var classx_p = [];
     text = unsupportedCharacters(text, 2);
@@ -173,7 +192,13 @@ function classx(text) {
     var text2 = text;
     for (var row = 0; row < parts.length; row++) {
         var str = new String(parts2[row]);
-        var str2 = new String(textNatural(parts2[row]));
+        let txtNatural = textNatural(parts2[row]);
+        var str2;
+        if (typeof txtNatural === "object")
+            str2 = txtNatural.join(" ");
+        else
+            str2 = txtNatural;
+
         text2 = text2.toString().replace(str, str2);
         var namet = parts[row].toString().replace(/[\*\(]/g, "");
         namet = namet.toString().replace(/\/.*/g, "");
@@ -184,26 +209,37 @@ function classx(text) {
         var derivative = getClassDerivate(namet);
         namet = parts[row].toString().replace(/:.*/g, "");
         var className = getClassName(namet.toString().replace(/&.*/g, ""));
+        // aumentado el dia 22/07/2022
         if (className.length > 0) {
-            var item = {
-                action: (namet.toString()[0] === "!" || namet.toString()[1] === "!") ? "create" : "update",
-                derivative: derivative,
-                className: className,
-                visibility: "public",
-                modifiers: searchmodifiersType(namet.toString().replace(/[!\(\*]/g, "").toString()[0], ""),
-                attributes: getAttributes(parts[row]),
-                methods: getMethods(parts[row]),
-                constructors: getConstructors(parts[row])
-            };
-            classx_p.push(item);
-            objectClass(item);
+            if (classx_p.length > 0) {
+                for (let i = 0; i < classx_p.length; i++) {
+                    if (classx_p[i].className === className) {
+                        increadingClassData(classx_p[i].attributes, getAttributes(parts[row]));
+                        increadingClassData(classx_p[i].methods, getMethods(parts[row]));
+                        increadingClassData(classx_p[i].constructors, getConstructors(parts[row]));
+                    }
+                }
+            } else {
+                var item = {
+                    action: (namet.toString()[0] === "!" || namet.toString()[1] === "!") ? "create" : "update",
+                    derivative: derivative,
+                    className: className,
+                    visibility: "public",
+                    modifiers: searchmodifiersType(namet.toString().replace(/[!\(\*]/g, "").toString()[0], ""),
+                    attributes: getAttributes(parts[row]),
+                    methods: getMethods(parts[row]),
+                    constructors: getConstructors(parts[row])
+                };
+                classx_p.push(item);
+                objectClass(item);
+            }
         }
     }
     return [text2, classx_p];
 }
 
 
-function getConstructors (text) {
+function getConstructors(text) {
     var metodox = [];
     var parts = manualPartition("%", "%", text);
     for (var row = 0; row < parts.length; row++) {
@@ -233,7 +269,8 @@ function getClassDerivate(text) {
 
 function textNatural(text) {
     if (text[0] === "*") {
-        return manualPartition("/", "/", text).toString().replace(/[\/\\\]\}]/g, "").toString().replace(/[\.\[\{\(\)\&\+¿?\-\$\#]/g, "").toString().replace(/=.*/g, "").replace(/\:.*/g, "");
+        let textManualPartition = manualPartition("/", "/", text);
+        return textManualPartition.join(" ").toString().replace(/[\/\\\]\}]/g, "").toString().replace(/[\.\[\{\(\)\&\+¿?\-\$\#]/g, "").toString().replace(/=.*/g, "").replace(/\:.*/g, "");
     } else { // ¿?
         return text.toString().replace(/[\!\(\)¿?]/g, "").toString().replace(/\{.*\}/g, "").toString().replace(/\[.*\]/g, "").replace(/\:.*/g, "");
     }
@@ -268,7 +305,7 @@ function getParameter(text) {
             var itempo = {
                 name: paramName,
                 type: searchDataType(getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")), getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) !== "" ?
-                    getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) : "String")
+                        getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) : "String")
             };
             parameters.push(itempo);
         }
@@ -313,7 +350,7 @@ function manualPartition(beging, end, characters) {
                 if (characters[rec - 2] === "*" && characters[rec] === "(") {
                     subs.x1 = rec - 2;
                 }
-                if(characters[rec - 1] === "*" && characters[rec] === "¿"){ // ¿?
+                if (characters[rec - 1] === "*" && characters[rec] === "¿") { // ¿?
                     subs.x1 = rec - 1;
                 }
             }
@@ -403,7 +440,7 @@ function unsupportedCharacters(character, want) {
 }
 
 function nameFormat(text, tipo) {
-    if(text === "" || text === undefined || text === null){
+    if (text === "" || text === undefined || text === null) {
         return "";
     }
     text = text.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, "");
@@ -420,7 +457,7 @@ function nameFormat(text, tipo) {
 }
 
 function nameFormatAux(text, tipo) {
-    if(text === "" || text === undefined || text === null){
+    if (text === "" || text === undefined || text === null) {
         return "";
     }
     text = text.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, "");
@@ -716,13 +753,13 @@ function getRelationship(myObject) {
                 var rtempy = searchDataClass(relationshipx[rel].type, myObject);
                 if (rtempy[1].length > 0) {
                     result.push(
-                        {
-                            from: myObject[packages].class[classis].className,
-                            to: rtempy[1],
+                            {
+                                from: myObject[packages].class[classis].className,
+                                to: rtempy[1],
 //                                from_packName: myObject[packages].packName,
 //                                to_packName: rtempy[0],
-                            typeRelatioship: "Aggregation"
-                        }
+                                typeRelatioship: "Aggregation"
+                            }
                     );
                 }
             }
@@ -735,26 +772,26 @@ function getRelationship(myObject) {
                     rtempy = searchDataClass(relationshipx[rel].parameters[rel2].type, myObject);
                     if (rtempy[1].length > 0) {
                         result.push(
-                            {
-                                from: myObject[packages].class[classis].className,
-                                to: rtempy[1],
+                                {
+                                    from: myObject[packages].class[classis].className,
+                                    to: rtempy[1],
 //                                    from_packName: myObject[packages].packName,
 //                                    to_packName: rtempy[0],
-                                typeRelatioship: "Dependence"
-                            }
+                                    typeRelatioship: "Dependence"
+                                }
                         );
                     }
                 }
                 rtempy = searchDataClass(relationshipx[rel].type, myObject);
                 if (rtempy[1].length > 0) {
                     result.push(
-                        {
-                            from: myObject[packages].class[classis].className,
-                            to: rtempy[1],
+                            {
+                                from: myObject[packages].class[classis].className,
+                                to: rtempy[1],
 //                                from_packName: myObject[packages].packName,
 //                                to_packName: rtempy[0],
-                            typeRelatioship: "Composition"
-                        }
+                                typeRelatioship: "Composition"
+                            }
                     );
                 }
             }
@@ -792,10 +829,10 @@ function getHackDiagram(text) {
 //console.log(DataType_RoyalCodex[indexDataType_RoyalCorex]);
 
     return [rel[1], {
-        diagram: packs[1],
-        relationships: rel[0],
-        action: []
-    }];
+            diagram: packs[1],
+            relationships: rel[0],
+            action: []
+        }];
 }
 
 function mergeClassDiagram(bigJson, minJson) {
@@ -813,18 +850,22 @@ function mergeClassDiagram(bigJson, minJson) {
 }
 
 function mergeDiagram(bigRel, minRel) {
-    for (var ind2 = 0; ind2 < minRel.length; ind2++) {
-        let find = false;
-        for (var ind = 0; ind < bigRel.length; ind++) {
-            //validate new package
-            if (bigRel[ind].packName === minRel[ind2].packName) {
-                find = true;
-                joinPackages(bigRel[ind].class, minRel[ind2].class);
-                joinEnums(bigRel[ind].enums, minRel[ind2].enums);
+
+    if (bigRel !== undefined && minRel !== undefined) {
+
+        for (var ind2 = 0; ind2 < minRel.length; ind2++) {
+            let find = false;
+            for (var ind = 0; ind < bigRel.length; ind++) {
+                //validate new package
+                if (bigRel[ind].packName === minRel[ind2].packName) {
+                    find = true;
+                    joinPackages(bigRel[ind].class, minRel[ind2].class);
+                    joinEnums(bigRel[ind].enums, minRel[ind2].enums);
+                }
             }
-        }
-        if (find === false) {
-            bigRel.push({...minRel[ind2]});
+            if (find === false) {
+                bigRel.push({...minRel[ind2]});
+            }
         }
     }
 }
@@ -867,7 +908,7 @@ function joinConstructors(bigPackage, minPackage) {
     }
 }
 
-function joinEnums (bigPackage, minPackage) {
+function joinEnums(bigPackage, minPackage) {
     for (var ind2 = 0; ind2 < minPackage.length; ind2++) {
         let find = false;
         for (var ind = 0; ind < bigPackage.length; ind++) {
@@ -884,10 +925,10 @@ function joinEnums (bigPackage, minPackage) {
     }
 }
 
-function joinElements (bigElemn, minElem) {
-    for(let i = 0; i < minElem.length; i++){
+function joinElements(bigElemn, minElem) {
+    for (let i = 0; i < minElem.length; i++) {
         let find = false;
-        for(let j = 0; j < bigElemn.length; j++){
+        for (let j = 0; j < bigElemn.length; j++) {
             if (minElem[i].name === bigElemn[j].name) {
                 if (minElem[i].type !== bigElemn[j].type) {
                     let countm = 0;
@@ -1014,7 +1055,7 @@ function vectorUnique(vector) {
 }
 
 function mergeRelationships(bigRel, minRel) {
-    if (bigRel.length > 0) {
+    if (bigRel !== undefined && bigRel.length > 0) {
         let cant = bigRel.length;
         let resp = true;
         let relationEncontrada = -1;
@@ -1023,7 +1064,7 @@ function mergeRelationships(bigRel, minRel) {
         for (let ind2 = 0; ind2 < minRel.length; ind2++) {
             for (ind = 0; ind < cant; ind++) {
                 resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
-                    minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
+                        minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
                 if (resp[0] === false) {
                     noExisteRelacion = true;
                     relationEncontrada = ind2;

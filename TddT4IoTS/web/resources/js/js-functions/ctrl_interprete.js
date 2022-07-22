@@ -18,6 +18,9 @@ app.controller("interpret_controller", function ($scope, $http) {
                 console.log(minjson);
                 $scope.interpretador.push(minjson);
 
+                if ($scope.bigDiagram.length === undefined)
+                    $scope.bigDiagram = minjson;
+
                 mergejson($scope.bigDiagram, minjson[1]);
                 renderJson(JSON.stringify($scope.bigDiagram, null, 2));
                 $scope.flagJson = true;

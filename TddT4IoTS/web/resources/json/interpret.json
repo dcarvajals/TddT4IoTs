@@ -36,12 +36,6 @@
         "example": "(ClassName [+methodname=empty<span class='badge badge-danger'>{</span><span class='badge badge-danger'>.</span>param1=string<span class='badge badge-danger'>.</span>param2=int<span class='badge badge-danger'>}</span>])"
     }, 
     {
-        "simbol": ":`",
-        "ascii": "58-96",
-        "description": "Derivate Class",
-        "example": "(ClasChild<span class='badge badge-danger'>:</span>ClassDad1<span class='badge badge-danger'>`</span>ClassDad2<span class='badge badge-danger'>`</span>ClassDad3)"
-    }, 
-    {
         "simbol": "&",
         "ascii": "38",
         "description": "Attribute",
@@ -84,22 +78,16 @@
         "example": "(<span class='badge badge-danger'>@</span>InterfaceName)"
     }, 
     {
-        "simbol": "?",
-        "ascii": "63",
-        "description": "Abstact class",
-        "example": "(<span class='badge badge-danger'>?</span>AbstractClassname)"
-    }, 
+        "simbol": "^",
+        "ascii": "64",
+        "description": "Ennumerations",
+        "example": "(<span class='badge badge-danger'>^</span>(Status «Disabled»,«Enabled»))"
+    },
     {
-        "simbol": "¬",
-        "ascii": "170",
-        "description": "Final class",
-        "example": "(<span class='badge badge-danger'>¬</span>ClassName)"
-    },  
-    {
-        "simbol": "^ ~ ^",
-        "ascii": "94-126",
-        "description": "Package",
-        "example": "<span class='badge badge-danger'>^</span>packagename<span class='badge badge-danger'>~</span>ClassName<span class='badge badge-danger'>^</span>"
+        "simbol": "%",
+        "ascii": "64",
+        "description": "New Constructors",
+        "example": "(+<span class='badge badge-danger'>%</span> .className=ClassName <span class='badge badge-danger'>%</span>)"
     },
     {
         "simbol": "¡>>¡",

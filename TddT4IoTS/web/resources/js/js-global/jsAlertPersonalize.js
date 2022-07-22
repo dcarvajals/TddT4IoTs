@@ -100,31 +100,31 @@ alertAll = function(obj) {
         case 2:
             successTo({
                 message: obj.information,
-                nameApplication: (obj.tittle === undefined) ? "TddM4IoTbs" : obj.tittle
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
             break;
         case 3:
             warningTo({
                 message: obj.information,
-                nameApplication: (obj.tittle === undefined) ? "TddM4IoTbs" : obj.tittle
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
             break;
         case 4:
             errorTo({
                 message: obj.information,
-                nameApplication: (obj.tittle === undefined) ? "TddM4IoTbs" : obj.tittle
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
             break;
         case 1:
             infoTo({
                 message: obj.information,
-                nameApplication: (obj.tittle === undefined) ? "TddM4IoTbs" : obj.tittle
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
             break;
         default:
             infoTo({
                 message: obj.information,
-                nameApplication: (obj.tittle === undefined) ? "TddM4IoTbs" : obj.tittle
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
             break;
     }
