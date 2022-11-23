@@ -16,7 +16,7 @@ public class DataStatic {
     public static String nameApplication = "Tddm4IoTbs";
 
     /**
-     * aplicaciones.uteq.edue.ec*
+     * localhost
      */
     public static String dbName = "tddt4iots";
     public static String dbUser = "tdduser";
