@@ -68,9 +68,9 @@ app.controller("application", function ($scope, $http) {
 
     $(document).ready(function () {
         $scope.DatoUsuario = getDataSession();
-        let permitUser = document.getElementById("permitUser");
+        //let permitUser = document.getElementById("permitUser");
         let nameUser = document.getElementById("nameUser");
-        permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
+        //permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
         nameUser.innerHTML = $scope.nameUser($scope.DatoUsuario);
         console.log($scope.DatoUsuario);
         console.log("tddm4iots iniciado correctamente");

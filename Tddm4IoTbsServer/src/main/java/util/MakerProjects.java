@@ -38,7 +38,7 @@ public class MakerProjects {
 
         String[] commands = new String[]{
             String.format("cd \"%s\"", (projectPath)),
-            String.format("spring init --artifactId=%s --boot-version=2.5.5 --build=maven --dependencies=data-jpa,web,postgresql,ws,lombok --description=\"description %s\" --groupId=com.anth --java-version=1.8 --language=java --name=%s --packaging=war --package-name=com.app.tddtm4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, ProjectName, ProjectName, projectPath)
+            String.format("spring init --artifactId=%s --boot-version=2.7.3 --build=maven --dependencies=data-jpa,web,postgresql,ws,lombok --description=\"description %s\" --groupId=com.anth --java-version=1.8 --language=java --name=%s --packaging=war --package-name=com.app.tddtm4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, ProjectName, ProjectName, projectPath)
         //String.format("mvn archetype:generate -DgroupId=com.mycompany -DartifactId=%s -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false", ProjectName)
         };
 
@@ -57,6 +57,7 @@ public class MakerProjects {
             CommandWindow terminal = new CommandWindow();
             if (terminal.status) {
                 String logs = terminal.ejecutarComandos(commands);
+                System.out.println(logs);
 
                 String metaFolder = contextPath + DataStatic.folderTemplate + DataStatic.folderMvn;
                 String folferTempateJava = contextPath + DataStatic.folderTemplate + DataStatic.folferTempateJava;

@@ -46,7 +46,11 @@ function CreateObjectClass(item)// put var how var object
         DataType_RoyalCodex[indexDataType_RoyalCorex].push(item);
     }
 }
-
+/***
+ * 
+ * @param {type} item
+ * @returns {undefined}
+ */
 function objectClass(item) {
     if (item.className.length > 0 && item.action === "create") {
         DataType_RoyalCodex[indexDataType_RoyalCorex].push(item.className);
@@ -209,17 +213,24 @@ function classx(text) {
         var derivative = getClassDerivate(namet);
         namet = parts[row].toString().replace(/:.*/g, "");
         var className = getClassName(namet.toString().replace(/&.*/g, ""));
+        let noexiste = false;
         // aumentado el dia 22/07/2022
         if (className.length > 0) {
             if (classx_p.length > 0) {
                 for (let i = 0; i < classx_p.length; i++) {
                     if (classx_p[i].className === className) {
+                        noexiste = false;
                         increadingClassData(classx_p[i].attributes, getAttributes(parts[row]));
                         increadingClassData(classx_p[i].methods, getMethods(parts[row]));
                         increadingClassData(classx_p[i].constructors, getConstructors(parts[row]));
+                        i = classx_p.length;
+                    } else {
+                        noexiste = true;
                     }
                 }
-            } else {
+            }
+
+            if (noexiste || classx_p.length === 0) {
                 var item = {
                     action: (namet.toString()[0] === "!" || namet.toString()[1] === "!") ? "create" : "update",
                     derivative: derivative,
@@ -233,6 +244,8 @@ function classx(text) {
                 classx_p.push(item);
                 objectClass(item);
             }
+
+
         }
     }
     return [text2, classx_p];
@@ -270,7 +283,7 @@ function getClassDerivate(text) {
 function textNatural(text) {
     if (text[0] === "*") {
         let textManualPartition = manualPartition("/", "/", text);
-        return textManualPartition.join(" ").toString().replace(/[\/\\\]\}]/g, "").toString().replace(/[\.\[\{\(\)\&\+¿?\-\$\#]/g, "").toString().replace(/=.*/g, "").replace(/\:.*/g, "");
+        return textManualPartition.join(" ").toString().replace(/[\/\\\]\}]/g, "").toString().replace(/[\.\[\{\(\)\&\+\¡\!¿?\-\$\#]/g, "").toString().replace(/=.*/g, "").replace(/\:.*/g, "");
     } else { // ¿?
         return text.toString().replace(/[\!\(\)¿?]/g, "").toString().replace(/\{.*\}/g, "").toString().replace(/\[.*\]/g, "").replace(/\:.*/g, "");
     }
@@ -351,6 +364,9 @@ function manualPartition(beging, end, characters) {
                     subs.x1 = rec - 2;
                 }
                 if (characters[rec - 1] === "*" && characters[rec] === "¿") { // ¿?
+                    subs.x1 = rec - 1;
+                }
+                if (characters[rec - 1] === "*" && characters[rec] === "¡") { // ¿?
                     subs.x1 = rec - 1;
                 }
             }
@@ -574,11 +590,12 @@ function typeOfRelationships(text, txtnatural) {
 //    var asociation = manualPartition("¿", "¿", text);
 //    var dependency = manualPartition("%", "%", text);
 //    var generalization = manualPartition("¡", "¡", text);
-    var partsRelations = manualPartition("¡", "¡", text);
+    var partsRelations = manualPartition("¡", "!", text);
 
     console.log(partsRelations);
     let uno = "1";
-    txtnatural = txtnatural.toString().replace("1<", "");
+
+    /*txtnatural = txtnatural.toString().replace("1<", "");
     txtnatural = txtnatural.toString().replace("1>", "");
     txtnatural = txtnatural.toString().replace("n<", "");
     txtnatural = txtnatural.toString().replace("n>", "");
@@ -586,109 +603,32 @@ function typeOfRelationships(text, txtnatural) {
     txtnatural = txtnatural.toString().replace("<1", "");
     txtnatural = txtnatural.toString().replace(">n", "");
     txtnatural = txtnatural.toString().replace("<n", "");
-    txtnatural = txtnatural.toString().replace("->", "");
-    txtnatural = txtnatural.toString().replace(/[\¡\<\>]/g, "");
+    txtnatural = txtnatural.toString().replace("->", "");*/
+    //txtnatural = txtnatural.toString().replace(/[\¡\<\>]/g, "");
+    let description = txtnatural;
     for (var row = 0; row < partsRelations.length; row++) {
+        let newString = new String(partsRelations[row]);
+        let txtNaturalAux = textNatural(partsRelations[row]);
+        description = description.toString().replace(newString, txtNaturalAux);
+
+        // buscar el texto entre la relacion
+        let text_relations = "";
+        text_relations = manualPartition("[", "]", partsRelations[row]);
+        console.log("texto entre las relaciones: " + text_relations);
         partsRelations[row] = partsRelations[row].toString().replace(/\¡/g, "");
-        let splitType = {
-            name: "",
-            simbol: "",
-            cardinalidate: ""
-        };
+        partsRelations[row] = partsRelations[row].toString().replace(text_relations, "");
+        let splitType = {};
+        let response_validate = {};
+        response_validate = validateCardinalidate(partsRelations[row], ">>");
+        splitType = response_validate.flag ? response_validate.data : {};
+        response_validate = validateCardinalidate(partsRelations[row], "<<");
+        splitType = JSON.stringify(splitType) === "{}" ? response_validate.flag ? response_validate.data : {} : splitType;
+        response_validate = validateCardinalidate(partsRelations[row], "<>");
+        splitType = JSON.stringify(splitType) === "{}" ? response_validate.flag ? response_validate.data : {} : splitType;
+        response_validate = validateCardinalidate(partsRelations[row], "><");
+        splitType = JSON.stringify(splitType) === "{}" ? response_validate.flag ? response_validate.data : {} : splitType;
 
-        // agregation
-        if (partsRelations[row].toString().includes("1>>1")) { // por defecto
-            splitType.name = "agregation";
-            splitType.simbol = "1>>1";
-            splitType.cardinalidate = "1..1";
-        } else if (partsRelations[row].toString().includes("1>>n")) { // uno a muchos
-            splitType.name = "agregation";
-            splitType.simbol = "1>>n";
-            splitType.cardinalidate = "1..*";
-        } else if (partsRelations[row].toString().includes("n>>1")) { // muchos a uno
-            splitType.name = "agregation";
-            splitType.simbol = "n>>1";
-            splitType.cardinalidate = "*..1";
-        } else if (partsRelations[row].toString().includes("n>>n")) { // muchos a muchos
-            splitType.name = "agregation";
-            splitType.simbol = "n>>n";
-            splitType.cardinalidate = "*..*";
-        } else if (partsRelations[row].toString().includes(">>")) {
-            splitType.name = "agregation";
-            splitType.simbol = ">>";
-            splitType.cardinalidate = "1..1";
-        }
-        // dependency
-        else if (partsRelations[row].toString().includes("1<<1")) {
-            splitType.name = "dependency";
-            splitType.simbol = "1<<1";
-            splitType.cardinalidate = "1..1";
-        } else if (partsRelations[row].toString().includes("1<<n")) {
-            splitType.name = "dependency";
-            splitType.simbol = "1<<n";
-            splitType.cardinalidate = "1..*";
-        } else if (partsRelations[row].toString().includes("n<<1")) {
-            splitType.name = "dependency";
-            splitType.simbol = "n<<1";
-            splitType.cardinalidate = "*..1";
-        } else if (partsRelations[row].toString().includes("n<<n")) {
-            splitType.name = "dependency";
-            splitType.simbol = "n<<n";
-            splitType.cardinalidate = "*..*";
-        } else if (partsRelations[row].toString().includes("<<")) {
-            splitType.name = "dependency";
-            splitType.simbol = "<<";
-            splitType.cardinalidate = "1..1";
-        }
-        // generalization
-        else if (partsRelations[row].toString().includes("1<>1")) {
-            splitType.name = "generalization";
-            splitType.simbol = "1<>1";
-            splitType.cardinalidate = "1..1";
-        } else if (partsRelations[row].toString().includes("1<>n")) {
-            splitType.name = "generalization";
-            splitType.simbol = "1<>n";
-            splitType.cardinalidate = "1..*";
-        } else if (partsRelations[row].toString().includes("n<>1")) {
-            splitType.name = "generalization";
-            splitType.simbol = "n<>1";
-            splitType.cardinalidate = "*..1";
-        } else if (partsRelations[row].toString().includes("n<>n")) {
-            splitType.name = "generalization";
-            splitType.simbol = "n<>n";
-            splitType.cardinalidate = "*..*";
-        } else if (partsRelations[row].toString().includes("<>")) {
-            splitType.name = "generalization";
-            splitType.simbol = "<>";
-            splitType.cardinalidate = "1..1";
-        }
-        // asociation
-        else if (partsRelations[row].toString().includes("1><1")) {
-            splitType.name = "asociation";
-            splitType.simbol = "1><1";
-            splitType.cardinalidate = "1..1";
-        } else if (partsRelations[row].toString().includes("1><n")) {
-            splitType.name = "asociation";
-            splitType.simbol = "1><n";
-            splitType.cardinalidate = "1..*";
-        } else if (partsRelations[row].toString().includes("n><1")) {
-            splitType.name = "asociation";
-            splitType.simbol = "n><1";
-            splitType.cardinalidate = "*..1";
-        } else if (partsRelations[row].toString().includes("n><n")) {
-            splitType.name = "asociation";
-            splitType.simbol = "n><n";
-            splitType.cardinalidate = "*..*";
-        } else if (partsRelations[row].toString().includes("><")) {
-            splitType.name = "asociation";
-            splitType.simbol = "><";
-            splitType.cardinalidate = "1..1";
-        } else if (partsRelations[row].toString().includes("->")) {
-            splitType.name = "asociation";
-            splitType.simbol = "->";
-            splitType.cardinalidate = "1..1";
-        }
-
+        partsRelations[row] = partsRelations[row].toString().replaceAll("/", "");
         let minrel = partsRelations[row].toString().split(splitType.simbol);
         console.log(splitType, minrel);
         if (minrel.length === 2) {
@@ -711,7 +651,11 @@ function typeOfRelationships(text, txtnatural) {
                     from: getClassName(minrel[0]),
                     to: getClassName(minrel[1]),
                     typeRelatioship: splitType.name,
-                    value: splitType.name,
+                    value: text_relations.length > 0 ?
+                        text_relations.toString()
+                            .replace("[", "")
+                            .replace("]", "")
+                            .replaceAll("/", ""): splitType.name,
                     cardinalidate: splitType.cardinalidate,
                     from_fk: from_fk,
                     to_fk: to_fk,
@@ -722,7 +666,42 @@ function typeOfRelationships(text, txtnatural) {
             }
         }
     }
-    return [relations, txtnatural];
+    return [relations, description];
+}
+
+function validateCardinalidate (text, symbol_relation) {
+    let response = {data: {}, flag: false};
+    let jsonType = {name: "", simbol: "", cardinalidate: ""};
+    let simbolrelation = {">>": "agregation", "<<":"dependency", "<>":"generalization", "><": "asociation"};
+    if (text.toString().includes("1"+symbol_relation+"1")) { // por defecto
+        jsonType.name = simbolrelation[symbol_relation];
+        jsonType.simbol = "1"+symbol_relation+"1";
+        jsonType.cardinalidate = "1..1";
+        response.flag = true;
+    } else if (text.toString().includes("1"+symbol_relation+"n")) { // uno a muchos
+        jsonType.name = simbolrelation[symbol_relation];
+        jsonType.simbol = "1"+symbol_relation+"n";
+        jsonType.cardinalidate = "1..*";
+        response.flag = true;
+    } else if (text.toString().includes("n"+symbol_relation+"1")) { // muchos a uno
+        jsonType.name = simbolrelation[symbol_relation];
+        jsonType.simbol = "n"+symbol_relation+"1";
+        jsonType.cardinalidate = "*..1";
+        response.flag = true;
+    } else if (text.toString().includes("n"+symbol_relation+"n")) { // muchos a muchos
+        jsonType.name = simbolrelation[symbol_relation];
+        jsonType.simbol = "n"+symbol_relation+"n";
+        jsonType.cardinalidate = "*..*";
+        response.flag = true;
+    } else if (text.toString().includes(symbol_relation)) {
+        jsonType.name = simbolrelation[symbol_relation];
+        jsonType.simbol = ""+symbol_relation+"";
+        jsonType.cardinalidate = "1..1";
+        response.flag = true;
+    }
+    response.data = jsonType;
+    console.log(response.data, response.flag);
+    return response;
 }
 
 function clearRelation(text) {
@@ -1055,37 +1034,39 @@ function vectorUnique(vector) {
 }
 
 function mergeRelationships(bigRel, minRel) {
-    if (bigRel !== undefined && bigRel.length > 0) {
-        let cant = bigRel.length;
-        let resp = true;
-        let relationEncontrada = -1;
-        let noExisteRelacion = false;
-        let ind;
-        for (let ind2 = 0; ind2 < minRel.length; ind2++) {
-            for (ind = 0; ind < cant; ind++) {
-                resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
-                        minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
-                if (resp[0] === false) {
-                    noExisteRelacion = true;
-                    relationEncontrada = ind2;
+    if (bigRel !== undefined) {
+        if (bigRel.length > 0) {
+            let cant = bigRel.length;
+            let resp = true;
+            let relationEncontrada = -1;
+            let noExisteRelacion = false;
+            let ind;
+            for (let ind2 = 0; ind2 < minRel.length; ind2++) {
+                for (ind = 0; ind < cant; ind++) {
+                    resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
+                            minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
+                    if (resp[0] === false) {
+                        noExisteRelacion = true;
+                        relationEncontrada = ind2;
+                    } else {
+                        // dejar de buscar poq si existe la relaion en alguna posicion de las relaciones totales
+                        ind = cant;
+                        noExisteRelacion = false;
+                    }
+                }
+                if (noExisteRelacion) {
+                    bigRel.push({...minRel[relationEncontrada]});
                 } else {
-                    // dejar de buscar poq si existe la relaion en alguna posicion de las relaciones totales
-                    ind = cant;
-                    noExisteRelacion = false;
+                    bigRel[ind] = {...minRel[relationEncontrada]};
+                    bigRel[ind].typeRelatioship = resp[1];
                 }
             }
-            if (noExisteRelacion) {
-                bigRel.push({...minRel[relationEncontrada]});
-            } else {
-                bigRel[ind] = {...minRel[relationEncontrada]};
-                bigRel[ind].typeRelatioship = resp[1];
-            }
-        }
 
-    } else {
-        for (var ind2 = 0; ind2 < minRel.length; ind2++) {
+        } else {
+            for (var ind2 = 0; ind2 < minRel.length; ind2++) {
 //            console.log(minRel[ind2]);
-            bigRel.push({...minRel[ind2]});
+                bigRel.push({...minRel[ind2]});
+            }
         }
     }
 }

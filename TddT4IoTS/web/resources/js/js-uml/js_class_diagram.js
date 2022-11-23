@@ -184,7 +184,8 @@ function relationsClass(relations) {
                 b: to,
                 card_A: relations[irelation].cardinalidate.split("..")[0],
                 card_B: relations[irelation].cardinalidate.split("..")[1],
-                value: relations[irelation].value
+                value: relations[irelation].value,
+                typeRelatioship: relations[irelation].typeRelatioship
             });
             elementsClass.push({"element": relation});
         }

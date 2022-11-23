@@ -456,8 +456,8 @@ public class Master_projectApis {
             String module = Methods.JsonToString(Jso, "module", "");
             String info = Methods.JsonToString(Jso, "info", "");
 
-            //String path = DataStatic.getLocation(request.getServletContext().getRealPath(""));
-            String path = DataStatic.pathTemp;
+            String path = DataStatic.getLocation(request.getServletContext().getRealPath(""));
+            //String path = DataStatic.pathTemp;
 
             String[] clains = Methods.getDataToJwt(sessionToken);
             String[] res = Methods.validatePermit(clains[0], clains[1], 1);

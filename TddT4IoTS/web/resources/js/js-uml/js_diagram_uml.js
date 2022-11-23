@@ -75,6 +75,7 @@ controller = app.controller("workAreaController", function ($scope) {
     // funcion que se ejecuta al cargar la pagina e inicializa el diagrama de caso de uso
     $(document).ready(function () {
         if (window.location.search !== "") {
+            loading();
             let urlParams = new URLSearchParams(window.location.search);
             id_project = urlParams.get('identifiquer');
             console.log(id_project);
@@ -91,6 +92,7 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.webSocketInit(id_project);
             // verificar si existe un proyecto maven a descargar
             //$scope.downloadPrjMav();
+            //swal.close();
         }
     });
 
@@ -322,6 +324,7 @@ controller = app.controller("workAreaController", function ($scope) {
             confirmButtonText: 'Yes, remove it!'
         }).then((result) => {
             if (result.isConfirmed) {
+                $scope.$apply(() => {
                 //limpiamos los actores que pertenecen al caso de uso
                 $scope.actorsUseCase.length = 0;
                 //limpiamos el escenario principal y el flujo alternativo del caso de uso
@@ -334,6 +337,9 @@ controller = app.controller("workAreaController", function ($scope) {
 
                 form.$setPristine();
                 form.$setUntouched();
+
+                    $scope.flag_update = false;
+                });
                 //cerramos el modal del caso de uso
                 $("#modal_usecase").modal('hide');
             }
@@ -369,6 +375,32 @@ controller = app.controller("workAreaController", function ($scope) {
     $("#Symbols_use_cases").click(function () {
         $("#modal_Symbols").modal();
     });
+    
+    $("#btninheritanceactor").click(function () {
+
+        if ($scope.editionClasDiagram) {
+            alertAll({
+                "status": 3,
+                "information": "You cannot modify the use case diagram while the class diagram editing is active."
+            });
+            return;
+        }
+
+        $("#modal_inheritance_actor").modal();
+    });
+    
+    $("#btnassociationusecase").click(function () {
+
+        if ($scope.editionClasDiagram) {
+            alertAll({
+                "status": 3,
+                "information": "You cannot modify the use case diagram while the class diagram editing is active."
+            });
+            return;
+        }
+
+        $("#modal_association_usecase").modal();
+    });
 
     $("#btnasosition").click(function () {
 
@@ -381,7 +413,7 @@ controller = app.controller("workAreaController", function ($scope) {
         }
 
         $("#modal_association").modal();
-    })
+    });
 
     $("#btninclusion").click(function () {
 
@@ -451,6 +483,49 @@ controller = app.controller("workAreaController", function ($scope) {
                 console.log($scope.jsonUseCase.actors);
                 console.log($scope.jsonUseCase.actors[0].obj_actor.getName());
             }
+        }
+    };
+    
+    // funcion para crear la herencia entre actores
+    $scope.createInHeritanceActor = function (form) {
+        if (form.$valid) {
+            let relation = {};
+            
+            relation = createRelation({
+                "type": UMLGeneralization,
+                "a": $scope.jsonUseCase.actors[form.selecactor1.$viewValue].obj_actor,
+                "b": $scope.jsonUseCase.actors[form.selecactor2.$viewValue].obj_actor
+            });
+            
+            $scope.jsonUseCase.relations.push({
+                "type": "UMLGeneralization",
+                "obj_relation": relation
+            });
+                
+            $("#modal_inheritance_actor").modal("hide");
+        } else {
+            alert("aguante :v");
+        }
+    };
+    
+    $scope.createAssociationUseCase = function (form) {
+        if (form.$valid) {
+            let relation = {};
+            
+            relation = createRelation({
+                "type": UMLCommunication,
+                "a": $scope.jsonUseCase.useCase[form.selectusecase1.$viewValue].obj_usecase,
+                "b": $scope.jsonUseCase.useCase[form.selectusecase2.$viewValue].obj_usecase
+            });
+                
+            $scope.jsonUseCase.relations.push({
+                "type": "UMLCommunication",
+                "obj_relation": relation
+            });
+                
+            $("#modal_association_usecase").modal("hide");
+        } else {
+            alert("aguante :v");
         }
     };
 
@@ -873,10 +948,11 @@ controller = app.controller("workAreaController", function ($scope) {
         $scope.updateSecuence($scope.jsonClass);
         $scope.manager_maf.main_stage.push({
             "actor": form.actor_ms.$viewValue,
-            "action_interpret": $scope.manager_maf.main_stage.length > 0 && form.check_final_step.$viewValue === false ? minjson[0] :
+            "action_interpret": minjson[0],
+            /*"action_interpret": $scope.manager_maf.main_stage.length > 0 && form.check_final_step.$viewValue === false ? minjson[0] :
                     form.check_final_step.$viewValue === true ? 'This use case ends when ' + minjson[0] :
                     form.check_final_step.$viewValue === false ? 'This use case starts when ' + minjson[0] :
-                    minjson[0],
+                    minjson[0]*/
             "action_original": form.action_ms.$viewValue
         });
 
@@ -1385,13 +1461,11 @@ controller = app.controller("workAreaController", function ($scope) {
             url: urlWebServicies + 'projects/loadModuleFile',
             data: JSON.stringify({...api_param}),
             beforeSend: function () {
-                loading();
+                //loading();
             },
             success: function (data) {
-                swal.close();
                 console.log(data);
                 console.log(isObjEmpty(data.data));
-                console.log("POR LA REMILPUTAAA", JSON.stringify($scope.jsonClass));
                 switch (api_param.module) {
                     case "DiagramUml":
                         if (!isObjEmpty(data.data)) {
@@ -1417,6 +1491,7 @@ controller = app.controller("workAreaController", function ($scope) {
                             if (!isObjEmpty(data.data.data)) {
                                 let jsonresponse = data.data.data;
                                 console.log(jsonresponse);
+                                console.log(JSON.stringify(jsonresponse));
                                 $scope.jsonClass = Object.assign([], jsonresponse);
                                 // eliminar las relaciones por la parte grafica
                                 diagramClass._relations.length = 0;
@@ -1455,6 +1530,7 @@ controller = app.controller("workAreaController", function ($scope) {
                         $scope.loadTddJUnit();
                         break;
                     case "Test":
+                        swal.close();
                         if (!isObjEmpty(data.data.data)) {
                             let jsonresponse = data.data.data;
                             $scope.jsonTdd = Object.assign({}, jsonresponse);
@@ -1463,9 +1539,9 @@ controller = app.controller("workAreaController", function ($scope) {
                             console.log("VAR ANGULAR", $scope.jsonTdd);
                             console.log(jsonresponse);
                         }
+                        alertAll(data);
                         break;
                 }
-                alertAll(data);
             },
             error: function (objXMLHttpRequest) {
                 console.log("error", objXMLHttpRequest);
@@ -1972,6 +2048,7 @@ controller = app.controller("workAreaController", function ($scope) {
             let relation = createRelationClass({
                 type: $scope.typeRelation.object,
                 value: $scope.typeRelation.value,
+                typeRelatioship: $scope.typeRelation.value,
                 a: from,
                 b: to,
                 card_A: cardinalidateObject.split("..")[0],

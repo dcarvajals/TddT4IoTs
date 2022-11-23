@@ -18,20 +18,20 @@ public class DataStatic {
     /**
      * aplicaciones.uteq.edue.ec*
      */
-//    public static String dbName = "cQf5KIlaaVd6IRjES95RoQ==";
-//    public static String dbUser = "9qy+3vHmh8zClkk38dnm3g==";
-//    public static String dbPassword = "Xg54kwNTey9YPcFBN6WNWWABv+Q+C4mg4xW9VO+zN7jClkk38dnm3g==";
-//    public static String dbPort = "nYsIHU+jDcE=";
-//    public static String dbHost = "EjCoYJyzeuQdRCjDM4JrjA==";//remoto
+    public static String dbName = "tddt4iots";
+    public static String dbUser = "tdduser";
+    public static String dbPassword = "tddt123456";
+    public static String dbPort = "5432";
+    public static String dbHost = "localhost";//remoto
 //    
     /**
      * bioforest.uteq.edue.ec*
      */
-    public static String dbName = "cQf5KIlaaVd6IRjES95RoQ==";
-    public static String dbUser = "9qy+3vHmh8zClkk38dnm3g==";
-    public static String dbPassword = "Ok9kbRfRsOrgEkfJ8bouhge5dQQCpnO5ytBA+lbCxOEpTujTi/G1ORNoJ/GC0fI1nqj5cldF+8fwdA8vXBJpGZCZhyGfxpMWiunNJ5XG+y/h+wXA59Lpe+r2O2YPHAVBSy7gzFoLNMM=";
-    public static String dbPort = "nYsIHU+jDcE=";
-    public static String dbHost = "i+aTFOSJFYo6UcZQmtEsRg=="; //remoto
+//    public static String dbName = "cQf5KIlaaVd6IRjES95RoQ==";
+//    public static String dbUser = "9qy+3vHmh8zClkk38dnm3g==";
+//    public static String dbPassword = "Ok9kbRfRsOrgEkfJ8bouhge5dQQCpnO5ytBA+lbCxOEpTujTi/G1ORNoJ/GC0fI1nqj5cldF+8fwdA8vXBJpGZCZhyGfxpMWiunNJ5XG+y/h+wXA59Lpe+r2O2YPHAVBSy7gzFoLNMM=";
+//    public static String dbPort = "nYsIHU+jDcE=";
+//    public static String dbHost = "i+aTFOSJFYo6UcZQmtEsRg=="; //remoto
     /**
      * heroku
      */
@@ -61,7 +61,7 @@ public class DataStatic {
     public static String folderUml = "UmlDiagram/";
     public static String folderEasy = "EasyIoT/";
     public static String folderMvmSpring = "/ProjectMvnSpr/";
-    public static String pathTemp = "D:\\REPOSITORIOS\\umleasyiotrep\\storageTddm4IoTbs\\src\\main\\webapp\\";
+    public static String pathTemp = "D:\\Repositorios\\TddT4IoTs\\storageTddm4IoTbs\\src\\main\\webapp\\";
 
     public static String folderTemplate = "tddm4iotbs_template/";
     public static String folderMvn = "mvn_config/";

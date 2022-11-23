@@ -24,20 +24,20 @@
         <link href="resources/css/css-app/utils.css" rel="stylesheet" type="text/css"/>
 
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
-        
+
         <script src="resources/js/js-library/jquery.min.js"></script>
         <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
-        <script src="resources/js/js-library/angular.js" type="text/javascript"></script>
-        <script src="resources/js/js-library/angular-route.min.js" type="text/javascript"></script>
-        <script src="resources/js/js-library/sweetalert2.min.js" type="text/javascript"></script>
-        <script src="resources/js/js-library/toastr.min.js" type="text/javascript"></script>
+        <script src="resources/js/js-library/angular.js"></script>
+        <script src="resources/js/js-library/angular-route.min.js"></script>
+        <script src="resources/js/js-library/sweetalert2.min.js" ></script>
+        <script src="resources/js/js-library/toastr.min.js" ></script>
 
-        <script src="resources/js/js-library/store2.min.js" type="text/javascript"></script>
-        <script src="resources/js/js-library/toastr.min.js" type="text/javascript"></script>
+        <script src="resources/js/js-library/store2.min.js" ></script>
+        <script src="resources/js/js-library/toastr.min.js" ></script>
 
-        <script src="resources/codemirror/codemirror.js" type="text/javascript"></script>
-        <script src="resources/codemirror/clike.min.js" type="text/javascript"></script>
-        <script src="resources/codemirror/matchbrackets.js" type="text/javascript"></script>
+        <script src="resources/codemirror/codemirror.js" ></script>
+        <script src="resources/codemirror/clike.min.js" ></script>
+        <script src="resources/codemirror/matchbrackets.js"></script>
 
         <script src="resources/js/js-library/UDCore.js"></script>
         <script src="resources/js/js-library/UDModules.js"></script>
@@ -120,7 +120,7 @@
                                                                   form_update_action.action_original.$dirty) ?
                                                                   'form-control form-control-sm is-invalid'
                                                                   : 'form-control form-control-sm'" cols="30"
-                                          rows="5">
+                                          rows="5" ng-blur="interpretUseCaseAction()">
                                 </textarea>
                                 <div class="invalid-feedback">
                                     Please enter the use case description
@@ -187,6 +187,66 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Modal Inheritance among actors (herencia entre actores) -->
+        <div class="modal fade" id="modal_inheritance_actor" tabindex="-1" role="dialog"
+             aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <form class="w-100" name="frmInheritanceActor" ng-submit="createInHeritanceActor(frmInheritanceActor)" novalidate>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"> Inheritance Actor </h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="col-form-label col-form-label-sm">From actor:</label>
+                                <select name="selecactor1"
+                                        ng-model="selecactor1"
+                                        ng-class="(formAssociation.selecactor1.$invalid
+                                                                && formAssociation.selecactor1.$dirty) ?
+                                                                'form-control form-control-sm is-invalid'
+                                                                : 'form-control form-control-sm'" required>
+                                    <option value="">Seleccione</option>
+                                    <option ng-repeat="data in jsonUseCase.actors"
+                                            ng-value="{{$index}}">
+                                        {{data.obj_actor.getName()}}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Select a actor.
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label col-form-label-sm">To actor:</label>
+                                <select name="selecactor2"
+                                        ng-model="selecactor2"
+                                        ng-class="(formAssociation.selecactor2.$invalid
+                                                                && formAssociation.selecactor2.$dirty) ?
+                                                                'form-control form-control-sm is-invalid'
+                                                                : 'form-control form-control-sm'" required>
+                                    <option value="">Seleccione</option>
+                                    <option ng-repeat="data in jsonUseCase.actors"
+                                            ng-value="{{$index}}">
+                                        {{data.obj_actor.getName()}}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Select a actor.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                            <button ng-disabled="frmInheritanceActor.$invalid" type="submit"
+                                    class="btn btn-sm btn-primary">Save changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
 
         <!-- Modal new usecase -->
         <div class="modal fade" id="modal_usecase" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
@@ -194,7 +254,8 @@
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exa">New Use Case</h5>
+                        <h5 ng-show="!flag_update" class="modal-title" id="exa">New Use Case</h5>
+                        <h5 ng-show="flag_update" class="modal-title" id="exa2">Update Use Case</h5>
                     </div>
                     <div class="modal-body overflow-auto" style="max-height: 500px;">
                         <nav>
@@ -327,7 +388,7 @@
                                                                           'form-control form-control-sm is-invalid'
                                                                           : 'form-control form-control-sm'" required
                                                   cols="30"
-                                                  rows="5"></textarea>
+                                                  rows="5" ng-blur="interpretUseCaseDescription(true)"></textarea>
                                         <div class="invalid-feedback">
                                             Please enter the use case description
                                         </div>
@@ -1037,6 +1098,65 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Modal asscoation use acse (herencia entre actores) -->
+        <div class="modal fade" id="modal_association_usecase" tabindex="-1" role="dialog"
+             aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <form class="w-100" name="frmAssociationUseCase" ng-submit="createAssociationUseCase(frmAssociationUseCase)" novalidate>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"> Association Use Case </h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="col-form-label col-form-label-sm">From usecase:</label>
+                                <select name="selectusecase1"
+                                        ng-model="selectusecase1"
+                                        ng-class="(formAssociation.selectusecase1.$invalid
+                                                                && formAssociation.selectusecase1.$dirty) ?
+                                                                'form-control form-control-sm is-invalid'
+                                                                : 'form-control form-control-sm'" required>
+                                    <option value="">Seleccione</option>
+                                    <option ng-repeat="data in jsonUseCase.useCase"
+                                            ng-value="{{$index}}">
+                                        {{data.obj_usecase.getName()}}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Select a use case.
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label col-form-label-sm">To actor:</label>
+                                <select name="selectusecase2"
+                                        ng-model="selectusecase2"
+                                        ng-class="(formAssociation.selectusecase2.$invalid
+                                                                && formAssociation.selectusecase2.$dirty) ?
+                                                                'form-control form-control-sm is-invalid'
+                                                                : 'form-control form-control-sm'" required>
+                                    <option value="">Seleccione</option>
+                                    <option ng-repeat="data in jsonUseCase.useCase"
+                                            ng-value="{{$index}}">
+                                        {{data.obj_usecase.getName()}}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Select a use case.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                            <button ng-disabled="frmAssociationUseCase.$invalid" type="submit"
+                                    class="btn btn-sm btn-primary">Save changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1976,8 +2096,8 @@
                                                                 'form-control form-control-sm is-invalid'
                                                                 : 'form-control form-control-sm'" name="db_port" ng-model="db_port" required="true">
                                         <div class="invalid-feedback">
-                                    Please enter the port.
-                                </div>
+                                            Please enter the port.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2183,9 +2303,17 @@
                                  data-toggle="tooltip" data-placement="right" title="Actor">
                                 <img class="m-auto" src="resources/img/img-uml/actor.svg" alt="">
                             </div>
+                            <div class="row p-2 toolUml" id="btninheritanceactor" draggable="true"
+                                 data-toggle="tooltip" data-placement="right" title="Inheritance  Actor">
+                                <img class="m-auto" src="resources/img/img-uml/herenciaActor.svg" alt="">
+                            </div>
                             <div class="row p-2 toolUml" id="btnusecase" draggable="true"
                                  data-toggle="tooltip" data-placement="right" title="Use case">
                                 <img class="m-auto" src="resources/img/img-uml/useCase.svg" alt="">
+                            </div>
+                            <div class="row p-2 toolUml" id="btnassociationusecase" draggable="true"
+                                 data-toggle="tooltip" data-placement="right" title="Assosiation Use case">
+                                <img class="m-auto" src="resources/img/img-uml/relUseCaseuml.svg" alt="">
                             </div>
                             <div class="row p-2 toolUml" id="btninclusion" draggable="true"
                                  data-toggle="tooltip" data-placement="right" title="Include">
@@ -2270,7 +2398,7 @@
                             Tools
                         </div>
                         <div class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml" id="" draggable="true"
+                            <div class="row p-2 toolUml" draggable="true"
                                  data-toggle="tooltip" data-placement="right" title="Tools in construction">
                                 <i class="fas fa-hammer"
                                    style="color: black; margin: auto; font-size: 2rem"></i>
@@ -2290,9 +2418,16 @@
                 <div class="w-100 p-3" style="overflow: auto;display: flow-root;">
                     <div style="height: 100%">
                         <div class="w-100">
-                            <button ng-repeat="buttonUml in btnDiagramUml"
+                            <button ng-repeat="buttonUml in btnDiagramUml" ng-show="buttonUml.type !== 'UMLSequenceDiagram'"
                                     ng-class="buttonUml.btnactive" ng-click="changeDiagramA(buttonUml)"> {{buttonUml.name}}
                             </button>
+                            <button class="btn btn-sm button-dt mr-2 mt-1" id="dropdownMenuButton"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Secuences Diagrams
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" ng-repeat="buttonUml in btnDiagramUml" href="#"
+                                   ng-click="changeDiagramA(buttonUml)" ng-show="buttonUml.type === 'UMLSequenceDiagram'">{{buttonUml.name}}</a>
+                            </div>
                         </div>
                         <!-- End of Sidebar -->
                         <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true"
@@ -2307,24 +2442,24 @@
             </div>
 
         </div>
-        <script src="resources/js/js-global/js_global.js" type="text/javascript"></script>
-        <script src="resources/js/js-global/jsAlertPersonalize.js" type="text/javascript"></script>
+        <script src="resources/js/js-global/js_global.js" ></script>
+        <script src="resources/js/js-global/jsAlertPersonalize.js" ></script>
         <script src="resources/js/js-uml/js_diagram_uml.js"></script>
         <script src="resources/js/js-uml/js_tools_uml.js"></script>
-        <script src="resources/js/js-uml/js_class_diagram.js" type="text/javascript"></script>
+        <script src="resources/js/js-uml/js_class_diagram.js" ></script>
 
         <!--begin: websocket-->
-        <script src="resources/js/js-websocket/ctrl_webscoket.js" type="text/javascript"></script>
+        <script src="resources/js/js-websocket/ctrl_webscoket.js" ></script>
         <!--end: websocket-->
 
         <!--begin: mavenproject-->
-        <script src="resources/js/js-mavenprojeect/js_mavenproject.js" type="text/javascript"></script>
+        <script src="resources/js/js-mavenprojeect/js_mavenproject.js" ></script>
         <!--end: mavenproject-->
 
-        <script src="resources/js/js-tdd/js_tdd.js" type="text/javascript"></script>
+        <script src="resources/js/js-tdd/js_tdd.js" ></script>
         <script src="resources/js/js-functions/RoyalCodex.js"></script>
-        <script src="resources/js/js-library/cycle.js" type="text/javascript"></script>
-        <script src="resources/js/js-library/JSONE.js" type="text/javascript"></script>
-        <script src="resources/js/js-uml/secuenceUml.js" type="text/javascript"></script>
+        <script src="resources/js/js-library/cycle.js" ></script>
+        <script src="resources/js/js-library/JSONE.js" ></script>
+        <script src="resources/js/js-uml/secuenceUml.js" ></script>
     </body>
 </html>

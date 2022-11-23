@@ -129,11 +129,7 @@ function setMenuUseCase(nodes, typeNode) {
                     }, 'Delete']
                 ]);
             } else if (node._type === "UMLSystem") {
-                node.setMenu([
-                    [function () {
-                        alertAll({"status": 3, "information": "No options."});
-                    }, '---'],
-                ]);
+                node.setMenu([]);
             }
         } else {
             if (node._type === "UMLCommunication" || node._type === "UMLInclude" || node._type === "UMLExtend" ||
@@ -563,11 +559,13 @@ function createSystem(projectName) {
     //no cambie de tamanio
     system.setMoveable();
 
-    system.setMenu([
-        [function () {
-            alertAll({"status": 3, "information": "No options."});
-        }, '---'],
-    ]);
+    system.setMenu([]);
+
+    /**
+     * [function () {
+     *             alertAll({"status": 3, "information": "No options."});
+     *         }, '---'],
+     * */
 
     diagramUseCase.addElement(system);
     diagramUseCase.draw();
@@ -696,10 +694,10 @@ function createInterface(attributes) {
 function createRelationClass(attributes) {
     let rel;
 
-    if(attributes.value === "generalization"){
+    if(attributes.typeRelatioship === "generalization"){
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
         rel.setEnd(new OpenTip());
-    } else if (attributes.value === "dependency") {
+    } else if (attributes.typeRelatioship === "dependency") {
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
         rel.setLine(new DashedLine());
         rel.setEnd(new OpenTip());
