@@ -243,7 +243,7 @@ public class FileAccess {
             new ZipFile(target).addFolder(new File(source));
             return true;
         } catch (ZipException ex) {
-            System.out.println("[Error zip]: " + ex.getMessage());
+            System.out.println("[Error zip]: xx" + ex.getMessage());
         }
         return false;
     }

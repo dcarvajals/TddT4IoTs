@@ -187,7 +187,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal Inheritance among actors (herencia entre actores) -->
         <div class="modal fade" id="modal_inheritance_actor" tabindex="-1" role="dialog"
              aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
@@ -246,7 +246,7 @@
                 </form>
             </div>
         </div>
-        
+
 
         <!-- Modal new usecase -->
         <div class="modal fade" id="modal_usecase" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
@@ -273,18 +273,24 @@
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
                                  aria-labelledby="nav-home-tab">
+                                <div class="custom-control custom-checkbox mt-1 mb-1">
+                                    <input type="checkbox" class="custom-control-input" id="customCheck1" checked>
+                                    <label class="custom-control-label" for="customCheck1">Show input not language symbol</label>
+                                </div>
                                 <form id="form_usecase" name="form_usecase" ng-submit="createUseCaseUC(form_usecase, true)">
                                     <div class="row">
                                         <div class="col">
                                             <div class="form-group">
                                                 <label class="col-form-label col-form-label-sm">Use case name:</label>
-                                                <input name="usecase_name"
-                                                       ng-model="usecase_name"
+                                                <input name="usecase_name" ng-model="usecase_name"
+                                                       type="text" class="form-control form-control-sm mt-1"
                                                        ng-class="(form_usecase.usecase_name.$invalid &&
                                                                                form_usecase.usecase_name.$dirty) ?
                                                                                'form-control form-control-sm is-invalid'
                                                                                : 'form-control form-control-sm'"
-                                                       required>
+                                                       ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_name, 'usecase_name_i')">
+                                                <input type="text" name="usecase_name_i" ng-model="usecase_name_i"
+                                                       class="form-control form-control-sm mt-1" readonly>
                                                 <div class="invalid-feedback">
                                                     Please choose a use case name.
                                                 </div>
@@ -318,7 +324,7 @@
                                         <div class="col-2 text-right">
                                             <label class="col-form-label col-form-label-sm">Name:</label>
                                         </div>
-                                        <div class="col-7">
+                                        <div class="col-5">
                                             <input type="text" name="usecase_actorname"
                                                    ng-model="usecase_actorname"
                                                    class="form-control form-control-sm">
@@ -332,6 +338,20 @@
                                                     class="btn btn-sm btn-info w-100">
                                                 Add
                                             </button>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="dropdown show">
+                                                <a class="btn btn-secondary btn-sm dropdown-toggle w-100" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Actors
+                                                </a>
+
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                    <a ng-repeat="data in jsonUseCase.actors" class="dropdown-item" href="#"
+                                                       ng-value="{{$index}}" ng-click="addActorCreated(data.obj_actor)">
+                                                        {{data.obj_actor.getName()}}
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="alert alert-danger mt-3" role="alert" ng-show="actorsUseCase.length === 0">
@@ -361,25 +381,34 @@
                                     <div class="form-group">
                                         <label class="col-form-label col-form-label-sm"> Porpuse:</label>
                                         <input name="usecase_porpuse" ng-model="usecase_porpuse"
-                                               type="text" class="form-control form-control-sm">
+                                               type="text" class="form-control form-control-sm"
+                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_porpuse, 'usecase_porpuse_i')">
+                                        <input name="usecase_porpuse_i" ng-model="usecase_porpuse_i"
+                                               type="text" class="form-control form-control-sm mt-1" readonly>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-form-label col-form-label-sm"> Pre-condition:</label>
                                         <input name="usecase_precondition" ng-model="usecase_precondition"
-                                               type="text" class="form-control form-control-sm">
+                                               type="text" class="form-control form-control-sm"
+                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_precondition, 'usecase_precondition_i')">
+                                        <input name="usecase_precondition_i" ng-model="usecase_precondition_i"
+                                               type="text" class="form-control form-control-sm mt-1" readonly>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-form-label col-form-label-sm"> Post-condition:</label>
                                         <input name="usecase_postcondition" ng-model="usecase_postcondition"
-                                               type="text" class="form-control form-control-sm">
+                                               type="text" class="form-control form-control-sm"
+                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_postcondition, 'usecase_postcondition_i')">
+                                        <input name="usecase_postcondition_i" ng-model="usecase_postcondition_i"
+                                               type="text" class="form-control form-control-sm mt-1" readonly>
                                     </div>
                                     <div class="form-group">
-                                        <button type="button" href="" ng-click="interpretUseCaseDescription(true)"
+                                        <!--<button type="button" href="" ng-click="interpretUseCaseDescription(true)"
                                                 ng-disabled="form_usecase.usecase_description.$invalid"
                                                 class="btn btn-success btn-sm float-right"
                                                 style="padding: 0px 10px; margin-top: 6px; font-size: 0.8rem;">
                                             Interpret
-                                        </button>
+                                        </button> -->
                                         <label class="col-form-label col-form-label-sm"> Description:</label>
                                         <textarea name="usecase_description_interpret"
                                                   ng-model="usecase_description_interpret"
@@ -388,7 +417,8 @@
                                                                           'form-control form-control-sm is-invalid'
                                                                           : 'form-control form-control-sm'" required
                                                   cols="30"
-                                                  rows="5" ng-blur="interpretUseCaseDescription(true)"></textarea>
+                                                  rows="5"
+                                                  ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_description_interpret, 'usecase_description_original')"></textarea>
                                         <div class="invalid-feedback">
                                             Please enter the use case description
                                         </div>
@@ -1087,6 +1117,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <div class="w-100 h-25"> consola </div>
+                        <br>
                         <button ng-click="cancelUseCase(form_usecase)" type="button" class="btn btn-sm btn-danger">Cancel
                         </button>
                         <button form="form_usecase" type="submit" ng-disabled="form_usecase.$invalid"
@@ -1100,7 +1132,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal asscoation use acse (herencia entre actores) -->
         <div class="modal fade" id="modal_association_usecase" tabindex="-1" role="dialog"
              aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
@@ -1131,7 +1163,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-form-label col-form-label-sm">To actor:</label>
+                                <label class="col-form-label col-form-label-sm">To usecase:</label>
                                 <select name="selectusecase2"
                                         ng-model="selectusecase2"
                                         ng-class="(formAssociation.selectusecase2.$invalid
@@ -1235,7 +1267,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <label class="col-form-label col-form-label-sm">Use Case 2</label>
+                                <label class="col-form-label col-form-label-sm">Use Case base</label>
                                 <select name="selectusecase1"
                                         ng-model="selectusecase1"
                                         ng-class="(formInclusion.selectusecase1.$invalid && formInclusion.selectusecase1.$dirty) ?
@@ -1251,7 +1283,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-form-label col-form-label-sm">Use Case 2</label>
+                                <label class="col-form-label col-form-label-sm">Use Case include</label>
                                 <select name="selectusecase2"
                                         ng-model="selectusecase2"
                                         ng-class="(formInclusion.selectusecase2.$invalid && formInclusion.selectusecase2.$dirty) ?
@@ -2457,7 +2489,7 @@
         <!--end: mavenproject-->
 
         <script src="resources/js/js-tdd/js_tdd.js" ></script>
-        <script src="resources/js/js-functions/RoyalCodex.js"></script>
+        <script src="resources/js/js-library/armadillo.js"></script>
         <script src="resources/js/js-library/cycle.js" ></script>
         <script src="resources/js/js-library/JSONE.js" ></script>
         <script src="resources/js/js-uml/secuenceUml.js" ></script>

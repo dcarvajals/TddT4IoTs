@@ -56,6 +56,8 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.showTool = "UMLUseCaseDiagram";
 
+    $scope.notifications = [];
+
     //datos para el diagrama de secuencia
     $scope.secuenceData = {
         package: [],
@@ -325,18 +327,18 @@ controller = app.controller("workAreaController", function ($scope) {
         }).then((result) => {
             if (result.isConfirmed) {
                 $scope.$apply(() => {
-                //limpiamos los actores que pertenecen al caso de uso
-                $scope.actorsUseCase.length = 0;
-                //limpiamos el escenario principal y el flujo alternativo del caso de uso
-                $scope.manager_maf.main_stage.length = 0;
-                $scope.manager_maf.alternative_flow.length = 0;
+                    //limpiamos los actores que pertenecen al caso de uso
+                    $scope.actorsUseCase.length = 0;
+                    //limpiamos el escenario principal y el flujo alternativo del caso de uso
+                    $scope.manager_maf.main_stage.length = 0;
+                    $scope.manager_maf.alternative_flow.length = 0;
 
-                //determinamos que la accion de editar se establece en false
-                $scope.flag_update = false;
-                clearFormUseCase(form);
+                    //determinamos que la accion de editar se establece en false
+                    $scope.flag_update = false;
+                    clearFormUseCase(form);
 
-                form.$setPristine();
-                form.$setUntouched();
+                    form.$setPristine();
+                    form.$setUntouched();
 
                     $scope.flag_update = false;
                 });
@@ -375,7 +377,7 @@ controller = app.controller("workAreaController", function ($scope) {
     $("#Symbols_use_cases").click(function () {
         $("#modal_Symbols").modal();
     });
-    
+
     $("#btninheritanceactor").click(function () {
 
         if ($scope.editionClasDiagram) {
@@ -388,7 +390,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
         $("#modal_inheritance_actor").modal();
     });
-    
+
     $("#btnassociationusecase").click(function () {
 
         if ($scope.editionClasDiagram) {
@@ -485,44 +487,44 @@ controller = app.controller("workAreaController", function ($scope) {
             }
         }
     };
-    
+
     // funcion para crear la herencia entre actores
     $scope.createInHeritanceActor = function (form) {
         if (form.$valid) {
             let relation = {};
-            
+
             relation = createRelation({
                 "type": UMLGeneralization,
                 "a": $scope.jsonUseCase.actors[form.selecactor1.$viewValue].obj_actor,
                 "b": $scope.jsonUseCase.actors[form.selecactor2.$viewValue].obj_actor
             });
-            
+
             $scope.jsonUseCase.relations.push({
                 "type": "UMLGeneralization",
                 "obj_relation": relation
             });
-                
+
             $("#modal_inheritance_actor").modal("hide");
         } else {
             alert("aguante :v");
         }
     };
-    
+
     $scope.createAssociationUseCase = function (form) {
         if (form.$valid) {
             let relation = {};
-            
+
             relation = createRelation({
                 "type": UMLCommunication,
                 "a": $scope.jsonUseCase.useCase[form.selectusecase1.$viewValue].obj_usecase,
                 "b": $scope.jsonUseCase.useCase[form.selectusecase2.$viewValue].obj_usecase
             });
-                
+
             $scope.jsonUseCase.relations.push({
                 "type": "UMLCommunication",
                 "obj_relation": relation
             });
-                
+
             $("#modal_association_usecase").modal("hide");
         } else {
             alert("aguante :v");
@@ -554,12 +556,14 @@ controller = app.controller("workAreaController", function ($scope) {
     //funcion para crear los actores dentro de la descripcion de los casos de uso
     $scope.createActorUC = function (flag) {
         if ($scope.usecase_actorname !== undefined && $scope.usecase_actorname.trim() !== '') {
+
             if (!$scope.nameEquals($scope.usecase_actorname, -1)) {
                 //crear lista de actores
                 let actorobject = createActorTools({
                     "name": $scope.usecase_actorname,
                     "pos_Y": randomPosition(400, 70)
                 });
+
                 $scope.actorsUseCase.push({
                     "obj_actor": actorobject,
                     "name": actorobject.getName()
@@ -574,16 +578,24 @@ controller = app.controller("workAreaController", function ($scope) {
         }
     };
 
+    $scope.addActorCreated = function (actorobject) {
+        $scope.actorsUseCase.push({
+            "obj_actor": actorobject,
+            "name": actorobject.getName()
+        });
+
+    };
+
     // funcion para crear los casos de uso y reelacionarlo con los actores que desee de forma automatica
     $scope.createUseCaseUC = function (form, flag) {
 
-        if ($scope.nameEquals(form.usecase_name.$modelValue, -1)) {
+        if ($scope.nameEquals(form.usecase_name_i.$modelValue, -1)) {
             return;
         }
 
         //crear objeto use case
         let usecase = createUseCase({
-            "name": form.usecase_name.$modelValue,
+            "name": form.usecase_name_i.$modelValue,
             "pos_Y": randomPosition(400, 70)
         });
 
@@ -607,11 +619,14 @@ controller = app.controller("workAreaController", function ($scope) {
                 "obj_relation": relation
             });
 
-            //agrega los actores que fueron creados por la descripcion del caso de uso existente
-            $scope.jsonUseCase.actors.push({
-                "obj_actor": actorUC,
-                "name": actorUC.getName()
-            });
+            if (!$scope.nameEqualsNoMess(actorUC.getName(), -1)) {
+                //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                $scope.jsonUseCase.actors.push({
+                    "obj_actor": actorUC,
+                    "name": actorUC.getName()
+                });
+            }
+
 
         }
         /**
@@ -626,14 +641,14 @@ controller = app.controller("workAreaController", function ($scope) {
             "height": 81,
             "id_div": "areaDiagram",
             "diagram": UMLSequenceDiagram,
-            "name": "Secuence Diagram - " + form.usecase_name.$modelValue,
+            "name": "Secuence Diagram - " + form.usecase_name_i.$modelValue,
             "interaction": false,
             "draw": false
         });
 
         $scope.btnDiagramUml.push({
             diagram: secuence_diagram,
-            "name": "Secuence Diagram - " + form.usecase_name.$modelValue,
+            "name": "Secuence Diagram - " + form.usecase_name_i.$modelValue,
             "type": "UMLSequenceDiagram",
             "status": "C",
             "btnactive": "btn btn-sm button-dt mr-2 mt-1"
@@ -641,10 +656,14 @@ controller = app.controller("workAreaController", function ($scope) {
 
         $scope.jsonUseCase.useCase.push({
             "obj_usecase": usecase,
-            "name": usecase.getName(),
+            "name": form.usecase_name.$modelValue,
+            "name_i": usecase.getName(),
             "porpuse": form.usecase_porpuse.$modelValue,
+            "porpuse_i": form.usecase_porpuse_i.$modelValue,
             "pre_condition": form.usecase_precondition.$modelValue,
+            "pre_condition_i": form.usecase_precondition_i.$modelValue,
             "post_condition": form.usecase_postcondition.$modelValue,
+            "post_condition_i": form.usecase_postcondition_i.$modelValue,
             "description_interpret": form.usecase_description_interpret.$modelValue,
             "description_original": form.usecase_description_original.$modelValue,
             "main_stage": Object.assign([], $scope.manager_maf.main_stage),
@@ -701,8 +720,23 @@ controller = app.controller("workAreaController", function ($scope) {
         let useCase = $scope.jsonUseCase.useCase;
         let minjson = [];
         for (let x = 0; x < useCase.length; x++) {
+            let usecase_name = useCase[x].name;
             let description_interpret = useCase[x].description_interpret;
-            minjson = getHackDiagram(description_interpret);
+            let usecase_postcondition_i = useCase[x].postcondition;
+            let usecase_precondition_i = useCase[x].precondition;
+            let usecase_porpuse_i = useCase[x].porpuse;
+            minjson = getHackDiagram(usecase_name === undefined ? "" : usecase_name);
+            //$scope.notifications.push(minjson)
+            console.log("NOTIFICACIONES !! - " + minjson);
+
+            mergeClassDiagram($scope.jsonClass, minjson[1]);
+            minjson = getHackDiagram(usecase_porpuse_i === undefined ? "" : usecase_porpuse_i);
+            mergeClassDiagram($scope.jsonClass, minjson[1]);
+            minjson = getHackDiagram(usecase_precondition_i === undefined ? "" : usecase_precondition_i);
+            mergeClassDiagram($scope.jsonClass, minjson[1]);
+            minjson = getHackDiagram(usecase_postcondition_i === undefined ? "" : usecase_postcondition_i);
+            mergeClassDiagram($scope.jsonClass, minjson[1]);
+            minjson = getHackDiagram(description_interpret == undefined ? "" : description_interpret);
             mergeClassDiagram($scope.jsonClass, minjson[1]);
             for (let y = 0; y < useCase[x].main_stage.length; y++) {
                 // action_original
@@ -792,22 +826,26 @@ controller = app.controller("workAreaController", function ($scope) {
     //funcion para editar los casos de uso
     $scope.updateUseCase = function (form, flag) {
 
-        if ($scope.nameEquals(form.usecase_name.$modelValue, $scope.encontrado)) {
+        if ($scope.nameEquals(form.usecase_name_i.$modelValue, $scope.encontrado)) {
             return;
         }
 
         //asignamos el nuevo nombre del caso de uso
-        $scope.object_update.setName(form.usecase_name.$modelValue);
+        $scope.object_update.setName(form.usecase_name_i.$modelValue);
         diagramUseCase.draw();
         //asignamos los nuevos datos al casos de uso
         $scope.jsonUseCase.useCase[$scope.encontrado].name = form.usecase_name.$modelValue;
+        $scope.jsonUseCase.useCase[$scope.encontrado].name_i = form.usecase_name_i.$modelValue;
         $scope.jsonUseCase.useCase[$scope.encontrado].porpuse = form.usecase_porpuse.$modelValue;
+        $scope.jsonUseCase.useCase[$scope.encontrado].porpuse_i = form.usecase_porpuse_i.$modelValue;
         $scope.jsonUseCase.useCase[$scope.encontrado].pre_condition = form.usecase_precondition.$modelValue;
+        $scope.jsonUseCase.useCase[$scope.encontrado].precondition_i = form.usecase_precondition_i.$modelValue;
         $scope.jsonUseCase.useCase[$scope.encontrado].post_condition = form.usecase_postcondition.$modelValue;
+        $scope.jsonUseCase.useCase[$scope.encontrado].post_condition_i = form.usecase_postcondition_i.$modelValue;
         $scope.jsonUseCase.useCase[$scope.encontrado].description_interpret = form.usecase_description_interpret.$modelValue;
         $scope.jsonUseCase.useCase[$scope.encontrado].description_original = form.usecase_description_original.$modelValue;
-        $scope.btnDiagramUml[$scope.encontrado + 2].name = "Secuence Diagram - " + form.usecase_name.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_diagram.setName("Secuence Diagram - " + form.usecase_name.$modelValue);
+        $scope.btnDiagramUml[$scope.encontrado + 2].name = "Secuence Diagram - " + form.usecase_name_i.$modelValue;
+        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_diagram.setName("Secuence Diagram - " + form.usecase_name_i.$modelValue);
 
         //preguntaremos si se agregaron nuevos actores dentro del caso de uso
         let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
@@ -833,10 +871,12 @@ controller = app.controller("workAreaController", function ($scope) {
                         "obj_relation": relation
                     });
 
-                    //agrega los actores que fueron creados por la descripcion del caso de uso existente
-                    $scope.jsonUseCase.actors.push({
-                        "obj_actor": $scope.actorsUseCase[index_X].obj_actor
-                    });
+                    if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
+                        //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                        $scope.jsonUseCase.actors.push({
+                            "obj_actor": $scope.actorsUseCase[index_X].obj_actor
+                        });
+                    }
                     index_actor_relation = 0;
                 }
             }
@@ -877,7 +917,7 @@ controller = app.controller("workAreaController", function ($scope) {
         for (ipack = 0; ipack < $scope.jsonClass.diagram.length; ipack++) {
             for (isec = 0; isec < $scope.jsonUseCase.useCase.length; isec++) {
                 let secuence = $scope.jsonUseCase.useCase[isec];
-                if (secuence.name === form.usecase_name.$modelValue)
+                if (secuence.name === form.usecase_name_i.$modelValue)
                     updateSecuenceDiagram(secuence.secuence_diagram, secuence.secuence_data);
             }
         }
@@ -890,12 +930,17 @@ controller = app.controller("workAreaController", function ($scope) {
     function clearFormUseCase(form, flag) {
         //$scope.$apply(() => {
         //limpiar formulario
+        $scope.usecase_name_i = "";
         $scope.usecase_name = "";
         $scope.usecase_porpuse = "";
+        $scope.usecase_porpuse_i = "";
         $scope.usecase_precondition = "";
+        $scope.usecase_precondition_i = "";
         $scope.usecase_postcondition = "";
+        $scope.usecase_postcondition_i = "";
         $scope.usecase_description_interpret = "";
         $scope.usecase_description_original = "";
+
         //});
 
         if (flag) {
@@ -920,14 +965,31 @@ controller = app.controller("workAreaController", function ($scope) {
     }
 
     //funcion para interpretar la descripcion general del caso de uso
-    $scope.interpretUseCaseDescription = function (flag) {
-        let minjson = getHackDiagram($scope.usecase_description_interpret);
+    $scope.interpretUseCaseDescription = function (flag, scope_usecase, scope_original) {
+        let minjson = getHackDiagram(scope_usecase.$modelValue);
         console.log(minjson);
-        $scope.usecase_description_original = minjson[0];
+        switch (scope_original) {
+            case "usecase_description_original" :
+                $scope.usecase_description_original = minjson[0];
+                break;
+            case "usecase_postcondition_i":
+                $scope.usecase_postcondition_i = minjson[0];
+                break;
+            case "usecase_precondition_i":
+                $scope.usecase_precondition_i = minjson[0];
+                break;
+            case "usecase_porpuse_i":
+                $scope.usecase_porpuse_i = minjson[0];
+                break;
+            case "usecase_name_i":
+                $scope.usecase_name_i = minjson[0];
+                break;
+        }
+        //scope_original.$modelValue = minjson[0];
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
         if (flag)
-            $scope.utilWebSocket("interpretUseCaseDescription", {"form": $scope.usecase_description_interpret});
+            $scope.utilWebSocket("interpretUseCaseDescription", {"form": scope_usecase.$modelValue});
         console.log($scope.jsonClass);
     };
 
@@ -950,9 +1012,9 @@ controller = app.controller("workAreaController", function ($scope) {
             "actor": form.actor_ms.$viewValue,
             "action_interpret": minjson[0],
             /*"action_interpret": $scope.manager_maf.main_stage.length > 0 && form.check_final_step.$viewValue === false ? minjson[0] :
-                    form.check_final_step.$viewValue === true ? 'This use case ends when ' + minjson[0] :
-                    form.check_final_step.$viewValue === false ? 'This use case starts when ' + minjson[0] :
-                    minjson[0]*/
+             form.check_final_step.$viewValue === true ? 'This use case ends when ' + minjson[0] :
+             form.check_final_step.$viewValue === false ? 'This use case starts when ' + minjson[0] :
+             minjson[0]*/
             "action_original": form.action_ms.$viewValue
         });
 
@@ -1001,7 +1063,7 @@ controller = app.controller("workAreaController", function ($scope) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, cancels all!'
+            confirmButtonText: 'Yes, deletes all!'
         }).then((result) => {
             if (result.isConfirmed) {
                 let elem = diagramUseCase.getElementByPoint(obj.obj_actor.getX(), obj.obj_actor.getY());
@@ -1639,7 +1701,7 @@ controller = app.controller("workAreaController", function ($scope) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, cancels all!'
+            confirmButtonText: 'Yes, deletes all!'
         }).then((result) => {
             if (result.isConfirmed) {
                 $scope.$apply(() => {
@@ -1705,6 +1767,50 @@ controller = app.controller("workAreaController", function ($scope) {
                 status: 3,
                 information: "The name entered is already assigned to another object in the use case diagram."
             });
+
+        return isEquals;
+    };
+    
+    /**
+     * @param {string} name
+     * @param index indice
+     * */
+    $scope.nameEqualsNoMess = (name, index) => {
+        let isEquals = false;
+        if ($scope.jsonUseCase.useCase.length > 0) {
+            for (let indice = 0; indice < $scope.jsonUseCase.useCase.length; indice++) {
+                let usecase = $scope.jsonUseCase.useCase[indice];
+                if (indice !== index) {
+                    if (name === usecase.name) {
+                        isEquals = true;
+                    }
+                }
+            }
+        }
+
+        if ($scope.jsonUseCase.actors.length > 0) {
+            for (let indice = 0; indice < $scope.jsonUseCase.actors.length; indice++) {
+                let actor = $scope.jsonUseCase.actors[indice];
+                if (indice !== index) {
+                    if (name === actor.name) {
+                        isEquals = true;
+                    }
+                }
+            }
+        }
+
+        if ($scope.actorsUseCase.length > 0) {
+            for (let indice = 0; indice < $scope.actorsUseCase.length; indice++) {
+                let actorusecase = $scope.actorsUseCase[indice];
+                if (actorusecase.obj_actor._type !== "UMLUseCase") {
+                    if (indice !== index) {
+                        if (name === actorusecase.name) {
+                            isEquals = true;
+                        }
+                    }
+                }
+            }
+        }
 
         return isEquals;
     };

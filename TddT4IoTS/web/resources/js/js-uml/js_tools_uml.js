@@ -113,31 +113,31 @@ function setMenuUseCase(nodes, typeNode) {
             if (node._type === "UMLActor") {
                 node.setMenu([
                     [function () {
-                        selectedActor(node);
-                    }, 'Update'],
+                            selectedActor(node);
+                        }, 'Update'],
                     [function () {
-                        deleteObject(node, 2);
-                    }, 'Delete']
+                            deleteObject(node, 2);
+                        }, 'Delete']
                 ]);
             } else if (node._type === "UMLUseCase") {
                 node.setMenu([
                     [function () {
-                        selectedUseCase(node, true);
-                    }, 'Update'],
+                            selectedUseCase(node, true);
+                        }, 'Update'],
                     [function () {
-                        deleteObject(node, 1);
-                    }, 'Delete']
+                            deleteObject(node, 1);
+                        }, 'Delete']
                 ]);
             } else if (node._type === "UMLSystem") {
                 node.setMenu([]);
             }
         } else {
             if (node._type === "UMLCommunication" || node._type === "UMLInclude" || node._type === "UMLExtend" ||
-                node._type === "UMLGeneralization") {
+                    node._type === "UMLGeneralization") {
                 node.setMenu([
                     [function () {
-                        deleteObject(node, 3);
-                    }, 'Delete']
+                            deleteObject(node, 3);
+                        }, 'Delete']
                 ]);
             }
         }
@@ -152,23 +152,23 @@ function setMenuClass(nodes, typeNode) {
             if (node._type === "UMLClass" || node._type === "UMLInterfaceExtended") {
                 node.setMenu([
                     [function () {
-                        selectedClass(node);
-                    }, 'Update'],
+                            selectedClass(node);
+                        }, 'Update'],
                     [function () {
-                        deleteObjectClass(node, 4); // 4 clases
-                    }, 'Delete']
+                            deleteObjectClass(node, 4); // 4 clases
+                        }, 'Delete']
                 ]);
             }
         } else {
             if (node._type === "UMLAggregation" || node._type === "UMLAssociation" || node._type === "UMLDependency" ||
-                node._type === "UMLGeneralization") {
+                    node._type === "UMLGeneralization") {
                 node.setMenu([
                     [function () {
-                        deleteObjectClass(node, 5); // 5 relaciones de clases
-                    }, 'Delete'],
+                            deleteObjectClass(node, 5); // 5 relaciones de clases
+                        }, 'Delete'],
                     [function () {
-                        editLegend(node);
-                    }, 'Edit legend']
+                            editLegend(node);
+                        }, 'Edit legend']
                 ]);
             }
         }
@@ -197,11 +197,11 @@ function createActorTools(attributes) {
     objectactor.setMoveable();
     objectactor.setMenu([
         [function () {
-            selectedActor(objectactor);
-        }, 'Update'],
+                selectedActor(objectactor);
+            }, 'Update'],
         [function () {
-            deleteObject(objectactor, 2);
-        }, 'Delete']
+                deleteObject(objectactor, 2);
+            }, 'Delete']
     ]);
     diagramUseCase.addElement(objectactor);
     diagramUseCase.draw();
@@ -244,7 +244,7 @@ function deleteObjectClass(obj, type) {
     }).then((result) => {
         if (result.isConfirmed) {
             let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
-            if(!ac.editionClasDiagram){
+            if (!ac.editionClasDiagram) {
                 alertAll({
                     "status": 3,
                     "information": "You cannot modify the class diagram while the class diagram editing is active."
@@ -255,10 +255,10 @@ function deleteObjectClass(obj, type) {
             let indexobj = [];
             ac.$apply(function () {
                 function fromToEquals(relationships, fromRel, toRel) {
-                    for(let x = 0; x < relationships.length; x++){
+                    for (let x = 0; x < relationships.length; x++) {
                         let elementA = relationships[x].from;
                         let elementB = relationships[x].to;
-                        if(fromRel === elementA && toRel ===  elementB ){
+                        if (fromRel === elementA && toRel === elementB) {
                             return [true, x];
                         }
                     }
@@ -268,16 +268,16 @@ function deleteObjectClass(obj, type) {
                 if (type === 4) { // clases
                     indexobj = searchPositionEqualsObject(ac.jsonClass.diagram[0].class, "className", obj.getName().split(" ")[1]);
                     let existRelationFrom = searchPositionEqualsObject(ac.jsonClass.relationships, "from", obj.getName().split(" ")[1]);
-                    if(existRelationFrom[0]){
+                    if (existRelationFrom[0]) {
                         alertAll({status: 3, information: "The selected class cannot be deleted because one of its attributes is being used by another class."});
                     } else {
                         let existRelationTo = searchPositionEqualsObject(ac.jsonClass.relationships, "to", obj.getName().split(" ")[1]);
-                        if(existRelationTo[0]) {
+                        if (existRelationTo[0]) {
                             alertAll({status: 3, information: "The selected class cannot be deleted because one of its attributes is being used by another class."});
                         } else {
                             // eliminar tambien el tipo de dato o la instancia de la clase
-                            for(let i = 0; i <  ac.data_type.length; i++){
-                                if(ac.data_type[i] === obj.getName().split(" ")[1]){
+                            for (let i = 0; i < ac.data_type.length; i++) {
+                                if (ac.data_type[i] === obj.getName().split(" ")[1]) {
                                     ac.data_type.splice(i, 1);
                                 }
                             }
@@ -287,7 +287,7 @@ function deleteObjectClass(obj, type) {
                             alertAll({status: 2, information: "Object successfully removed"});
                         }
                     }
-                } else if (type === 5){
+                } else if (type === 5) {
                     console.log(obj.getElementA().getName());
                     console.log(obj.getElementB().getName());
                     let fromRel = obj.getElementA().getName().split(" ")[1];
@@ -296,11 +296,11 @@ function deleteObjectClass(obj, type) {
                     let positionClass = searchClass(ac.jsonClass.diagram[0].class, fromRel, toRel); // 0 from - 1 to
                     // elimintar atributo de la clase from
                     deleteAttribute(ac.jsonClass.diagram[0].class[positionClass[0]].attributes,
-                        ac.jsonClass.relationships[validation[1]].from_fk);
+                            ac.jsonClass.relationships[validation[1]].from_fk);
                     // eliminar atributo de la clase to
                     deleteAttribute(ac.jsonClass.diagram[0].class[positionClass[1]].attributes,
-                        ac.jsonClass.relationships[validation[1]].to_fk);
-                    if(validation[0]){
+                            ac.jsonClass.relationships[validation[1]].to_fk);
+                    if (validation[0]) {
                         let attributesA = obj.getElementA().getComponents();
                         let attributesB = obj.getElementB().getComponents();
                         // eliminamos los atributos desde la parte grafica
@@ -319,34 +319,34 @@ function deleteObjectClass(obj, type) {
     });
 }
 
-function searchClass (array, from, to) {
+function searchClass(array, from, to) {
     let posFrom = -1;
     let posTo = -1;
-    for(let x = 0; x < array.length; x++){
+    for (let x = 0; x < array.length; x++) {
         let className = array[x].className
-        if(className === from){
+        if (className === from) {
             posFrom = x;
-        } else if (className === to){
+        } else if (className === to) {
             posTo = x;
         }
     }
     return [posFrom, posTo];
 }
 
-function deleteAttribute (attributes, fk) {
-    for(let x = 0; x < attributes.length; x++){
+function deleteAttribute(attributes, fk) {
+    for (let x = 0; x < attributes.length; x++) {
         let attrAux = attributes[x].name;
-        if(attrAux === fk){
+        if (attrAux === fk) {
             attributes.splice(x, 1);
             return true;
         }
     }
 }
 
-function deleteAttrGraph (array, fk) {
-    for(let x = 0; x < array.length; x++){
+function deleteAttrGraph(array, fk) {
+    for (let x = 0; x < array.length; x++) {
         let keyForean = array[x]._text.toString().split(" ")[1];
-        if(keyForean === fk){
+        if (keyForean === fk) {
             array.splice(x, 1);
             return;
         }
@@ -446,11 +446,11 @@ function createUseCase(attributes) {
     diagramUseCase.draw();
     objectcase.setMenu([
         [function () {
-            selectedUseCase(objectcase, true);
-        }, 'Update'],
+                selectedUseCase(objectcase, true);
+            }, 'Update'],
         [function () {
-            deleteObject(objectcase, 1);
-        }, 'Delete']
+                deleteObject(objectcase, 1);
+            }, 'Delete']
     ]);
     return objectcase;
 }
@@ -481,10 +481,14 @@ function selectedUseCase(obj, flag) {
         }
 
         //mostrar los datos al usuario
-        ac.usecase_name = ac.jsonUseCase.useCase[ac.encontrado].obj_usecase.getName();
+        ac.usecase_name = ac.jsonUseCase.useCase[ac.encontrado].name;
+        ac.usecase_name_i = ac.jsonUseCase.useCase[ac.encontrado].obj_usecase.getName();
         ac.usecase_porpuse = ac.jsonUseCase.useCase[ac.encontrado].porpuse;
+        ac.usecase_porpuse_i = ac.jsonUseCase.useCase[ac.encontrado].porpuse_i;
         ac.usecase_precondition = ac.jsonUseCase.useCase[ac.encontrado].pre_condition;
+        ac.usecase_precondition_i = ac.jsonUseCase.useCase[ac.encontrado].pre_condition_i;
         ac.usecase_postcondition = ac.jsonUseCase.useCase[ac.encontrado].post_condition;
+        ac.usecase_postcondition_i = ac.jsonUseCase.useCase[ac.encontrado].post_condition_i;
         ac.usecase_description_interpret = ac.jsonUseCase.useCase[ac.encontrado].description_interpret;
         ac.usecase_description_original = ac.jsonUseCase.useCase[ac.encontrado].description_original;
 
@@ -497,7 +501,7 @@ function selectedUseCase(obj, flag) {
         ac.table_loop = Object.assign([], ac.jsonUseCase.useCase[ac.encontrado].secuence_data.table_loop);
         ac.table_alternative_if = Object.assign([], ac.jsonUseCase.useCase[ac.encontrado].secuence_data.table_alternative_if);
         ac.table_alternative_else = Object.assign([], ac.jsonUseCase.useCase[ac.encontrado].secuence_data.table_alternative_else);
-        if(flag)
+        if (flag)
             ac.utilWebSocket("selectedUseCase", {"position": ac.encontrado});
     });
     let relations_usecase = obj.getRelations();
@@ -519,7 +523,7 @@ function selectedUseCase(obj, flag) {
     } else {
         console.log("no tiene relacion");
     }
-    if(flag)
+    if (flag)
         $('#modal_usecase').modal();
 }
 
@@ -527,8 +531,8 @@ function createRelation(attributes) {
     let rel = new attributes.type({a: attributes.a, b: attributes.b});
     rel.setMenu([
         [function () {
-            deleteObject(rel, 3);
-        }, 'Delete']
+                deleteObject(rel, 3);
+            }, 'Delete']
     ]);
     diagramUseCase.addElement(rel);
     diagramUseCase.draw();
@@ -596,18 +600,18 @@ function createClass(attributes) {
     newclass.setName(attributes.name);
     newclass.setMenu([
         [function () {
-            selectedClass(newclass);
-        }, 'Update'],
+                selectedClass(newclass);
+            }, 'Update'],
         [function () {
-            deleteObjectClass(newclass, 4); // 4 clases
-        }, 'Delete']
+                deleteObjectClass(newclass, 4); // 4 clases
+            }, 'Delete']
     ]);
     diagramClass.addElement(newclass);
     //diagramClass.draw();
     return newclass;
 }
 
-function createEnum(attributes){
+function createEnum(attributes) {
     let newenum = new UMLClass({x: attributes.x, y: attributes.y});
     newenum.setName(attributes.name);
     var color = '#B6E2B5';
@@ -617,11 +621,11 @@ function createEnum(attributes){
     //newenum.setStereotype("enumeration")
     newenum.setMenu([
         [function () {
-            selectedClass(newenum);
-        }, 'Update'],
+                selectedClass(newenum);
+            }, 'Update'],
         [function () {
-            deleteObjectClass(newenum, 4); // 4 clases
-        }, 'Delete']
+                deleteObjectClass(newenum, 4); // 4 clases
+            }, 'Delete']
     ]);
     diagramClass.addElement(newenum);
     //diagramClass.draw();
@@ -632,7 +636,7 @@ function selectedClass(node) {
     console.log(node.getName());
     node.removeContextualMenu();
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
-    if(!ac.editionClasDiagram){
+    if (!ac.editionClasDiagram) {
         alertAll({
             "status": 3,
             "information": "You cannot modify the class diagram while the class diagram editing is active."
@@ -680,11 +684,11 @@ function createInterface(attributes) {
     newinterface.addStereotype("interface");
     newinterface.setMenu([
         [function () {
-            selectedClass(newinterface);
-        }, 'Update'],
+                selectedClass(newinterface);
+            }, 'Update'],
         [function () {
-            //deleteObjectClass(diagramClass);
-        }, 'Delete']
+                //deleteObjectClass(diagramClass);
+            }, 'Delete']
     ]);
     diagramClass.addElement(newinterface);
     //diagramClass.draw();
@@ -694,9 +698,14 @@ function createInterface(attributes) {
 function createRelationClass(attributes) {
     let rel;
 
-    if(attributes.typeRelatioship === "generalization"){
+    if (attributes.a === undefined || attributes.b === undefined) {
+        return rel;
+    }
+
+    if (attributes.typeRelatioship === "generalization") {
+        //rel = new attributes.type({a: attributes.a, b: attributes.b});
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
-        rel.setEnd(new OpenTip());
+        rel.setEnd(new CloseTip());
     } else if (attributes.typeRelatioship === "dependency") {
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
         rel.setLine(new DashedLine());
@@ -706,11 +715,11 @@ function createRelationClass(attributes) {
     }
     rel.setMenu([
         [function () {
-            deleteObjectClass(rel, 5);
-        }, 'Delete'],
+                deleteObjectClass(rel, 5);
+            }, 'Delete'],
         [function () {
-            editLegend(rel);
-        }, 'Edit legend']
+                editLegend(rel);
+            }, 'Edit legend']
     ]);
 
     rel.addStereotype(attributes.value);
@@ -721,7 +730,7 @@ function createRelationClass(attributes) {
     return rel;
 }
 
-function editLegend (node) {
+function editLegend(node) {
     node.removeContextualMenu();
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
 
@@ -739,20 +748,20 @@ function editLegend (node) {
 
 }
 
-function updateLegendTools (node, text) {
+function updateLegendTools(node, text) {
     node._stereotype._childs[0]._text = text;
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
     let fromRel = node.getElementA().getName().split(" ")[1];
     let toRel = node.getElementB().getName().split(" ")[1];
-    if(toRel === undefined) {
+    if (toRel === undefined) {
         toRel = node.getElementB().getName();
     }
 
     function fromToEquals(relationships, fromRel, toRel) {
-        for(let x = 0; x < relationships.length; x++){
+        for (let x = 0; x < relationships.length; x++) {
             let elementA = relationships[x].from;
             let elementB = relationships[x].to;
-            if(fromRel === elementA && toRel ===  elementB ){
+            if (fromRel === elementA && toRel === elementB) {
                 return [true, x];
             }
         }
@@ -840,24 +849,25 @@ function laternative(attributes) {
     attributes.diagram.addElement(alternative);
 }
 
-function searchObjectTool (typeDiagram, name) {
+function searchObjectTool(typeDiagram, name) {
     let nodes = [];
-    if(typeDiagram === "UMLUseCaseDiagram"){
+    if (typeDiagram === "UMLUseCaseDiagram") {
         nodes = diagramUseCase._nodes;
-        for(let x = 0; x < nodes.length; x++){
-            if(nodes[x].getName() === name){
+        for (let x = 0; x < nodes.length; x++) {
+            if (nodes[x].getName() === name) {
                 return [nodes[x], diagramUseCase];
             }
         }
-    } else if (typeDiagram === "UMLClassDiagram"){
+    } else if (typeDiagram === "UMLClassDiagram") {
         nodes = diagramClass._nodes;
-        for(let x = 0; x < nodes.length; x++){
-            if(nodes[x].getName() === name){
+        for (let x = 0; x < nodes.length; x++) {
+            if (nodes[x].getName() === name) {
                 return [nodes[x], diagramClass];
             }
         }
     }
-};
+}
+;
 
 
 /**

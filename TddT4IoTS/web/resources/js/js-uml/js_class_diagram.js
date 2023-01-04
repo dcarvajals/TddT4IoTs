@@ -54,13 +54,13 @@ function updateClassDiagram(jsonInterprete, action) {
         for (let iclass = 0; iclass < package.class.length; iclass++) {
             clas = package.class[iclass];
             ac.data_type.push(clas.className);
-            if(clas.modifiers === "interface"){
+            if (clas.modifiers === "interface") {
                 newclass = createInterface({
                     name: visibilityGlobal[clas.visibility] + " " + clas.className,
                     x: (Math.floor(Math.random() * 10) * 100),
                     y: (Math.floor(Math.random() * 15) * 30)
                 });
-            }else{
+            } else {
                 newclass = createClass({
                     name: visibilityGlobal[clas.visibility] + " " + clas.className,
                     x: (Math.floor(Math.random() * 10) * 100),
@@ -71,7 +71,7 @@ function updateClassDiagram(jsonInterprete, action) {
             elementsClass.push({"element": newclass});
             for (let iattributes = 0; iattributes < clas.attributes.length; iattributes++) {
                 attributes = clas.attributes[iattributes];
-                if(attributes.type === "fk" || attributes.type === "enumeration")
+                if (attributes.type === "fk" || attributes.type === "enumeration")
                     newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name);
                 else
                     newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name + ":" + attributes.type);
@@ -89,7 +89,7 @@ function updateClassDiagram(jsonInterprete, action) {
 
         for (let ienum = 0; ienum < package.enums.length; ienum++) {
             enumsx = package.enums[ienum];
-            newenum = createEnum ({
+            newenum = createEnum({
                 name: enumsx.name,
                 x: (Math.floor(Math.random() * 10) * 100),
                 y: (Math.floor(Math.random() * 15) * 30)
@@ -106,8 +106,8 @@ function updateClassDiagram(jsonInterprete, action) {
     alertAll({"status": 2, "information": "Class diagram successfully updated."});
 }
 
-function getClassPosition (elementsClass) {
-    for(let i = 0; i < elementsClass.length; i++){
+function getClassPosition(elementsClass) {
+    for (let i = 0; i < elementsClass.length; i++) {
         positionsClass.push({
             "posx": elementsClass[i]._x, "posy": elementsClass[i]._y, "name": elementsClass[i].getName()
         });
@@ -115,15 +115,15 @@ function getClassPosition (elementsClass) {
     console.log("POSITION CLASS ", positionsClass);
 }
 
-function setClassPosition () {
-    for(let i = 0; i < positionsClass.length; i++){
-        if(diagramClass._nodes[i] !== undefined){
-         diagramClass._nodes[i].position(positionsClass[i].posx, positionsClass[i].posy);
-        diagramClass.draw();   
+function setClassPosition() {
+    for (let i = 0; i < positionsClass.length; i++) {
+        if (diagramClass._nodes[i] !== undefined) {
+            diagramClass._nodes[i].position(positionsClass[i].posx, positionsClass[i].posy);
+            diagramClass.draw();
         }
     }
     positionsClass.length = 0;
-    console.log("DIAGRAMA CLASES: ",diagramClass);
+    console.log("DIAGRAMA CLASES: ", diagramClass);
     diagramClass.draw();
 }
 
@@ -132,18 +132,18 @@ function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
 }
 
-function deleteRelationsRedundant (relations) {
-    if(relations.length > 0){
+function deleteRelationsRedundant(relations) {
+    if (relations.length > 0) {
         let newRelations = [];
         let relationsSuccess = [];
-        for(let positionRelation = 0; positionRelation < relations.length; positionRelation ++){
+        for (let positionRelation = 0; positionRelation < relations.length; positionRelation++) {
             let from = relations[positionRelation].from;
             let to = relations[positionRelation].to;
-            for(let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++){
+            for (let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++) {
                 let fromx = relations[positionRelationAux].from;
                 let tox = relations[positionRelationAux].to;
-                if(positionRelationAux !== positionRelation){
-                    if((from === fromx && to === tox) || (from === tox && to === fromx)){
+                if (positionRelationAux !== positionRelation) {
+                    if ((from === fromx && to === tox) || (from === tox && to === fromx)) {
                         relationsSuccess.push(positionRelationAux);
                     }
                 }
@@ -153,15 +153,15 @@ function deleteRelationsRedundant (relations) {
         let unique_data = [];
         unique_data = relationsSuccess.filter(onlyUnique);
         // agregar las relaciones que no se repitieron
-        for(let newRelation = 0; newRelation < relations.length; newRelation++){
+        for (let newRelation = 0; newRelation < relations.length; newRelation++) {
             let relation = relations[newRelation];
             let flag = true;
-            for(let positionRedudant = 0; positionRedudant < unique_data.length; positionRedudant++){
-                if(newRelation === unique_data[positionRedudant]){
+            for (let positionRedudant = 0; positionRedudant < unique_data.length; positionRedudant++) {
+                if (newRelation === unique_data[positionRedudant]) {
                     flag = false;
                 }
             }
-            if(flag){
+            if (flag) {
                 newRelations.push(relation);
             }
         }
@@ -178,16 +178,21 @@ function relationsClass(relations) {
             //let attributes = from.getComponents();
             //console.log("ATRIBUTOS DE LA CLASE FROM", attributes[2]._childs);
             //to.addAttribute(attributes[2]._childs[0]._text);
-            let relation = createRelationClass({
-                type: relationsGlobal[relations[irelation].typeRelatioship],
-                a: from,
-                b: to,
-                card_A: relations[irelation].cardinalidate.split("..")[0],
-                card_B: relations[irelation].cardinalidate.split("..")[1],
-                value: relations[irelation].value,
-                typeRelatioship: relations[irelation].typeRelatioship
-            });
-            elementsClass.push({"element": relation});
+
+            if (from === undefined || to === undefined) {
+                console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
+            } else {
+                let relation = createRelationClass({
+                    type: relationsGlobal[relations[irelation].typeRelatioship],
+                    a: from,
+                    b: to,
+                    card_A: relations[irelation].cardinalidate.split("..")[0],
+                    card_B: relations[irelation].cardinalidate.split("..")[1],
+                    value: relations[irelation].value,
+                    typeRelatioship: relations[irelation].typeRelatioship
+                });
+                elementsClass.push({"element": relation});
+            }
         }
     }
 }
@@ -196,7 +201,7 @@ function getFromToRelation(nameClass) {
     for (let i = 0; i < elementsClass.length; i++) {
         let getNameClass = elementsClass[i].element.getName();
         console.log("nombre de clase agregada ", getNameClass);
-        if(getNameClass.includes(" ")){
+        if (getNameClass.includes(" ")) {
             if (getNameClass.split(" ")[1] === nameClass) {
                 return elementsClass[i].element;
             }
