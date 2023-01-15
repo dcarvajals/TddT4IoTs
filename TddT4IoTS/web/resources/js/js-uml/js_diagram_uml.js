@@ -5,7 +5,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     // expandir el controlador a otro script js
     app.expandControllerA($scope);
-
+ 
     // expandir el controlador al archivo de socket
     app.expandControllerSocket($scope);
 
@@ -850,37 +850,60 @@ controller = app.controller("workAreaController", function ($scope) {
         //preguntaremos si se agregaron nuevos actores dentro del caso de uso
         let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
         let index_Y = 0, index_actor_relation = 0;
-        for (let index_X = 0; index_X < $scope.actorsUseCase.length;
-                index_Y === relations_usecase.length ? index_X++ : index_X) {
-            for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
-                //pregunto si este actor no se encuentra en las relaciones de este caso de uso
-                if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
+        console.log(relations_usecase);
+        if(relations_usecase.length > 0) {
+            for (let index_X = 0; index_X < $scope.actorsUseCase.length;
+                 index_Y === relations_usecase.length ? index_X++ : index_X) {
+                for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
+                    //pregunto si este actor no se encuentra en las relaciones de este caso de uso
+                    if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
                         relations_usecase[index_Y]._elemA.getName()) {
-                    index_actor_relation++;
-                }
-
-                if (index_actor_relation === relations_usecase.length) {
-                    let relation = createRelation({
-                        "a": $scope.actorsUseCase[index_X].obj_actor,
-                        "b": $scope.object_update,
-                        "type": UMLCommunication
-                    });
-
-                    //agrega las relaciones al json de los datos para el diagrama de casos de uso
-                    $scope.jsonUseCase.relations.push({
-                        "obj_relation": relation
-                    });
-
-                    if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
-                        //agrega los actores que fueron creados por la descripcion del caso de uso existente
-                        $scope.jsonUseCase.actors.push({
-                            "obj_actor": $scope.actorsUseCase[index_X].obj_actor
-                        });
+                        index_actor_relation++;
                     }
-                    index_actor_relation = 0;
+
+                    if (index_actor_relation === relations_usecase.length) {
+                        let relation = createRelation({
+                            "a": $scope.actorsUseCase[index_X].obj_actor,
+                            "b": $scope.object_update,
+                            "type": UMLCommunication
+                        });
+
+                        //agrega las relaciones al json de los datos para el diagrama de casos de uso
+                        $scope.jsonUseCase.relations.push({
+                            "obj_relation": relation
+                        });
+
+                        if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
+                            //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                            $scope.jsonUseCase.actors.push({
+                                "obj_actor": $scope.actorsUseCase[index_X].obj_actor
+                            });
+                        }
+                        index_actor_relation = 0;
+                    }
+                }
+                index_actor_relation = 0;
+            }
+        } else {
+            for (let index_X = 0; index_X < $scope.actorsUseCase.length; index_X++) {
+                let relation = createRelation({
+                    "a": $scope.actorsUseCase[index_X].obj_actor,
+                    "b": $scope.object_update,
+                    "type": UMLCommunication
+                });
+
+                //agrega las relaciones al json de los datos para el diagrama de casos de uso
+                $scope.jsonUseCase.relations.push({
+                    "obj_relation": relation
+                });
+
+                if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
+                    //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                    $scope.jsonUseCase.actors.push({
+                        "obj_actor": $scope.actorsUseCase[index_X].obj_actor
+                    });
                 }
             }
-            index_actor_relation = 0;
         }
 
         $scope.jsonUseCase.useCase[$scope.encontrado].main_stage =
@@ -1080,7 +1103,11 @@ controller = app.controller("workAreaController", function ($scope) {
                         }
                     }
                     $scope.$apply(() => {
-                        $scope.actorsUseCase.splice(positionActor, 1);
+                        let positionObj = searchPositionEqualsObject($scope.jsonUseCase.actors, "name", $scope.actorsUseCase[positionActor].name);
+                        if(positionObj[0]) {
+                            $scope.jsonUseCase.actors.splice(positionObj[1], 1);
+                            $scope.actorsUseCase.splice(positionActor, 1);
+                        }
                     });
                     alertAll({
                         "status": 2,
@@ -1088,7 +1115,11 @@ controller = app.controller("workAreaController", function ($scope) {
                     });
                 } else {
                     $scope.$apply(() => {
-                        $scope.actorsUseCase.splice(positionActor, 1);
+                        let positionObj = searchPositionEqualsObject($scope.jsonUseCase.actors, "name", $scope.actorsUseCase[positionActor].name);
+                        if(positionObj[0]) {
+                            $scope.jsonUseCase.actors.splice(positionObj[1], 1);
+                            $scope.actorsUseCase.splice(positionActor, 1);
+                        }
                     });
                     alertAll({
                         "status": 2,
@@ -1646,7 +1677,7 @@ controller = app.controller("workAreaController", function ($scope) {
         for (let iusecase = 0; iusecase < data.useCase.length; iusecase++) {
             let usecaseNode = data.useCase[iusecase];
             for (let iusecasediagram = 0; iusecasediagram < arrayUseCase.length; iusecasediagram++) {
-                if (usecaseNode.name === arrayUseCase[iusecasediagram].obj.getName()) {
+                if (usecaseNode.name_i === arrayUseCase[iusecasediagram].obj.getName()) {
                     usecaseNode.obj_usecase = arrayUseCase[iusecasediagram].obj;
                     let secuence_diagram = createDiagram({
                         "width": 100,
@@ -1677,6 +1708,20 @@ controller = app.controller("workAreaController", function ($scope) {
                 for (let irel = 0; irel < arrayRelations.length; irel++) {
                     data.relations[irel].obj_relation = arrayRelations[irel].obj;
                 }
+            }
+        }
+
+        if(arrayActors.length > 0 && data.actors.length === 0) {
+            for(let iactor = 0; iactor < arrayActors.length; iactor++) {
+                data.actors.push({
+                    "obj_actor": arrayActors[iactor].obj,
+                    "name": arrayActors[iactor].obj.getName()
+                });
+            }
+        } else if (arrayActors.length === data.actors.length) {
+            for(let iactor = 0; iactor < arrayActors.length; iactor++) {
+                data.actors[iactor].obj_actor = arrayActors[iactor].obj;
+                data.actors[iactor].name = arrayActors[iactor].obj.getName();
             }
         }
 
@@ -1799,16 +1844,21 @@ controller = app.controller("workAreaController", function ($scope) {
             }
         }
 
+        let encontrado = 0;
         if ($scope.actorsUseCase.length > 0) {
             for (let indice = 0; indice < $scope.actorsUseCase.length; indice++) {
                 let actorusecase = $scope.actorsUseCase[indice];
                 if (actorusecase.obj_actor._type !== "UMLUseCase") {
                     if (indice !== index) {
                         if (name === actorusecase.name) {
-                            isEquals = true;
+                            encontrado ++;
                         }
                     }
                 }
+            }
+
+            if(encontrado > 1) {
+                isEquals = true;
             }
         }
 

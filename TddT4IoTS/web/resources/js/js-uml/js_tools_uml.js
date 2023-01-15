@@ -393,11 +393,15 @@ function deleteObject(obj, type) {
                     }
                 } else if (type === 2) { // actores
                     indexobj = searchPositionEqualsObject(ac.jsonUseCase.actors, "name", obj.getName()) // searchObjeEquals(type, ac, obj); // buscar los casos de uso o actores o relaciones
-                    ac.jsonUseCase.actors.splice(indexobj[1], 1);
+                    if(indexobj[0]) {
+                        ac.jsonUseCase.actors.splice(indexobj[1], 1);
+                    }
                     obj.remove();
                 } else if (type === 3) { // relaciones de los casos de uso
                     let indexrel = searchObjeEquals(ac, obj); // buscar las relaciones
-                    ac.jsonUseCase.relations.splice(indexrel, 1);
+                    if(indexrel >= 0) {
+                        ac.jsonUseCase.relations.splice(indexrel, 1);
+                    }
                     obj.remove();
                 }
             });
@@ -475,8 +479,14 @@ function selectedUseCase(obj, flag) {
 
         //buscar la descripcion del caso de uso seleccionado
         for (let index_X = 0; index_X < ac.jsonUseCase.useCase.length; index_X++) {
-            if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === obj.getName()) {
-                ac.encontrado = index_X;
+            if(ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === undefined) {
+                if (ac.jsonUseCase.useCase[index_X].name_i === obj.getName()) {
+                    ac.encontrado = index_X;
+                }
+            } else {
+                if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === obj.getName()) {
+                    ac.encontrado = index_X;
+                }
             }
         }
 
