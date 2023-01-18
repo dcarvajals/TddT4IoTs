@@ -1,4 +1,4 @@
-package com.app.tddtm4iots.enums;{$s} 
+package com.app.tddt4iots.enums;{$s} 
 {$s}
 public enum {$nameClass} { {$s}
 	{$params}

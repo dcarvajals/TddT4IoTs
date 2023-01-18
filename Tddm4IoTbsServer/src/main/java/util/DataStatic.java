@@ -18,18 +18,18 @@ public class DataStatic {
     /**
      * localhost
      */
-    public static String dbName = "tddt4iots";
-    public static String dbUser = "tdduser";
-    public static String dbPassword = "tddt123456";
-    public static String dbPort = "5432";
-    public static String dbHost = "localhost";//remoto
-    
-    // aplicaciones uteq
 //    public static String dbName = "tddt4iots";
-//    public static String dbUser = "postgres";
-//    public static String dbPassword = "5352dc929bad89caa0334581790b4cf1";
+//    public static String dbUser = "tdduser";
+//    public static String dbPassword = "tddt123456";
 //    public static String dbPort = "5432";
-//    public static String dbHost = "10.1.1.41";//remoto
+//    public static String dbHost = "localhost";//remoto
+    
+     //aplicaciones uteq
+    public static String dbName = "tddt4iots";
+    public static String dbUser = "postgres";
+    public static String dbPassword = "5352dc929bad89caa0334581790b4cf1";
+    public static String dbPort = "5432";
+    public static String dbHost = "10.1.1.41";//remoto
     
 //    
     /**

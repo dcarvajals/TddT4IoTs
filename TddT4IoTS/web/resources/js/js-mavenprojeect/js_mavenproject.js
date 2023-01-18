@@ -10,8 +10,21 @@ app.expandControllerMavenProject = function ($scope) {
      * ##############################################################################################################
      * */
 
-    // descargar proyecto
+    // descargar
     $scope.downloadPrjMav = () => {
+        let urlParams = new URLSearchParams(window.location.search);
+        let id_project = urlParams.get('identifiquer');
+        let api_data = {
+            "user_token": $scope.DatoUsuario.user_token,
+            "idProj": id_project,
+            "info": JSON.stringify($scope.jsonMavenProject),
+            "module": 'DownloadMvn'
+        };
+        apiencapsulateProject(api_data);
+    };
+
+    // empaquetar proyecto
+    $scope.packagePrjMav = () => {
         let urlParams = new URLSearchParams(window.location.search);
         let id_project = urlParams.get('identifiquer');
         let api_data = {
@@ -34,6 +47,12 @@ app.expandControllerMavenProject = function ($scope) {
             "module": 'CreateMvn'
         };
         apiencapsulateProject(api_data);
+        setTimeout(function(){
+            swal.close();
+            console.log("TERMINANDO...");
+            $("#modal_package_maven").modal("show");
+        }, 8000);
+        loadingMvn();
     };
 
     apiencapsulateProject = (api_param) => {
@@ -47,7 +66,6 @@ app.expandControllerMavenProject = function ($scope) {
                 loading();
             },
             success: (data) => {
-                swal.close();
                 console.log(data);
                 alertAll(data);
                 $scope.$apply(() => {
@@ -55,13 +73,20 @@ app.expandControllerMavenProject = function ($scope) {
                     console.log($scope.mavenProject);*/
                     if(api_param.module === "CreateMvn") {
                         $("#modal_class_conecction").modal("hide");
-                        $("#modal_download_maven").modal("show");
                         //$scope.downloadPrjMav();
                         $scope.mavenProject = data.MavenApplication;
                     } else if (api_param.module === "ZipMvn") {
+                        swal.close();
+                        $("#modal_package_maven").modal("hide");
+                        $("#modal_download_maven").modal("show");
                         console.log(data);
-                        $scope.mavenProject = data.MavenApplication;
-                        download("ProjectMvnSpr.zip", $scope.mavenProject);
+                        $scope.mavenProject = data.data.MavenApplication;
+                        //download("ProjectMvnSpr.zip", data.data.MavenApplication);
+                    } else if (api_param.module === "DownloadMvn") {
+                        swal.close();
+                        console.log(data);
+                        $scope.mavenProject = data.data.MavenApplication;
+                        download("ProjectMvnSpr.zip", data.data.MavenApplication);
                     }
                 });
             },
@@ -73,7 +98,8 @@ app.expandControllerMavenProject = function ($scope) {
 
     function download(filename, textInput) {
         var element = document.createElement('a');
-        element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
+        //element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
+        element.setAttribute('href', location.origin + "/storageTddm4IoTbs/" + textInput);
         element.setAttribute('download', filename);
         document.body.appendChild(element);
         element.click();

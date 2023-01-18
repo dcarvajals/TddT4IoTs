@@ -38,7 +38,7 @@ public class MakerProjects {
 
         String[] commands = new String[]{
             String.format("cd \"%s\"", (projectPath)),
-            String.format("spring init --artifactId=%s --boot-version=2.7.3 --build=maven --dependencies=data-jpa,web,postgresql,ws,lombok --description=\"description %s\" --groupId=com.anth --java-version=1.8 --language=java --name=%s --packaging=war --package-name=com.app.tddtm4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, ProjectName, ProjectName, projectPath)
+            String.format("spring init --artifactId=%s --boot-version=2.7.3 --build=maven --dependencies=data-jpa,web,postgresql,ws,lombok --description=\"description %s\" --groupId=com.tddt4iots --java-version=1.8 --language=java --name=%s --packaging=war --package-name=com.app.tddt4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, ProjectName, ProjectName, projectPath)
         //String.format("mvn archetype:generate -DgroupId=com.mycompany -DartifactId=%s -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false", ProjectName)
         };
 
@@ -74,7 +74,7 @@ public class MakerProjects {
 //                }
 
                 //Model
-                tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddtm4iots\\entities");
+                tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\entities");
                 tmpFolder.mkdir();
                 // crear clases entidades
                 for (int posEntitie = 0; posEntitie < entitiesJava.size(); posEntitie++) {
@@ -156,14 +156,14 @@ public class MakerProjects {
                         templateEntitie = templateEntitie.replace("${imports}", imports);
                         templateEntitie = templateEntitie.replace("{$attrs}", nameAttr);
                         FileAccess classEntitie = new FileAccess();
-                        classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\entities\\" + entitieName + ".java", templateEntitie);
+                        classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\entities\\" + entitieName + ".java", templateEntitie);
                         System.out.println("PathZip: " + contextPath + relPath);
                         System.out.println("Creaando clase ->" + entitieName + " \n");
                     }
                 }
 
                 //Dao
-                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\dao");
+                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\dao");
                 tmpFolder.mkdir();
 
                 // crear las clases dao
@@ -181,14 +181,14 @@ public class MakerProjects {
                         templateDao = templateDao.replace("{$nameClass}", entitieName);
 
                         FileAccess classEntitie = new FileAccess();
-                        classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\dao\\" + entitieName + "Dao.java", templateDao);
+                        classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\dao\\" + entitieName + "Dao.java", templateDao);
                         System.out.println("PathZip: " + contextPath + relPath);
                         System.out.println("Creaando clase ->" + entitieName + " \n");
                     }
                 }
 
                 //Enum
-                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\enums");
+                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\enums");
                 tmpFolder.mkdir();
                 for (int posEnum = 0; posEnum < enumsJava.size(); posEnum++) {
                     // obtener el json de la posicion respectiva
@@ -213,13 +213,13 @@ public class MakerProjects {
                     templateEnum = templateEnum.replace("{$params}", elementos.replaceAll("\"", ""));
                     System.out.println(templateEnum);
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\enums\\" + nameEnum + ".java", templateEnum);
+                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\enums\\" + nameEnum + ".java", templateEnum);
                     System.out.println("PathZip: " + contextPath + relPath);
                     System.out.println("Creaando enum ->" + enumx + " \n");
                 }
 
                 //Apis
-                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\apis");
+                tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\apis");
                 tmpFolder.mkdir();
 
                 // crear las clases apis
@@ -245,7 +245,7 @@ public class MakerProjects {
                             templateApi = templateApi.replace("{$idClass}", name);
 
                             FileAccess classEntitie = new FileAccess();
-                            classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddtm4iots\\apis\\" + entitieName + "Api.java", templateApi);
+                            classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\apis\\" + entitieName + "Api.java", templateApi);
                             System.out.println("PathZip: " + contextPath + relPath);
                             System.out.println("Creaando clase ->" + entitieName + " \n");
                         }
@@ -278,8 +278,8 @@ public class MakerProjects {
         String path = contextPath + relPath + demo;
         Thread th = new Thread(() -> {
             FileAccess fac = new FileAccess();
-            fac.makeZipFromFolder(path, path + ".zip");
-            System.out.println("PathZip: " + contextPath + relPath);
+            fac.makeZipFromFolder(contextPath, relPath + ".zip");
+            System.out.println("PathZip: " + relPath );
         });
         th.start();
     }

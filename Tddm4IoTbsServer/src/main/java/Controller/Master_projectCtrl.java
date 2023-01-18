@@ -425,12 +425,14 @@ public class Master_projectCtrl {
                 params = "1";
             } else if (module.equals("ZipMvn")) {
                 params = "2";
+            } else if (module.equals("DownloadMvn")) {
+                params = "4";
             } else if (module.equals("UpdateMvn")) {
                 params = "3";
             }
 
             System.out.println(params);
-            if (params.matches("[123]")) {
+            if (params.matches("[1234]")) {
                 String relpath = DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring;
 
                 status = "2";
@@ -439,10 +441,15 @@ public class Master_projectCtrl {
                 if (params.equals("1")) {
                     System.out.println("RUTA POR DEFECTO => " + path);
                     MakerProjects.createMavenProject(path, relpath, resp[1], info);
+                    //MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
                 } else if (params.equals("2")) {
-                    MakerProjects.MaketarMaven(path, relpath);
-                    data = "{\"MavenApplication\":\"" + resp[1] + "/" + DataStatic.folderUml + "MavenApplication.zip\"}";
+                    System.out.println("RUTA SOURCE: " + path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring);
+                    System.out.println("RUTA TARGET: " + path + DataStatic.folderProyect + resp[1]);
+                    MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/"+resp[1]+".zip" + "\"}";
                     System.out.println(data);
+                } else if (params.equals("4")) {
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/"+resp[1]+".zip" + "\"}";
                 } else {
                     if (!info.equals("")) {
                         MakerProjects.setMavenProject(path, relpath, resp[1], info);

@@ -1,7 +1,7 @@
-package com.app.tddtm4iots.apis;{$s}
+package com.app.tddt4iots.apis;{$s}
 {$s}
-import com.app.tddtm4iots.entities.{$nameClass};{$s}
-import com.app.tddtm4iots.dao.{$nameClass}Dao;{$s}
+import com.app.tddt4iots.entities.{$nameClass};{$s}
+import com.app.tddt4iots.dao.{$nameClass}Dao;{$s}
 import org.springframework.beans.factory.annotation.Autowired;{$s}
 import org.springframework.http.ResponseEntity;{$s}
 import org.springframework.web.bind.annotation.*;{$s}

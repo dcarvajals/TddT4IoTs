@@ -1,6 +1,6 @@
-package com.app.tddtm4iots.entities;{$s} 
+package com.app.tddt4iots.entities;{$s} 
 {$s}
-import com.app.tddtm4iots.enums.*;{$s}
+import com.app.tddt4iots.enums.*;{$s}
 import lombok.Data;{$s} 
 import lombok.NoArgsConstructor;{$s} 
 {$s}
@@ -42,7 +42,7 @@ public class {$nameClass} {{$s}
     {$s}
     @Override{$s}
     public String toString() {{$s}
-        return "com.app.tddtm4iots.entities.{$nameClass}[ {$idClass}=" + {$idClass} + " ]";{$s}
+        return "com.app.tddt4iots.entities.{$nameClass}[ {$idClass}=" + {$idClass} + " ]";{$s}
     }{$s}
 
 }

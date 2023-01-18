@@ -1,6 +1,6 @@
-package com.app.tddtm4iots.dao;{$s} 
+package com.app.tddt4iots.dao;{$s} 
 {$s} 
-import com.app.tddtm4iots.entities.{$nameClass};{$s} 
+import com.app.tddt4iots.entities.{$nameClass};{$s} 
 import org.springframework.data.jpa.repository.JpaRepository;{$s} 
 {$s} 
 public interface {$nameClass}Dao extends JpaRepository<{$nameClass}, Long> {{$s} 
