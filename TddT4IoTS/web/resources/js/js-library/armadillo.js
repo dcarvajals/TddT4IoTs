@@ -566,6 +566,7 @@ function nameFormatAux(text, tipo) {
         return "";
     }
     text = text.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, "");
+    text = text.toString().trim();
     let newText = "";
     for (let i = 0; i < text.length; i++) {
         newText += i === 0 ? text[i].toLowerCase() : text[i].toString();
@@ -1031,7 +1032,7 @@ function joinMethods(bigAttr, minAttr) {
                     for (var ind3 = 0; ind3 < bigAttr.length; ind3++) {
                         if (minAttr[ind3].name === bigAttr[ind].name) {
                             countm = countm + 1;
-                            ind3 = 0;
+                            ind3 = bigAttr.length;
                         }
                     }
                     minAttr[ind2].name = minAttr[ind2].name + (countm > 0 ? countm : "");

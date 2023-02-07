@@ -126,7 +126,10 @@ function setMenuUseCase(nodes, typeNode) {
                         }, 'Update'],
                     [function () {
                             deleteObject(node, 1);
-                        }, 'Delete']
+                        }, 'Delete'],
+                    [function () {
+                            viewUseCase(node);
+                        }, 'View']
                 ]);
             } else if (node._type === "UMLSystem") {
                 node.setMenu([]);
@@ -393,13 +396,13 @@ function deleteObject(obj, type) {
                     }
                 } else if (type === 2) { // actores
                     indexobj = searchPositionEqualsObject(ac.jsonUseCase.actors, "name", obj.getName()) // searchObjeEquals(type, ac, obj); // buscar los casos de uso o actores o relaciones
-                    if(indexobj[0]) {
+                    if (indexobj[0]) {
                         ac.jsonUseCase.actors.splice(indexobj[1], 1);
                     }
                     obj.remove();
                 } else if (type === 3) { // relaciones de los casos de uso
                     let indexrel = searchObjeEquals(ac, obj); // buscar las relaciones
-                    if(indexrel >= 0) {
+                    if (indexrel >= 0) {
                         ac.jsonUseCase.relations.splice(indexrel, 1);
                     }
                     obj.remove();
@@ -454,9 +457,55 @@ function createUseCase(attributes) {
             }, 'Update'],
         [function () {
                 deleteObject(objectcase, 1);
-            }, 'Delete']
+            }, 'Delete'],
+        [function () {
+                viewUseCase(node);
+            }, 'View']
     ]);
     return objectcase;
+}
+
+function viewUseCase(obj) {
+    let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
+    obj.removeContextualMenu();
+    ac.$apply(function () {
+        //buscar la descripcion del caso de uso seleccionado
+        for (let index_X = 0; index_X < ac.jsonUseCase.useCase.length; index_X++) {
+            if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === undefined) {
+                if (ac.jsonUseCase.useCase[index_X].name_i === obj.getName()) {
+                    ac.encontrado = index_X;
+                }
+            } else {
+                if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === obj.getName()) {
+                    ac.encontrado = index_X;
+                }
+            }
+        }
+    });
+
+    let relations_usecase = obj.getRelations();
+    //preguntamos si el caso de uso esta realcionado con algun actor
+    if (relations_usecase.length > 0) {
+        console.log("tiene relacion");
+        let encontrado = -1;
+        ac.$apply(function () {
+            ac.actorsUseCase.length = 0;
+            //buscamos los actores que estan relacionados con el actor
+            for (let index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
+                if(relations_usecase[index_Y]._elemA._type === "UMLActor"){
+                ac.actorsUseCase.push({
+                    "obj_actor": relations_usecase[index_Y]._elemA,
+                    "name": relations_usecase[index_Y]._elemA.getName()
+                });
+            }
+            }
+        });
+        console.log(ac.actorsUseCase);
+    } else {
+        console.log("no tiene relacion");
+    }
+    
+    $('#modal_view_usecase').modal();
 }
 
 function selectedUseCase(obj, flag) {
@@ -479,7 +528,7 @@ function selectedUseCase(obj, flag) {
 
         //buscar la descripcion del caso de uso seleccionado
         for (let index_X = 0; index_X < ac.jsonUseCase.useCase.length; index_X++) {
-            if(ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === undefined) {
+            if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === undefined) {
                 if (ac.jsonUseCase.useCase[index_X].name_i === obj.getName()) {
                     ac.encontrado = index_X;
                 }
@@ -732,7 +781,9 @@ function createRelationClass(attributes) {
             }, 'Edit legend']
     ]);
 
-    rel.addStereotype(attributes.value);
+    if (attributes.value !== "")
+        rel.addStereotype(attributes.value);
+
     rel.setRoleA(attributes.card_A);
     rel.setRoleB(attributes.card_B);
     diagramClass.addElement(rel);

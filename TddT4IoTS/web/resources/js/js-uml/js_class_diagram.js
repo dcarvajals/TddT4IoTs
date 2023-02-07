@@ -72,7 +72,7 @@ function updateClassDiagram(jsonInterprete, action) {
             for (let iattributes = 0; iattributes < clas.attributes.length; iattributes++) {
                 attributes = clas.attributes[iattributes];
                 if (attributes.type === "fk" || attributes.type === "enumeration")
-                    newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name);
+                    newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name.toString().trim() + " fk");
                 else
                     newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name + ":" + attributes.type);
             }
@@ -116,10 +116,27 @@ function getClassPosition(elementsClass) {
 }
 
 function setClassPosition() {
+    let found = false;
+    let class_num = 0;
+    let position_aux = 0;
     for (let i = 0; i < positionsClass.length; i++) {
-        if (diagramClass._nodes[i] !== undefined) {
-            diagramClass._nodes[i].position(positionsClass[i].posx, positionsClass[i].posy);
-            diagramClass.draw();
+        if (class_num === positionsClass.length)
+            break;
+        
+        if (diagramClass._nodes[class_num] !== undefined) {
+            console.log(diagramClass._nodes[class_num].getName());
+            if (diagramClass._nodes[class_num].getName() === positionsClass[i].name) {
+                found = true;
+                position_aux = i;
+                i = -1;
+            }
+
+            if (found) {
+                diagramClass._nodes[class_num].position(positionsClass[position_aux].posx, positionsClass[position_aux].posy);
+                diagramClass.draw(); 
+                class_num++;
+                found = false;
+            }
         }
     }
     positionsClass.length = 0;

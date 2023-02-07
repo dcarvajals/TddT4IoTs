@@ -5,7 +5,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     // expandir el controlador a otro script js
     app.expandControllerA($scope);
- 
+
     // expandir el controlador al archivo de socket
     app.expandControllerSocket($scope);
 
@@ -18,6 +18,8 @@ controller = app.controller("workAreaController", function ($scope) {
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });
+    
+    $scope.showLS = false;
 
     // json para almacenar los datos del diagrama de caso de uso
     $scope.jsonUseCase = {
@@ -568,6 +570,12 @@ controller = app.controller("workAreaController", function ($scope) {
                     "obj_actor": actorobject,
                     "name": actorobject.getName()
                 });
+
+                $scope.jsonUseCase.actors.push({
+                    "obj_actor": actorobject,
+                    "name": actorobject.getName()
+                });
+
                 if (flag)
                     $scope.utilWebSocket("createActorUC", {"form": $scope.usecase_actorname});
 
@@ -851,13 +859,13 @@ controller = app.controller("workAreaController", function ($scope) {
         let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
         let index_Y = 0, index_actor_relation = 0;
         console.log(relations_usecase);
-        if(relations_usecase.length > 0) {
+        if (relations_usecase.length > 0) {
             for (let index_X = 0; index_X < $scope.actorsUseCase.length;
-                 index_Y === relations_usecase.length ? index_X++ : index_X) {
+                    index_Y === relations_usecase.length ? index_X++ : index_X) {
                 for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
                     //pregunto si este actor no se encuentra en las relaciones de este caso de uso
                     if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
-                        relations_usecase[index_Y]._elemA.getName()) {
+                            relations_usecase[index_Y]._elemA.getName()) {
                         index_actor_relation++;
                     }
 
@@ -1104,7 +1112,7 @@ controller = app.controller("workAreaController", function ($scope) {
                     }
                     $scope.$apply(() => {
                         let positionObj = searchPositionEqualsObject($scope.jsonUseCase.actors, "name", $scope.actorsUseCase[positionActor].name);
-                        if(positionObj[0]) {
+                        if (positionObj[0]) {
                             $scope.jsonUseCase.actors.splice(positionObj[1], 1);
                             $scope.actorsUseCase.splice(positionActor, 1);
                         }
@@ -1116,7 +1124,7 @@ controller = app.controller("workAreaController", function ($scope) {
                 } else {
                     $scope.$apply(() => {
                         let positionObj = searchPositionEqualsObject($scope.jsonUseCase.actors, "name", $scope.actorsUseCase[positionActor].name);
-                        if(positionObj[0]) {
+                        if (positionObj[0]) {
                             $scope.jsonUseCase.actors.splice(positionObj[1], 1);
                             $scope.actorsUseCase.splice(positionActor, 1);
                         }
@@ -1711,17 +1719,27 @@ controller = app.controller("workAreaController", function ($scope) {
             }
         }
 
-        if(arrayActors.length > 0 && data.actors.length === 0) {
-            for(let iactor = 0; iactor < arrayActors.length; iactor++) {
+        if (arrayActors.length > 0 && data.actors.length === 0) {
+            for (let iactor = 0; iactor < arrayActors.length; iactor++) {
                 data.actors.push({
                     "obj_actor": arrayActors[iactor].obj,
                     "name": arrayActors[iactor].obj.getName()
                 });
             }
         } else if (arrayActors.length === data.actors.length) {
-            for(let iactor = 0; iactor < arrayActors.length; iactor++) {
+            for (let iactor = 0; iactor < arrayActors.length; iactor++) {
                 data.actors[iactor].obj_actor = arrayActors[iactor].obj;
                 data.actors[iactor].name = arrayActors[iactor].obj.getName();
+            }
+        } else if (arrayActors.length !== data.actors.length) {
+            data.actors.length = 0;
+            for (let iactor = 0; iactor < arrayActors.length; iactor++) {
+                if (arrayActors[iactor].obj.getName() !== undefined) {
+                    data.actors.push({
+                        "obj_actor": arrayActors[iactor].obj,
+                        "name": arrayActors[iactor].obj.getName()
+                    });
+                }
             }
         }
 
@@ -1807,6 +1825,17 @@ controller = app.controller("workAreaController", function ($scope) {
             }
         }
 
+        if ($scope.jsonUseCase.actors.length > 0) {
+            for (let indice = 0; indice < $scope.jsonUseCase.actors.length; indice++) {
+                let actor = $scope.jsonUseCase.actors[indice];
+                if (indice !== index) {
+                    if (name === actor.name) {
+                        isEquals = true;
+                    }
+                }
+            }
+        }
+
         if (isEquals)
             alertAll({
                 status: 3,
@@ -1815,7 +1844,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
         return isEquals;
     };
-    
+
     /**
      * @param {string} name
      * @param index indice
@@ -1851,13 +1880,13 @@ controller = app.controller("workAreaController", function ($scope) {
                 if (actorusecase.obj_actor._type !== "UMLUseCase") {
                     if (indice !== index) {
                         if (name === actorusecase.name) {
-                            encontrado ++;
+                            encontrado++;
                         }
                     }
                 }
             }
 
-            if(encontrado > 1) {
+            if (encontrado > 1) {
                 isEquals = true;
             }
         }
@@ -2459,6 +2488,25 @@ controller = app.controller("workAreaController", function ($scope) {
         $scope.mt_datatype = "-1";
         $scope.mt_visibility = "-1";
     };
+
+    $scope.copyUseCase = function () {
+        selectElementContents(document.getElementById('viewUseCaseTable'));
+    };
+
+    function selectElementContents(table) {
+        //ar table = document.getElementById(el);
+
+        if (navigator.clipboard) {
+            var text = table.innerText.trim();
+
+            //var range = document.createRange();
+            //range.selectNode(table);
+
+            navigator.clipboard.writeText(text).catch(function () { });
+        }
+        console.log("COPIADO !!");
+        alertAll({"status": 2, "information": "Content successfully copied."});
+    }
 
     /**
      * ##############################################################################################################
