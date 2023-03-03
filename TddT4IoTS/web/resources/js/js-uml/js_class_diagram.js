@@ -199,6 +199,27 @@ function relationsClass(relations) {
             if (from === undefined || to === undefined) {
                 console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
             } else {
+                
+                if(relations[irelation].cardinalidate === undefined) {
+                    relations[irelation]["cardinalidate"] = "u..u";
+                }
+                
+                if(relations[irelation].from_fk === undefined) {
+                    relations[irelation]["from_fk"] = relations[irelation].to.toString().toLowerCase() +":"+ relations[irelation].to;
+                }
+                
+                if(relations[irelation].simbol === undefined) {
+                    relations[irelation]["simbol"] = "";
+                }
+                
+                if(relations[irelation].to_fk === undefined) {
+                    relations[irelation]["from_fk"] = relations[irelation].from.toString().toLowerCase() +":"+ relations[irelation].from;
+                }
+                
+                if(relations[irelation].value === undefined) {
+                    relations[irelation]["value"] = relations[irelation].typeRelatioship;
+                }
+                
                 let relation = createRelationClass({
                     type: relationsGlobal[relations[irelation].typeRelatioship],
                     a: from,

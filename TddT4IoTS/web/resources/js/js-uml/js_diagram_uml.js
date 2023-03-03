@@ -18,7 +18,7 @@ controller = app.controller("workAreaController", function ($scope) {
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });
-    
+
     $scope.showLS = false;
 
     // json para almacenar los datos del diagrama de caso de uso
@@ -1682,9 +1682,23 @@ controller = app.controller("workAreaController", function ($scope) {
             }
         }
 
+        if (data.useCase.length === arrayUseCase.length) {
+            for (let iusecase = 0; iusecase < data.useCase.length; iusecase++) {
+                for (let iusecase_ = 0; iusecase_ < data.useCase.length; iusecase_++) {
+                    if (data.useCase[iusecase].name === arrayUseCase[iusecase_].obj.getName()) {
+                        data.useCase[iusecase].obj_usecase = arrayUseCase[iusecase_].obj;
+                        iusecase_ = data.useCase.length;
+                    }
+                }
+            }
+        }
+
         for (let iusecase = 0; iusecase < data.useCase.length; iusecase++) {
             let usecaseNode = data.useCase[iusecase];
             for (let iusecasediagram = 0; iusecasediagram < arrayUseCase.length; iusecasediagram++) {
+                if(usecaseNode.name_i === undefined)
+                    usecaseNode["name_i"] = usecaseNode.name;
+                    
                 if (usecaseNode.name_i === arrayUseCase[iusecasediagram].obj.getName()) {
                     usecaseNode.obj_usecase = arrayUseCase[iusecasediagram].obj;
                     let secuence_diagram = createDiagram({
