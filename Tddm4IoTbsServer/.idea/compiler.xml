@@ -7,15 +7,21 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Tddm4IoTbsServer" />
+        <module name="storageTddm4IoTbs" />
+        <module name="Tddt4iotsMaven" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="storageTddm4IoTbs" target="1.7" />
       <module name="Tddm4IoTbsServer" target="1.8" />
+      <module name="Tddt4iotsMaven" target="1.7" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Tddm4IoTbsServer" options="-endorseddirs D:\REPOSITORIOS\umleasyiotrep\Tddm4IoTbsServer\target/endorsed" />
+      <module name="Tddm4IoTbsServer" options="-endorseddirs D:\Repositorios\TddT4IoTs\Tddm4IoTbsServer\target/endorsed" />
+      <module name="Tddt4iotsMaven" options="-endorseddirs D:\Repositorios\TddT4IoTs\Tddt4iotsMaven\target/endorsed" />
+      <module name="storageTddm4IoTbs" options="-endorseddirs D:\Repositorios\TddT4IoTs\storageTddm4IoTbs\target/endorsed" />
     </option>
   </component>
 </project>

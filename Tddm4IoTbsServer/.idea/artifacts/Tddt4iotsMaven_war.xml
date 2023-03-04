@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Tddt4iotsMaven:war">
+    <output-path>$PROJECT_DIR$/../Tddt4iotsMaven/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>Tddt4iotsMaven</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="Tddt4iotsMaven-1.0.war">
+      <element id="artifact" artifact-name="Tddt4iotsMaven:war exploded" />
+    </root>
+  </artifact>
+</component>
