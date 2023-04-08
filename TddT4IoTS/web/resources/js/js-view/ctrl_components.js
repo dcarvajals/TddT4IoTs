@@ -550,8 +550,8 @@ app.controller("component_controller", function ($scope, $http) {
     getCodeComponent = () => {
         jsonCodeMirror.Libraries = b64EncodeUnicode(libraries.getValue());
         jsonCodeMirror.Variables = b64EncodeUnicode(variables.getValue());
-        jsonCodeMirror.Loop = b64EncodeUnicode(setup.getValue());
-        jsonCodeMirror.Setup = b64EncodeUnicode(loop.getValue());
+        jsonCodeMirror.Loop = b64EncodeUnicode(loop.getValue()); 
+        jsonCodeMirror.Setup = b64EncodeUnicode(setup.getValue());
         jsonCodeMirror.Methods = b64EncodeUnicode(methods.getValue());
         return jsonCodeMirror;
     };
@@ -609,6 +609,7 @@ app.controller("component_controller", function ($scope, $http) {
                 $("#newComponent").hide();
                 $("#listComponent").show();
                 $scope.loadComponents();
+                $scope.loadComponentsHome();
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {

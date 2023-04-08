@@ -769,6 +769,8 @@ function createRelationClass(attributes) {
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
         rel.setLine(new DashedLine());
         rel.setEnd(new OpenTip());
+    } else if (attributes.typeRelatioship === "association" && attributes.type === undefined) {
+        rel = new UMLAssociation({a: attributes.a, b: attributes.b});
     } else {
         rel = new attributes.type({a: attributes.a, b: attributes.b});
     }
