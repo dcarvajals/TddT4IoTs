@@ -38,6 +38,10 @@ app.config(function ($routeProvider) {
                 templateUrl: "interpret.html",
                 controller: "interpret_controller"
             })
+            .when("/entregablesproject", {
+                templateUrl: "entregablesproject.html",
+                controller: "projectentregable_controller"
+            })
             .otherwise({
                 redirectTo: 'notfound',
                 templateUrl: 'notfound.html',

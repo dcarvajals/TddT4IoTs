@@ -59,6 +59,39 @@
     text-align: center;
 }
 
+
+.button-pe {
+    background:#2c468a;
+    color: white;
+    box-shadow: 0 4px #dbab35;
+    letter-spacing: 1.28px;
+    border-radius: 2px 2px 0 0;
+    transition: box-shadow .1s ease-out,transform .1s ease-out;
+}
+
+.button-pe:focus, .button-pe:hover{
+    background: #2c468a;
+    color: white !important;
+    box-shadow: 0 2px #dbab35;
+    transform: translateY(2px);
+}
+
+.button-perc {
+    background: #037199;
+    color: white;
+    box-shadow: 0 4px #dbab35;
+    letter-spacing: 1.28px;
+    border-radius: 2px 2px 0 0;
+    transition: box-shadow .1s ease-out,transform .1s ease-out;
+}
+
+.button-perc:focus, .button-perc:hover{
+    background: #037199;
+    color: white !important;
+    box-shadow: 0 2px #dbab35;
+    transform: translateY(2px);
+}
+
 .button-d{
     background: #006700;
     color: white;

@@ -17,10 +17,33 @@ app.controller("myprojects_controller", function ($scope, $http) {
      * */
 
     $scope.myprojects = [];
+    $scope.myprojects_entregables = [];
+
     $scope.selected_project = {};
     $scope.flag_selected_project = false;
-
-
+    
+    $scope.loadEntregablesProject = () => {        
+        if($scope.selected_project !== undefined && $scope.selected_project !== null){
+            
+            window.sessionStorage.setItem("id_project", $scope.selected_project.idproj);
+            window.location = "app.html#!/entregablesproject";
+            
+            /*$.ajax({
+                method:"POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                url: urlWebServicies + 'entregable/selectEntregables',
+                data: JSON.stringify({
+                    "idmasterproject": $scope.selected_project.idproj
+                }),
+                success: function(data){
+                    window.location = "app.html#!/home";
+                }
+            });*/
+        }
+        
+    };
+  
     //funcion para cargar los proyectos existentes
     $scope.loadProjects = () => {
         var dataUser = store.session.get("user_tddm4iotbs");
@@ -43,6 +66,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     $scope.$apply(function () {
                         $scope.myprojects = data.data;
                     });
+                     
                     alertAll(data);
                     console.log($scope.myprojects);
                 },
@@ -55,8 +79,13 @@ app.controller("myprojects_controller", function ($scope, $http) {
         }
     };
 
+    $scope.alert = function (arg) {
+        alert(arg);
+    };
     $scope.selectProject = function (objetct_selected_project) {
         var dataUser = store.session.get("user_tddm4iotbs");
+        window.sessionStorage.setItem("projectpath", objetct_selected_project.path_mp);
+        window.sessionStorage.setItem("projectname", objetct_selected_project.name_mp);
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
                 method: "POST",
@@ -77,6 +106,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     console.log(data);
                     $scope.flag_selected_project = true;
                     console.log(objetct_selected_project);
+                    
                     $scope.$apply(() => {
                         $scope.selected_project = {
                             "idproj": objetct_selected_project.id_masterproject,
@@ -90,7 +120,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         };
                         $scope.mavenProject = rutasStorage.projects + objetct_selected_project.path_mp + "/ProjectMvnSpr.zip";
                     });
-                    console.log("PATH DEEL RPOYECTO " , objetct_selected_project.path_mp);
+                    console.log("PATH DEEL RPOYECTO ", objetct_selected_project.path_mp);
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
@@ -331,7 +361,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
     $scope.shareProject = (form) => {
         if (form.$valid) {
             var dataUser = store.session.get("user_tddm4iotbs");
-            if(form.shared_np.$viewValue === dataUser["email_person"]){
+            if (form.shared_np.$viewValue === dataUser["email_person"]) {
                 alertAll({status: 3, information: "You cannot share your project to yourself."});
                 return;
             }
@@ -367,7 +397,18 @@ app.controller("myprojects_controller", function ($scope, $http) {
             }
         }
     };
-
+    
+    $scope.listEntregablesProject = (selected_project) => {
+        alert(selected_project);
+    };
+    
+    /* *
+     * Abrir modal para mostrar los entregables existentes 
+     * para el proyecto seleccionado
+     * */
+    $scope.selectEntregable = () => {
+        $("#modalSelectEntregable").modal();
+    };
     /**
      * Abrir modal para crear un nuevo proyecto
      * */
@@ -390,7 +431,6 @@ app.controller("myprojects_controller", function ($scope, $http) {
         $scope.shared_np = "";
         $("#modalShareProject").modal('hide');
     };
-
 
 
 });

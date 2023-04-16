@@ -140,6 +140,10 @@ app.controller("shareprojects_controller", function ($scope, $http) {
         }
         console.log($scope.selected_project);
     };
+    
+    $scope.selectProjectEntregables = function (objetct_selected_projectup){
+        var dataUser = store.session.get("user_tddm4iotbs");
+    };
 
     $scope.deleteModule = function (objetct_selected_project, type) {
 
@@ -361,4 +365,12 @@ app.controller("shareprojects_controller", function ($scope, $http) {
             location.href = "app.html#!/home";
         }
     }
+    
+    $scope.loadEntregablesProjectShare = () => {      
+        if($scope.selected_projectup !== undefined && $scope.selected_projectup !== null){
+            window.sessionStorage.setItem("id_project",  $scope.selected_projectup.idproj);
+            window.location = "app.html#!/entregablesproject";
+        } 
+    }
+    
 });
