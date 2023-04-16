@@ -37,8 +37,11 @@ public class Conection {
         WeEncoder WEr = new WeEncoder();
         try {
             Class.forName("org.postgresql.Driver");
-            conex = DriverManager.getConnection("jdbc:postgresql://" + DataStatic.dbHost + ":" +  DataStatic.dbPort +
+            //conex = DriverManager.getConnection("jdbc:postgresql://" + DataStatic.dbHost + ":" +  DataStatic.dbPort + "/" + DataStatic.dbName,  DataStatic.dbUser,  DataStatic.dbPassword);
+            
+            conex = DriverManager.getConnection("jdbc:postgresql://localhost:" +  DataStatic.dbPort +
                     "/" + DataStatic.dbName,  DataStatic.dbUser,  DataStatic.dbPassword);
+            
         } catch (Exception exc) {
             System.out.println("No connection");
             System.out.println(exc.getMessage());

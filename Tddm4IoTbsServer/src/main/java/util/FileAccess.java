@@ -5,6 +5,8 @@
  */
 package util;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -41,6 +43,8 @@ import org.apache.commons.io.FileUtils;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author USUARIO
@@ -70,7 +74,6 @@ public class FileAccess {
             }
         } catch (Exception e) {
             result = "{}";
-            System.out.println("Error in read File project");
         } finally {
             try {
                 if (null != fr) {
@@ -369,6 +372,80 @@ public class FileAccess {
 		} else {
 			System.out.println("No se encontró el directorio..");
 		}
+    }
+    
+
+    public boolean ValidateFolderExists(String path) {
+        File parent = new File(path);
+        if (!parent.exists()) {
+            parent = new File(path);
+            parent.mkdir();            
+            return false;
+        }
+        else
+            return true;
+    }
+    
+    public boolean FolderExists(String path) {
+        File parent = new File(path);
+        if (!parent.exists())
+            return false;
+        else
+            return true;
+    }
+
+    public String saveJsonEntregable(String[] data, String path,String nameTask) {
+        JsonObject objJson = jsonObjectCreateNomenclature(data, path, true);
+
+        FileAccess fac = new FileAccess();
+        fac.writeFileText(path.concat(nameTask).concat(".json"), objJson.toString());
+        return "Insertado correctamente";
+    }
+
+    public String upateJsonEntregable(String[] data, String path) {
+        JsonObject objJson = jsonObjectCreateNomenclature(data, path, false);
+        FileAccess fac = new FileAccess();
+
+        fac.deleteFile(path);
+        fac.writeFileText(path, objJson.toString());
+        return "Actualizado correctamente";
+    }
+
+    public JsonObject jsonObjectCreateNomenclature(String[] data, String path, Boolean band) //actualizar y añadir informacion json
+    {
+        String jsoncad = "", vectorjson = "";
+        
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+        LocalDateTime now = LocalDateTime.now();  
+        String actualDate = (dtf.format(now));  
+        
+        if (data.length == 4 && band) {
+            vectorjson = "[{'percentage':'" + data[0] + "','description':'" + data[1] + "','update_date':'" + actualDate + "'}]";
+            jsoncad = "{'dataUpdate':" + vectorjson + ",'id_task':'" + data[2] + "'}";
+            return Methods.stringToJSON(jsoncad);
+        } else {
+            
+            
+            JsonObject objJson = readFileJson(path);
+            JsonElement elemento1 = objJson.get("dataUpdate");
+            String obj = elemento1.toString().substring(1, elemento1.toString().length() - 1);
+            String id = objJson.get("id_task").toString();
+            
+            
+            vectorjson = "{'percentage':'" + data[0] + "','description':'" + data[1] + "','update_date':'" + actualDate + "'}";
+            jsoncad = "{'dataUpdate': [" + obj + "," + vectorjson + "], 'id_task': " + id + "}";
+
+            
+            
+            return Methods.stringToJSON(jsoncad);
+        }
+    }
+
+    public JsonObject readFileJson(String path) {
+        FileAccess fac = new FileAccess();
+        String fileData = fac.readFileText(path, "f");
+        JsonObject jsonObj = Methods.stringToJSON(fileData);
+        return jsonObj;
     }
 
 }

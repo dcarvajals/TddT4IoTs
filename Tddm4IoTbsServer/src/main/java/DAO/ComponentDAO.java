@@ -35,7 +35,6 @@ public class ComponentDAO {
      */
     public String[] selectComponents(String idtype, String idquery) {
         String query = String.format("select * from component_select(%s, %s)", idtype, idquery);
-        System.out.println(query);
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -75,7 +74,6 @@ public class ComponentDAO {
      */
     public String stateComponent(String idComponent, String status) {
         String query = String.format("select * from component_state(%s, '%s')", idComponent, status);
-        System.out.println(query);
         String resp = conex.fillString(query);
         return resp.matches("[24]") ? resp : "4";
     }
@@ -88,7 +86,8 @@ public class ComponentDAO {
      */
     public String[] UpdateComponent(Component comp) {
         String query = String.format("select * from component_update('%s')", comp.returnXml());
-        System.out.println(query);
+        
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{

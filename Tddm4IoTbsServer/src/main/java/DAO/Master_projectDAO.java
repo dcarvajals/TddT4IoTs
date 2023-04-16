@@ -48,6 +48,18 @@ public class Master_projectDAO {
             return new String[]{"4", "[]"};
         }
     }
+    
+    public String selectProjectById(String id_project){
+        String query = String.format("Select * from master_project_select('%s')", id_project);
+        DefaultTableModel table = conex.returnRecord(query);
+        
+        if(table.getRowCount() > 0){
+            return table.getValueAt(0, 0).toString();
+        }
+        else{
+            return "";
+        }
+    }
 
     /**
      * Method used to create a project.
@@ -209,6 +221,16 @@ public class Master_projectDAO {
     public boolean aceptInvitation (String idProject, String permit, String joinActive) {
         String sentecy = "update permit_master set permit_pm = '"+permit+"', joinactive_pm = '"+joinActive+"' where id_permitmaster = " + idProject;
         return conex.modifyBD(sentecy);
+    }
+    
+    public String getprojectProperty(String idperson, String idmasterproject) {
+        String query = String.format("select * from project_user_property('%s', '%s')", idperson, idmasterproject);
+        System.out.println(query);
+        DefaultTableModel tab = conex.returnRecord(query);
+        if (tab.getRowCount() > 0) 
+            return tab.getValueAt(0, 0).toString();
+        else 
+            return "[]";
     }
 
 }

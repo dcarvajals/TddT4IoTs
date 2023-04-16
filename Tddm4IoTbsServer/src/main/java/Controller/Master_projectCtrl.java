@@ -51,6 +51,11 @@ public class Master_projectCtrl {
         };
     }
 
+    public String selectProjectById(String id_project) {
+        String response = master.selectProjectById(id_project);
+        return response;
+    }
+
     public String[] selectProjects(String idtype, String userID) {
         String status = "4", message = "Error returning data", data = "[]";
         String flag = "-1";
@@ -71,6 +76,8 @@ public class Master_projectCtrl {
                 for (int index = 0; index < jarr.size(); index++) {
                     String code = jarr.get(index).getAsJsonObject().get("id_masterproject").getAsString();
                     code = codec.textEncryptor(code);
+
+                    //code = codec.textDecryptor(code);
                     jarr.get(index).getAsJsonObject().addProperty("id_masterproject", code);
                 }
                 status = "2";
@@ -117,6 +124,8 @@ public class Master_projectCtrl {
                     parent = new File(projPath + "/" + DataStatic.folderUml);
                     parent.mkdir();
                     parent = new File(projPath + "/" + DataStatic.folderMvmSpring);
+                    parent.mkdir();
+                    parent = new File(projPath + "/Entregables");
                     parent.mkdir();
                 }
             }
@@ -359,9 +368,9 @@ public class Master_projectCtrl {
 
     public String[] loadJsonModule(String idUser, String idProj, String module, String path) {
         String status = "4", message = "Error loading the modules of the selected project", data = "{}";
-        System.out.println("MASTER PROJECT => "+idProj);
+        System.out.println("MASTER PROJECT => " + idProj);
         idProj = codec.textDecryptor(idProj);
-        System.out.println("MASTER PROJECT decryptor => "+idProj);
+        System.out.println("MASTER PROJECT decryptor => " + idProj);
         String[] resp = master.valitPermitEditJson(idProj, idUser);
 
         if (resp[0].equals("2") && !resp[1].equals("")) {
@@ -446,10 +455,10 @@ public class Master_projectCtrl {
                     System.out.println("RUTA SOURCE: " + path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring);
                     System.out.println("RUTA TARGET: " + path + DataStatic.folderProyect + resp[1]);
                     MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
-                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/"+resp[1]+".zip" + "\"}";
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + resp[1] + ".zip" + "\"}";
                     System.out.println(data);
                 } else if (params.equals("4")) {
-                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/"+resp[1]+".zip" + "\"}";
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + resp[1] + ".zip" + "\"}";
                 } else {
                     if (!info.equals("")) {
                         MakerProjects.setMavenProject(path, relpath, resp[1], info);
@@ -493,7 +502,7 @@ public class Master_projectCtrl {
         idproj = codec.textDecryptor(idproj);
         if (permit.equals("SHARE_ADMIN")) {
             permitShare = "A";
-        } else if (permit.equals("SHARE_WRITER")){
+        } else if (permit.equals("SHARE_WRITER")) {
             permitShare = "W";
         } else {
             permitShare = "R";
@@ -530,41 +539,40 @@ public class Master_projectCtrl {
 
         return new String[]{status, message, data};
     }
-    
-       public String[] listShareProject(String idPerson, String typeSelect, String idProject) {
+
+    public String[] listShareProject(String idPerson, String typeSelect, String idProject) {
         String status = "4", message = "Error returning data", data = "{}";
         String idType = typeSelect;
         idProject = !idProject.equals("0") ? codec.textDecryptor(idProject) : "0";
         String[] resp = master.listShareProject(idType, idPerson, idProject);
-        
-            if (resp[0].equals("2")) {
-                JsonArray jarr = Methods.stringToJsonArray(resp[1]);
 
-                for (int index = 0; index < jarr.size(); index++) {
-                    String code = jarr.get(index).getAsJsonObject().get("id_masterproject").getAsString();
-                    code = codec.textEncryptor(code);
-                    jarr.get(index).getAsJsonObject().addProperty("id_masterproject", code);
-                }
-                
-                for (int index = 0; index < jarr.size(); index++) {
-                    String code = jarr.get(index).getAsJsonObject().get("id_permitmaster").getAsString();
-                    code = codec.textEncryptor(code);
-                    jarr.get(index).getAsJsonObject().addProperty("id_permitmaster", code);
-                }
-                
-                status = "2";
-                message = "Projects successfully loaded";
-                data = jarr.toString();
+        if (resp[0].equals("2")) {
+            JsonArray jarr = Methods.stringToJsonArray(resp[1]);
+
+            for (int index = 0; index < jarr.size(); index++) {
+                String code = jarr.get(index).getAsJsonObject().get("id_masterproject").getAsString();
+                code = codec.textEncryptor(code);
+                jarr.get(index).getAsJsonObject().addProperty("id_masterproject", code);
             }
 
+            for (int index = 0; index < jarr.size(); index++) {
+                String code = jarr.get(index).getAsJsonObject().get("id_permitmaster").getAsString();
+                code = codec.textEncryptor(code);
+                jarr.get(index).getAsJsonObject().addProperty("id_permitmaster", code);
+            }
+
+            status = "2";
+            message = "Projects successfully loaded";
+            data = jarr.toString();
+        }
 
         return new String[]{status, message, data};
     }
-       
-       public String[] aceptInvitation(String idProject, String permit, String joinActive) {
+
+    public String[] aceptInvitation(String idProject, String permit, String joinActive) {
         String status = "4", message = "Error accepting shared project invitation", data = "{}";
         idProject = codec.textDecryptor(idProject);
-        if(joinActive.equals("I")){
+        if (joinActive.equals("I")) {
             message = "You are no longer a contributor to this project, the group appreciates the time you spent on the development of this project.";
         }
         if (master.aceptInvitation(idProject, permit, joinActive)) {
@@ -577,5 +585,11 @@ public class Master_projectCtrl {
         }
 
         return new String[]{status, message, data};
+    }
+    
+    public String getPropertyProject(String idperson,String idprojectmaster)
+    {
+        String idmastProject=codec.textDecryptor(idprojectmaster);
+        return master.getprojectProperty(idperson, idmastProject);
     }
 }

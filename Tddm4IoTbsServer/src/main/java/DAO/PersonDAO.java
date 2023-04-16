@@ -219,4 +219,18 @@ public class PersonDAO {
         String resp = conex.fillString(query);
         return resp.matches("[24]") ? resp : "4";
     }
+    
+    public String emailtoid(String email)
+    {
+        conex = new Conection();
+        String query = String.format("select * from email_to_id('%s')", email);
+        DefaultTableModel table=conex.returnRecord(query);
+        if(table.getRowCount()>0)
+            return table.getValueAt(0, 1).toString();
+        else
+            return "[]";
+    }
+    
+    
+    
 }

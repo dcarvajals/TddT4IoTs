@@ -435,4 +435,10 @@ public class PersonaCtrl {
         }
         return new String[]{status, message, data};
     }
+    
+    public String emailgetid(String email)
+    {
+        return  pdao.emailtoid(email);
+    }
+    
 }

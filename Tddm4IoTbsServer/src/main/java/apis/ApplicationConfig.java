@@ -28,10 +28,15 @@ public class ApplicationConfig extends Application {
      * out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
+        resources.add(apis.Component_TaskApis.class);
         resources.add(apis.ComponentsApis.class);
+        resources.add(apis.Entregable_MembersApis.class);
+//        resources.add(org.glassfish.jersey.server.wadl.internal.WadlResource.class);
+        resources.add(apis.Entregable_TaskApis.class);
         resources.add(apis.Master_projectApis.class);
         resources.add(apis.PersonApis.class);
-//        resources.add(org.glassfish.jersey.server.wadl.internal.WadlResource.class);
+        resources.add(apis.Project_EntregableApis.class);
+        resources.add(apis.ReporteApi.class);
     }
 
 }

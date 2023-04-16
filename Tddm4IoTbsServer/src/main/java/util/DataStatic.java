@@ -25,7 +25,7 @@ public class DataStatic {
 //    public static String dbHost = "localhost";//local
     
      //app.applications uteq
-    public static String dbName = "tddt4iots";
+    public static String dbName = "tddt4iots3";
     public static String dbUser = "postgres";
     public static String dbPassword = "123456";
     public static String dbPort = "5432";
@@ -66,6 +66,9 @@ public class DataStatic {
     public static String folderProyect = "tddm4iotbs_projects/";
     public static String folderComponent = "tddm4iotbs_components/";
 
+    public static String folderEntregables = "Entregables/";
+    public static String folderComponents = "Components/";
+    public static String folderTasks = "Tasks/";
     public static String folderUml = "UmlDiagram/";
     public static String folderEasy = "EasyIoT/";
     public static String folderMvmSpring = "/ProjectMvnSpr/";

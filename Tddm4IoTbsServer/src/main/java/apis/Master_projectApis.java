@@ -6,6 +6,7 @@
 package apis;
 
 import Controller.Master_projectCtrl;
+import Controller.PersonaCtrl;
 import com.google.gson.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import util.DataStatic;
 import util.Methods;
+import util.WeEncoder;
 
 /**
  * REST Web Service
@@ -85,6 +87,31 @@ public class Master_projectApis {
                 .build();
     }
 
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/getProject")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getProjectById(String data) {
+        String message;
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {                
+           String id_master_project = Methods.JsonToString(Jso, "idmasterproject", "");
+           
+            WeEncoder encoder = new WeEncoder();
+            id_master_project = encoder.textDecryptor(id_master_project);
+            
+           String resp = mpControl.selectProjectById(id_master_project);
+           message = resp; 
+       } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
     /**
      * This is the web service that allows you to start the module.
      *
@@ -182,6 +209,13 @@ public class Master_projectApis {
             String state = Methods.JsonToString(Jso, "state", "");
 
             String rute = DataStatic.getLocation(request.getServletContext().getRealPath(""));
+            System.out.print("asdasdasd");
+            System.out.print("asdasdasd");
+            System.out.print("asdasdasd");
+            System.out.print("asdasdasd");
+            System.out.print("asdasdasd");
+            System.out.print("asdasdasd");
+            
 
             System.out.println("project Path: " + rute);
 
@@ -581,4 +615,61 @@ public class Master_projectApis {
                 .build();
     }
     
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/getProjectProperty")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getProjectProperty(String data) {
+        String message;
+        
+        PersonaCtrl person =new PersonaCtrl();
+        
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {                
+           String emailperson = Methods.JsonToString(Jso, "emailperson", "");
+           String idmasterproject = Methods.JsonToString(Jso, "idmasterproject", "");
+            
+           String resp = mpControl.getPropertyProject(person.emailgetid(emailperson), idmasterproject);
+           resp=resp.substring(1, resp.length()-1);
+           message = resp; 
+       } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/shareProjectMembers")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response shareProjectMembers(String data) {
+        String message;
+        System.out.println("shareProject()");
+        System.out.println(data);
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+//            String SsessionToken = Methods.JsonToString(Jso, "user_token", "");
+            String emailShare = Methods.JsonToString(Jso, "emailShare", "");
+            String idproj = Methods.JsonToString(Jso, "idproj", "");
+            String permit = Methods.JsonToString(Jso, "permit", "");
+            String stateShare = Methods.JsonToString(Jso, "stateShare", "");
+
+      
+            String[] res = mpControl.shareProject("null", emailShare, idproj, permit, stateShare);
+            message = Methods.getJsonMessage(res[0], res[1], res[2]);
+        
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
 }
+
