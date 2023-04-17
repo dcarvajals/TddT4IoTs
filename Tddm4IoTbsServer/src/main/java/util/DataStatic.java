@@ -25,7 +25,7 @@ public class DataStatic {
 //    public static String dbHost = "localhost";//local
     
      //app.applications uteq
-    public static String dbName = "tddt4iots3";
+    public static String dbName = "tddt4iots";
     public static String dbUser = "postgres";
     public static String dbPassword = "123456";
     public static String dbPort = "5432";

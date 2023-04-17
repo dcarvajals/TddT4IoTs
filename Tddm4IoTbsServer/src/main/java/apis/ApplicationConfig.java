@@ -31,7 +31,6 @@ public class ApplicationConfig extends Application {
         resources.add(apis.Component_TaskApis.class);
         resources.add(apis.ComponentsApis.class);
         resources.add(apis.Entregable_MembersApis.class);
-//        resources.add(org.glassfish.jersey.server.wadl.internal.WadlResource.class);
         resources.add(apis.Entregable_TaskApis.class);
         resources.add(apis.Master_projectApis.class);
         resources.add(apis.PersonApis.class);
