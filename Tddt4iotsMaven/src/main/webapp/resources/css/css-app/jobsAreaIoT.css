@@ -84,13 +84,13 @@ and open the template in the editor.
 
 .divParameters{
     font-family: 'Nunito','Segoe UI', sans-serif !important;
-    height: 84.6vh;
+    height: 95%;
     width: 600px;
     background: white;
     position: absolute !important;
     z-index: 10 !important;
     border-top: 1px solid #DDE0E6;
-    margin-top: -85vh;
+    /*margin-top: -85vh;*/
     border-bottom: 1px solid #DDE0E6;
     display: none;
 

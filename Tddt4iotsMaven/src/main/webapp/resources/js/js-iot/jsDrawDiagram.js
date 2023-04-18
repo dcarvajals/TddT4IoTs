@@ -34,16 +34,16 @@ function initDiagramProject() {
 
     nodeMenu =
             goJs("ContextMenu",
-                    itemButton("Parameters",
+                    itemButton("Configuration and parameterization",
                             function (e, obj) {
                                 e.diagram.commandHandler.copySelection();
                                 //alert("Construction zone");
                                 console.log(obj.part.data);
-                                 console.log(myDiagram.model.linkDataArray);
-                                 angular.element($('[ng-controller="controllerWorkIoT"]')).scope()
-                                 .getParametersBD(obj.part.data, myDiagram.model.linkDataArray);
+                                console.log(myDiagram.model.linkDataArray);
+                                angular.element($('[ng-controller="controllerWorkIoT"]')).scope()
+                                        .getParametersBD(obj.part.data, myDiagram.model.linkDataArray);
                             }),
-                    itemButton("Delete",
+                    itemButton("Delete component",
                             function (e, obj) {
                                 Swal.fire({
                                     title: 'Are you sure?',
@@ -52,7 +52,7 @@ function initDiagramProject() {
                                     showCancelButton: true,
                                     confirmButtonColor: '#3085d6',
                                     cancelButtonColor: '#d33',
-                                    confirmButtonText: 'Yes, cancels all!'
+                                    confirmButtonText: 'Yes, delete it.'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
                                         e.diagram.commandHandler.deleteSelection();
@@ -60,11 +60,6 @@ function initDiagramProject() {
                                     }
                                     ;
                                 });
-                            }),
-                    goJs(go.Shape, "LineH", {strokeWidth: 2, height: 1, stretch: go.GraphObject.Horizontal}),
-                    itemButton("More Info...",
-                            function (e, obj) {
-                                alert("mas info :v");
                             })
                     );
 
@@ -96,7 +91,7 @@ function initDiagramProject() {
                         selectionAdorned: false,
                         contextMenu: nodeMenu,
                         desiredSize: new go.Size(20, 20)
-                        //movable: false
+                                //movable: false
                     }, new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
                     goJs(go.Shape,
                             {
@@ -184,6 +179,14 @@ function initDiagramProject() {
             /*goJs(go.Shape, {isPanelMain: true, stroke: "blue", strokeWidth: 8})*/ //rgba(140, 0, 50)
             /*goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, fromArrow: "Circle"}),
              goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, toArrow: "Circle"}))*/;
+
+    //VALIDACION DE LA CONEXION A LOS PUERTOS
+    myDiagram.toolManager.relinkingTool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
+        console.log(fromport.jb.portId);
+        console.log(toport.jb.portId);
+        alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
+        return fromport.jb.portId === "Gnd";
+    }
 
     goJs(go.Overview, "overView", {
         observed: myDiagram
@@ -301,7 +304,7 @@ function initPalette() {
                             {
                                 name: "SHAPE",
                                 fill: "red", stroke: "red",
-                                figure: "Rectangle",
+                                figure: "RoundedRectangle",
                                 spot1: new go.Spot(0, 0, 5, 1), // keep the text inside the shape
                                 spot2: new go.Spot(1, 1, -5, 0),
                                 // some port-related properties
@@ -325,18 +328,26 @@ function initPalette() {
     myPalette.groupTemplate =
             goJs(go.Group, "Horizontal",
                     {
+                        name: "toolTdd",
                         selectionAdorned: false,
                         locationSpot: go.Spot.Center, locationObjectName: "ICON",
                         padding: 0,
-                        background: "white",
-                        cursor: "grab"
-                                //movable: false,
+                        background: "#F1F1F3",
+                        cursor: "grab", width: 245, margin: new go.Margin(100, 10, 0, 10),
+                        mouseEnter: function (e, toolTdd) {
+                            toolTdd.background = "white";
+                        },
+                        mouseLeave: function (e, toolTdd) {
+                            toolTdd.background = "#F1F1F3";
+                        }
+                        //movable: false,
                     },
                     new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
                     goJs(go.Panel, "Vertical", go.Panel.Viewbox,
-                            {margin: 0, width: 70, height: 70, margin: 10},
+                            {width: 70, height: 70, margin: new go.Margin(0, 5, 0, 20), background: "white", padding: 5},
                             goJs(go.Panel, "Spot",
                                     {name: "ICON"}, // an initial height; size will be set by InputOutputGroupLayout
+
                                     goJs(go.Picture,
                                             new go.Binding("source", "img"), new go.Binding("width", "widthX"),
                                             new go.Binding("height", "heightX"),
@@ -345,18 +356,27 @@ function initPalette() {
                                             }),
                                     )
                             ),
+                    new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
                     goJs(go.Panel, "Vertical", {
                         width: 160,
                         height: 100,
-                        padding: 10},
-                            goJs(go.TextBlock, {name: "TB"},
+                        padding: 0, background: "#F1F1F3"},
+                            goJs(go.TextBlock, {name: "TBE"},
                                     new go.Binding("text", "name"), {
-                                font: "bold  12px Nunito, Serif",
-                                text: "alignment: Left"
+                                font: "bold  12px Roboto Mono",
+                                textAlign: "left", margin: new go.Margin(20, 0, 5, 0), width: 120,
+
                             }),
-                            goJs(go.TextBlock, {name: "TB"},
+                            goJs(go.TextBlock, {name: "TBD"},
                                     new go.Binding("text", "description"), {
-                                font: "10px Nunito, Serif"
+                                font: "9px Roboto Mono",
+                                textAlign: "left", margin: new go.Margin(0, 10, 0, 10), width: 120,
+                                mouseEnter: function (e, TBD) {
+                                    TBD.stroke = "#87D5FF";
+                                },
+                                mouseLeave: function (e, TBD) {
+                                    TBD.stroke = "black";
+                                }
                             })
                             )
                     );
@@ -383,11 +403,12 @@ function loadComponents(obj) {
             img: rutasStorage.components + obj.data[i].pathimg_component + "/component.png",
             name: obj.data[i].name_component,
             type: obj.data[i].type_component,
-            description: obj.data[i].description_component,
+            description: obj.data[i].description_component.length > 100 ? obj.data[i].description_component.toString().substring(0, 99) : obj.data[i].description_component,
             key: obj.data[i].id_component,
             loc: "0 0",
             _isg: true,
-            "ports": getPorts(obj.data[i])
+            "ports": getPorts(obj.data[i]),
+            "code": obj.data[i].data_json.code
         });
 
         //myDiagram.model.addNodeDataCollection(components);
@@ -409,6 +430,7 @@ getPorts = (param_ports) => {
     if (ports_param !== undefined) {
         for (let i = 0; i < ports_param.length; i++) {
             ports.push({
+                "key": ports_param[i].name_port + "-" + param_ports.id_component,
                 "name_port": ports_param[i].name_port,
                 "digital": ports_param[i].digital,
                 "analog": ports_param[i].analog,

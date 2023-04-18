@@ -47,13 +47,14 @@ public class FillAndExport {
             String patheportsjxml=pathImage;
             patheportsjxml=patheportsjxml.replace("target","src");
             patheportsjxml=patheportsjxml.replace("Tddm4IoTbsServer-1.0-SNAPSHOT","main");
-            param.put("parampath", DataStatic.getLocation(pathImage) + "\\ImgEnc\\imagen.png");
+            param.put("parampath", DataStatic.getLocation(pathImage) + "ImgEnc/imagen.png");
             param.put("cad", cad);
 
             
-            JasperReport report = JasperCompileManager.compileReport(patheportsjxml + "/java/reports/" + (type.equals(1) ? "reportEntregable.jrxml"
+            JasperReport report = JasperCompileManager.compileReport(patheportsjxml + "/../../../reports/" + (type.equals(1) ? "reportEntregable.jrxml"
                                                                     : type.equals(2) ? "reportComponent.jrxml"
                                                                     : type.equals(3) ? "reportTask.jrxml" : "reportAll.jrxml"));
+            report.setProperty("net.sf.jasperreports.awt.ignore.missing.font", "true");
             JasperPrint print = JasperFillManager.fillReport(report, param, ConfigDSource.getData(this.idp, this.type,DataStatic.getLocation(pathImage)+"\\tddm4iotbs_projects\\",this.nameProject,part));
             File file = File.createTempFile("output", "pdf");
             JasperExportManager.exportReportToPdfStream(print, new FileOutputStream(file));

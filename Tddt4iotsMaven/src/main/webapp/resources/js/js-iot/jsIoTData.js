@@ -1,4 +1,4 @@
-/* global rutasStorage, angular, store, urlWebServicies, myDiagram, go, swal, clearDiagram */
+/* global rutasStorage, angular, store, urlWebServicies, myDiagram, go, swal, clearDiagram, codeGeneral */
 
 /**
  * initDiagram(responseA.data);
@@ -21,6 +21,20 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     var loadBlocky = false;
     $scope.dataProject = {};
 
+    $scope.arrayParameters = [];
+    $scope.jsonCode = [];
+
+    //variables para manipular el codigo
+    $scope.jsonVariables = [];
+    $scope.jsonValueDigitalAnalog = [];
+    $scope.jsonValueData = [];
+    $scope.jsonValueDigitalRead = [];
+
+    // variables para el codigo agregado parametrizado por componente
+    $scope.codeParameter = {};
+    
+    $scope.cofigParam = 0;
+
     $(document).ready(() => {
         if (window.location.search !== "") {
             $scope.DatoUsuario = getDataSession();
@@ -33,6 +47,15 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             initDiagramProject();
             initPalette();
             initContextMenu();
+            // cargar la plantilla del codigo fuente arduino
+            $scope.$apply(() => {
+                let moduleParam = $("#moduleParam");
+                moduleParam.removeClass("animate__slideOutUp");
+                moduleParam.addClass("animate__slideInDown");
+                moduleParam.show();
+                loadCodeGeneral();
+                moduleParam.hide();
+            });
 
             $scope.getComponentes();
             $scope.loadColors();
@@ -146,6 +169,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
      * @param objLink objeto para conocer las relaciones que tinene el componente
      * */
     $scope.getParametersBD = (obj, objLink) => {
+        //loadCodeGeneral();
         //verificar que tipo de componente es al que se le dio click derecho
         let type_component = obj.type;
         //abrir la venta donde se visualizara tanto los bloques de codigo o las secciones de codigo de caca componente
@@ -153,21 +177,93 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         moduleParam.removeClass("animate__slideOutUp");
         moduleParam.addClass("animate__slideInDown");
         moduleParam.show();
+
         console.log("tipo de componente => ", type_component);
-        if (type_component === "embedded_system") { // seccion para cargar la seccion de los bloques generadores de cod
-            $("#blockCode").show();
-            $("#sectionCode").hide();
-            //cargamos solo una vez los bloques de codigo
-            if (!loadBlocky) {
-                loadBlocky = true;
-                $scope.$apply(() => {
-                    initBlockCode();
-                });
+        console.log("code", obj);
+        console.log("conexiones: ", objLink);
+
+        $scope.arrayParameters = [];
+
+        let arrayConecctions = objLink;
+        let arrayPortsComponentSelected = obj.ports;
+
+        for (let posicionPuertoConexion = 0; posicionPuertoConexion < arrayConecctions.length; posicionPuertoConexion++) {
+            let puertoConexion = arrayConecctions[posicionPuertoConexion];
+            for (let posicionPuertoComponente = 0; posicionPuertoComponente < arrayPortsComponentSelected.length; posicionPuertoComponente++) {
+                let puertoComponente = arrayPortsComponentSelected[posicionPuertoComponente];
+
+                let idComponenteFrom = puertoConexion.from;
+                let idComponenteTo = puertoConexion.to;
+
+                if (puertoComponente.key === idComponenteFrom || puertoComponente.key === idComponenteTo) {
+                    $scope.$apply(function () {
+                        $scope.arrayParameters.push(puertoComponente);
+                        posicionPuertoComponente = arrayPortsComponentSelected.length;
+                    });
+                }
             }
-        } else {
-            $("#sectionCode").show();
-            $("#blockCode").hide();
+
         }
+
+        for (var i = 0; i < $scope.arrayParameters.length; i++) {
+            if ($scope.arrayParameters[i].digital && !$scope.arrayParameters[i].analog) {
+                document.getElementById("btnDigitalAnalog" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("btnData" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("portDigital" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("statDigital" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("portAnalog" + $scope.arrayParameters[i].key).style.display = "none";
+            } else if ($scope.arrayParameters[i].analog && !$scope.arrayParameters[i].digital) {
+                document.getElementById("btnDigitalAnalog" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("btnData" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("portDigital" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("statDigital" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("portAnalog" + $scope.arrayParameters[i].key).style.display = "block";
+            } else if ($scope.arrayParameters[i].digital && $scope.arrayParameters[i].analog) {
+                document.getElementById("btnDigitalAnalog" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("btnData" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("portDigital" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("portAnalog" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("statDigital" + $scope.arrayParameters[i].key).style.display = "block";
+            }
+        }
+        for (var i = 0; i < $scope.arrayParameters.length; i++) {
+            if ($scope.arrayParameters[i].data) {
+                document.getElementById("btnDigitalAnalog" + $scope.arrayParameters[i].key).style.display = "none";
+                document.getElementById("btnData" + $scope.arrayParameters[i].key).style.display = "block";
+                document.getElementById("data" + $scope.arrayParameters[i].key).style.display = "block";
+            } else {
+                //document.getElementById("btnDigitalAnalog").style.display = "none";
+                //document.getElementById("btnData").style.display = "none";
+                document.getElementById("data" + $scope.arrayParameters[i].key).style.display = "none";
+            }
+        }
+
+        if ($scope.jsonCode.length === 0) {
+            //inicializar el json que contendra todo la estructura del codigo del sistema IOT
+            $scope.jsonCode = [{
+                    variables: []
+                }, {
+                    pinMode: []
+                }, {
+                    logic: []
+                }, {
+                    params: []
+                }];
+
+        } else {
+            updateCodeEditor();
+        }
+        $scope.$apply(function () {
+            $scope.codeParameter["Libraries"] = b64_to_utf8(obj.code.Libraries);
+            $scope.codeParameter["Variables"] = b64_to_utf8(obj.code.Variables);
+            $scope.codeParameter["Loop"] = b64_to_utf8(obj.code.Loop);
+            $scope.codeParameter["Setup"] = b64_to_utf8(obj.code.Setup);
+            $scope.codeParameter["Methods"] = b64_to_utf8(obj.code.Methods);
+        });
+
+        console.log("PUERTOS CONECTADOS DEL COMPONENTE SELECCIONADO: ", $scope.arrayParameters);
+        $("#sectionCode").show();
+        $("#blockCode").hide();
     };
 
     /**
@@ -318,5 +414,204 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     $scope.exportPng = () => {
         makeBlob();
     };
+
+    // ******************** //
+    // GENERACION DE CÓDIGO //
+    // ******************** //
+
+    //agrear los puertos que estan siendo usados por el arduino
+    $scope.addPortsDigitalAnalog = function (position) {
+        //alert("digital o analogico");
+
+        //alert($("#selectPD" + $scope.arrayParameters[position].name_port).val());
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() === "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() === "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        if ($("#selectPD" + $scope.arrayParameters[position].key).val() === "---" &&
+                $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                $("#selectPA" + $scope.arrayParameters[position].key).val() === "---") {
+            errorTo({information: "Error when processing the data"});
+            return;
+        }
+
+        //$scope.jsonValueDigitalRead.length = 0;
+
+        if ($scope.arrayParameters[position].digital === true && $scope.arrayParameters[position].analog === false) {
+            if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                    $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                    $("#selectPD" + $scope.arrayParameters[position].key).val() === "digitalWrite") {
+                $scope.jsonCode[1].pinMode.push({
+                    valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ", " +
+                            $("#selectSD" + $scope.arrayParameters[position].key).val() + ");",
+                    pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
+                    namePort: $scope.arrayParameters[position].name_port,
+                    out_inp: true
+                });
+            } else {
+                $scope.jsonCode[1].pinMode.push({
+                    valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
+                    pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
+                    namePort: $scope.arrayParameters[position].name_port,
+                    out_inp: false
+
+                });
+            }
+        } else {
+            if ($("#selectPD" + $scope.arrayParameters[position].key).val() === "---" &&
+                    $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
+                    $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---" &&
+                    $("#selectPA" + $scope.arrayParameters[position].key).val() === "analogWrite") {
+                $scope.jsonCode[1].pinMode.push({
+                    valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ",255);",
+                    pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
+                    namePort: $scope.arrayParameters[position].name_port,
+                    out_inp: true
+                });
+            } else {
+
+                if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                        $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
+                        $("#selectPA" + $scope.arrayParameters[position].key).val() === "---" &&
+                        $("#selectPD" + $scope.arrayParameters[position].key).val() === "digitalWrite") {
+                    $scope.jsonCode[1].pinMode.push({
+                        valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ", " +
+                                $("#selectSD" + $scope.arrayParameters[position].key).val() + ");",
+                        pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
+                        namePort: $scope.arrayParameters[position].name_port,
+                        out_inp: true
+                    });
+
+                    console.log($scope.jsonCode[1].pinMode);
+                    //updateShina($scope.jsonCode);
+                    updateCodeEditor();
+                    return;
+                } else {
+                    $scope.jsonCode[1].pinMode.push({
+                        valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
+                        pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
+                        namePort: $scope.arrayParameters[position].name_port,
+                        out_inp: false
+                    });
+                    console.log($scope.jsonCode[1].pinMode);
+                    //updateShina($scope.jsonCode);
+                    updateCodeEditor();
+                    return;
+                }
+
+                $scope.jsonCode[1].pinMode.push({
+                    valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
+                    pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
+                    namePort: $scope.arrayParameters[position].name_port,
+                    out_inp: false
+                });
+            }
+        }
+
+        console.log($scope.jsonValueDigitalRead);
+        console.log($scope.jsonCode[1].pinMode);
+        //updateShina($scope.jsonCode);
+        updateCodeEditor();
+    };
+
+    //agregar los value de los parametros de los componentes que no son puertos digitales ni analogicos si no que solo transfieren datos
+    $scope.addValueData = function (position) {
+        //alert("datito");
+        $scope.jsonCode[3].params.push({
+            namePort: $scope.arrayParameters[position].name_port,
+            valueParam: $("#input" + $scope.arrayParameters[position].key).val(),
+            idComponent: $scope.arrayParameters[position].idComponent
+        });
+        //updateShina($scope.jsonCode);
+        updateCodeEditor();
+    };
+
+
+    //funcion que actualiazara el codigo por cualqueir modificacion que se valla realizando
+    function updateCodeEditor() {
+        code = "";
+        const fecha = new Date();
+        codeGeneral.setValue(code);
+        code += "/* Code generated by Tddt4iots \n" +
+                " Date:  " + fecha.toDateString() + " */ \n ";
+        //actualizamos los cambios realizados en el json de las variables
+        //$scope.jsonCode[1].pinMode = $scope.jsonValueDigitalAnalog;
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[0].variables.length; indexVariables++) {
+            code += $scope.jsonCode[0].variables[indexVariables].type + " " + $scope.jsonCode[0].variables[indexVariables].var + ";\n";
+        }
+        code += "\n";
+        code += "void setup () \n";
+        code += "{ \n";
+        code += "    Serial.begin(9600); \n";
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].pinMode.length; indexVariables++) {
+            code += "    " + $scope.jsonCode[1].pinMode[indexVariables].pinModePort + "\n";
+        }
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[0].variables.length; indexVariables++) {
+            code += "    " + $scope.jsonCode[0].variables[indexVariables].var + " = " + $scope.jsonCode[0].variables[indexVariables].value + ";\n";
+        }
+        code += "}\n";
+        code += "void loop() \n\
+{\n";
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].pinMode.length; indexVariables++) {
+            if ($scope.jsonCode[1].pinMode[indexVariables].out_inp === true) {
+                code += "    " + $scope.jsonCode[1].pinMode[indexVariables].valueWriteRaad + "\n";
+            }
+        }
+
+        //code += analize($scope.jsonCode[2].logic, 1);
+
+        code += "}";
+        codeGeneral.setValue(code);
+
+        console.log(code);
+        //function para inicializar los tooltip de los componentes de boostrap
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    }
+
 
 });

@@ -136,7 +136,7 @@
                                 <input disabled type="checkbox"
                                        name="ip_isdigital_v" ng-model="ip_isdigital_v"
                                        class="custom-control-input" id="">
-                                <label class="custom-control-label" for="">The port is of digital type</label>
+                                <label class="custom-control-label" >The port is of digital type</label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -144,7 +144,7 @@
                                 <input disabled type="checkbox" name="ip_isanalog_v"
                                        ng-model="ip_isanalog_v"
                                        class="custom-control-input" id="">
-                                <label class="custom-control-label" for="">The port is analog type</label>
+                                <label class="custom-control-label" >The port is analog type</label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -152,7 +152,7 @@
                                 <input disabled type="checkbox" name="ip_isdata_v"
                                        ng-model="ip_isdata_v"
                                        class="custom-control-input" id="">
-                                <label class="custom-control-label" for="">The port will be used to send
+                                <label class="custom-control-label" >The port will be used to send
                                     and receive data</label>
                             </div>
                         </div>
@@ -161,7 +161,7 @@
                                 <input disabled type="checkbox" name="ip_isenergy_v"
                                        ng-model="ip_isenergy_v"
                                        class="custom-control-input" id="">
-                                <label class="custom-control-label" for="">The port is for power supply</label>
+                                <label class="custom-control-label" >The port is for power supply</label>
                             </div>
                             <div ng-show="form_port_view.ip_isenergy_v.$viewValue">
                                 <label> The maximum and minimum voltage received by the power port: </label>
@@ -414,12 +414,12 @@
                 <h6 class="m-0 font-weight-bold text-dark">My component list -
                     (Rows) {{arrayComponentes.length}} </h6>
                 <button type="button" ng-click="clickViewComponentAdmin()"
-                        style="position: absolute;right: 0;margin-right: 17rem;"
+                        style="position: absolute;right: 0;margin-right: 19rem;"
                         ng-show="DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R'"
                         class="btn button-dt btn-sm"><i class="fas fa-stopwatch"></i> Proposals
                 </button>
                 <button type="button" ng-click="clickViewComunityComponents()"
-                        style="position: absolute;right: 0;margin-right: 10rem;"
+                        style="position: absolute;right: 0;margin-right: 11rem;"
                         class="btn button-ds btn-sm"><i class="fas fa-globe-americas"></i> Comunity
                 </button>
                 <button type="button" ng-click="openFormNewComponent()"
@@ -532,11 +532,30 @@
                             </div>
                             <div class="row">
                                 <div class="col-xl-4 col-md-3 mb-2">
-                                    <button class="btn button-ds btn-sm w-100"
-                                            ng-click="selectedComponent(dom_array_components, 'C')"
-                                            aria-expanded="false">
-                                        Details <i class="fas fa-info-circle ml-4"></i>
-                                    </button>
+                                    
+                                    
+                                    <div class="dropdown">
+                                        <button class="btn button-dt btn-sm w-100"
+                                                ng-click="selectProject(dom_myprojects)"
+                                                type="button" id="actions{{dom_array_components.id_component}}"
+                                                data-toggle="dropdown" aria-haspopup="true"
+                                                aria-expanded="false">
+                                            Actions <i class="fas fa-chevron-down ml-4"></i>
+                                        </button>
+                                        <div class="dropdown-menu"
+                                             aria-labelledby="actions{{dom_array_components.id_component}}">
+                                            <button class="dropdown-item"
+                                                    ng-click="selectedComponent(dom_array_components, 'C')">
+                                                <i class="fas fa-info-circle"></i>
+                                                Details
+                                            </button>
+                                            <button class="dropdown-item"
+                                                    ng-click="updateComponent(dom_array_components.id_component)">
+                                                <i class="fas fa-pen"></i>
+                                                Update
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -561,14 +580,14 @@
                 </div>
                 <div class="form-group">
                     <label class="col-form-label col-form-label-sm"> Name component </label>
-                    <labeel class="form-control form-control-sm h-auto"> {{detailsComponenteSelected.name_component}}
-                    </labeel>
+                    <label class="form-control form-control-sm h-auto"> {{detailsComponenteSelected.name_component}}
+                    </label>
                 </div>
                 <div class="form-group">
                     <label class="col-form-label col-form-label-sm"> Description component </label>
-                    <labeel class="form-control form-control-sm h-auto text-justify">
+                    <label class="form-control form-control-sm h-auto text-justify">
                         {{detailsComponenteSelected.description_component}}
-                    </labeel>
+                    </label>
                 </div>
             </div>
         </div>
@@ -588,7 +607,7 @@
             <div class="card-body" style="height: 460px; overflow: auto">
                 <div class="form-group">
                     <label class="col-form-label col-form-label-sm"> Component name: </label>
-                    <input name="name_component" id="" class="form-control form-control-sm" type="text">
+                    <input name="name_component" class="form-control form-control-sm" type="text" />
                 </div>
 
                 <div class="alert alert-primary" role="alert" id=""
