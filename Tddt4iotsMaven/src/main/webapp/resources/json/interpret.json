@@ -1,11 +1,5 @@
 [
     {
-        "simbol": "!",
-        "ascii": "33",
-        "description": "New class",
-        "example": "<span class='badge badge-danger'>!</span>(ClassName)"
-    }, 
-    {
         "simbol": "*",
         "ascii": "42",
         "description": "Hidden class",
@@ -70,7 +64,19 @@
         "ascii": "61",
         "description": "Data type",
         "example": "(ClassName &+atrb1<span class='badge badge-danger'>=</span>string&+atrb2<span class='badge badge-danger'>=</span>string&+atrb3<span class='badge badge-danger'>=</span>float)"
-    }, 
+    },
+    {
+        "simbol": "||",
+        "ascii": "-",
+        "description": "Data types with dimensions",
+        "example": "*(ClassName &-atrb1=int|1,2,n| [-method=string|1,2,n|{.param1=float|1,2,n|}])"
+    },
+    {
+        "simbol": "||",
+        "ascii": "-",
+        "description": "Array ArrayList",
+        "example": "*(ClassName &-atrb1=Array|Int| [-method=ArrayList|String|{.param1=Array|Float|}])"
+    },
     {
         "simbol": "@",
         "ascii": "64",
@@ -78,10 +84,10 @@
         "example": "(<span class='badge badge-danger'>@</span>InterfaceName)"
     }, 
     {
-        "simbol": "^",
+        "simbol": "¿?",
         "ascii": "64",
         "description": "Ennumerations",
-        "example": "(<span class='badge badge-danger'>^</span>(Status «Disabled»,«Enabled»))"
+        "example": "<span class='badge badge-danger'>*¿</span>Status »Disabled »Enabled <span class='badge badge-danger'>?</span>"
     },
     {
         "simbol": "%",
@@ -90,27 +96,57 @@
         "example": "(+<span class='badge badge-danger'>%</span> .className=ClassName <span class='badge badge-danger'>%</span>)"
     },
     {
-        "simbol": "¡>>¡",
+        "simbol": "uu",
+        "ascii": "-",
+        "description": "No cardinality",
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 u<span class='badge badge-danger'>>[cardinalidate_text]></span>u ClassName2<span class='badge badge-danger'>!</span>"
+    },
+    {
+        "simbol": "11",
+        "ascii": "-",
+        "description": "One at a time",
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]></span>1 ClassName2<span class='badge badge-danger'>!</span>"
+    },
+    {
+        "simbol": "1n",
+        "ascii": "-",
+        "description": "One to many",
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>!</span>"
+    },
+    {
+        "simbol": "n1",
+        "ascii": "-",
+        "description": "Many to one",
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 n<span class='badge badge-danger'>>[cardinalidate_text]></span>1 ClassName2<span class='badge badge-danger'>!</span>"
+    },
+    {
+        "simbol": ">>",
         "ascii": "173-62",
         "description": "Relation Agregation",
-        "example": "<span class='badge badge-danger'>¡</span>(ClassName1)<span class='badge badge-danger'>>></span>(ClassName2)<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>!</span>"
     },
     {
-        "simbol": "¡<<¡",
+        "simbol": "<<",
         "ascii": "173-62",
         "description": "Relation Dependency",
-        "example": "<span class='badge badge-danger'>¡</span>(ClassName1)<span class='badge badge-danger'><<</span>(ClassName2)<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'><[cardinalidate_text]<</span>n ClassName2<span class='badge badge-danger'>!</span>"
     },
     {
-        "simbol": "¡<>¡",
+        "simbol": "<>",
         "ascii": "173-62",
         "description": "Relation Generalization",
-        "example": "<span class='badge badge-danger'>¡</span>(ClassName1)<span class='badge badge-danger'><></span>(ClassName2)<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'><[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>!</span>"
     },
     {
-        "simbol": "¡><¡",
+        "simbol": "><",
         "ascii": "173-62",
         "description": "Relation Asociation",
-        "example": "<span class='badge badge-danger'>¡</span>(ClassName1)<span class='badge badge-danger'>><</span>(ClassName2)<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]<</span>n ClassName2<span class='badge badge-danger'>¡</span>"
+    },
+    {
+        "simbol": "<:>",
+        "ascii": "62-173",
+        "description": "Relation Composition",
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'><:[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>¡</span>"
     }
 ]

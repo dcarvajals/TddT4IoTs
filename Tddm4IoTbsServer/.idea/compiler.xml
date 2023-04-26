@@ -11,11 +11,6 @@
         <module name="Tddt4iotsMaven" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="storageTddm4IoTbs" target="1.7" />
-      <module name="Tddm4IoTbsServer" target="1.8" />
-      <module name="Tddt4iotsMaven" target="1.7" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

@@ -100,7 +100,7 @@ app.controller("home_controller", function ($scope, $http) {
 
     $scope.loadExample = (simbol) => {
         console.log(simbol);
-        let message = '<div><b>' + simbol.example + '</b><div>';
+        let message = '<div style="font-family: math;font-size: 16px;">' + simbol.example + '<div>';
         Swal.fire({
             title: '<strong>' + simbol.description + ' example <span class="badge badge-info">' + simbol.simbol + '</span> </strong>',
             icon: 'info',

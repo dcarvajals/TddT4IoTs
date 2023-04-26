@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global mainContext, width, motionContext, height, diagramClass, UMLGeneralization, UMLDependency, UMLAssociation, UMLAggregation */
+/* global mainContext, width, motionContext, height, diagramClass, UMLGeneralization, UMLDependency, UMLAssociation, UMLAggregation, UMLComposition */
 
 var elementsClass = [];
 var positionsClass = [];
@@ -22,14 +22,16 @@ const relationsGlobal = {
     "agregation": UMLAggregation,
     "dependency": UMLDependency,
     "generalization": UMLGeneralization,
-    "asociation": UMLAssociation
+    "asociation": UMLAssociation,
+    "composition": UMLComposition
 };
 
 const relationsGlobalname = {
     "agregation": "agregation",
     "dependency": "dependency",
     "generalization": "generalization",
-    "asociation": "asociation"
+    "asociation": "asociation",
+    "composition": "composition"
 };
 
 function updateClassDiagram(jsonInterprete, action) {
@@ -71,10 +73,13 @@ function updateClassDiagram(jsonInterprete, action) {
             elementsClass.push({"element": newclass});
             for (let iattributes = 0; iattributes < clas.attributes.length; iattributes++) {
                 attributes = clas.attributes[iattributes];
-                if (attributes.type === "fk" || attributes.type === "enumeration")
-                    newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name.toString().trim() + " fk");
+                if(attributes.name.toString().trim() !== "") {
+                    if (attributes.type === "fk" || attributes.type === "enumeration")
+                        newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name.toString().trim() + " fk");
                 else
                     newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name + ":" + attributes.type);
+                }
+                
             }
             for (let imethods = 0; imethods < clas.methods.length; imethods++) {
                 methods = clas.methods[imethods];

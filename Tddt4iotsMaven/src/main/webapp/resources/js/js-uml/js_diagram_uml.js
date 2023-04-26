@@ -160,7 +160,7 @@ controller = app.controller("workAreaController", function ($scope) {
                             "height": 81,
                             "id_div": "areaDiagram",
                             "diagram": $scope.diagramsUml[posDiagram].type === "UMLUseCaseDiagram" ? UMLUseCaseDiagram :
-                                    $scope.diagramsUml[posDiagram].type === "UMLClassDiagram" ? UMLClassDiagram : undefined,
+                                $scope.diagramsUml[posDiagram].type === "UMLClassDiagram" ? UMLClassDiagram : undefined,
                             "name": $scope.diagramsUml[posDiagram].name,
                             "interaction": $scope.diagramsUml[posDiagram].interaction,
                             "draw": $scope.diagramsUml[posDiagram].draw
@@ -363,7 +363,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.loadExample = (simbol) => {
         console.log(simbol);
-        let message = '<div><b>' + simbol.example + '</b><div>';
+        let message = '<div style="font-family: math;font-size: 16px;">' + simbol.example + '<div>';
         Swal.fire({
             title: '<strong>' + simbol.description + ' example <span class="badge badge-info">' + simbol.simbol + '</span> </strong>',
             icon: 'info',
@@ -641,7 +641,7 @@ controller = app.controller("workAreaController", function ($scope) {
          * Agrega finalmente el objeto del caso de uso y los datos de la descripcion del caso de uso al json de los
          * DATOS del json del diagrama de casos de uso
          **/
-        //variable para agregar los diagramas de secuencia por cada caso de uso
+            //variable para agregar los diagramas de secuencia por cada caso de uso
         let secuence_diagram = {};
 
         secuence_diagram = createDiagram({
@@ -793,12 +793,12 @@ controller = app.controller("workAreaController", function ($scope) {
                         });
                     } else if (objectClass.className === nameClassTo) {
                         objectClass.attributes.push({
-                            name: to_fk,
-                            type: type,
-                            visibility: "private",
-                            cardinalidate: arrayRelations[positionRel].cardinalidate,
-                            idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
-                        }
+                                name: to_fk,
+                                type: type,
+                                visibility: "private",
+                                cardinalidate: arrayRelations[positionRel].cardinalidate,
+                                idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
+                            }
                         );
                     }
                 }
@@ -861,11 +861,11 @@ controller = app.controller("workAreaController", function ($scope) {
         console.log(relations_usecase);
         if (relations_usecase.length > 0) {
             for (let index_X = 0; index_X < $scope.actorsUseCase.length;
-                    index_Y === relations_usecase.length ? index_X++ : index_X) {
+                 index_Y === relations_usecase.length ? index_X++ : index_X) {
                 for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
                     //pregunto si este actor no se encuentra en las relaciones de este caso de uso
                     if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
-                            relations_usecase[index_Y]._elemA.getName()) {
+                        relations_usecase[index_Y]._elemA.getName()) {
                         index_actor_relation++;
                     }
 
@@ -915,18 +915,18 @@ controller = app.controller("workAreaController", function ($scope) {
         }
 
         $scope.jsonUseCase.useCase[$scope.encontrado].main_stage =
-                Object.assign([], $scope.manager_maf.main_stage);
+            Object.assign([], $scope.manager_maf.main_stage);
         $scope.jsonUseCase.useCase[$scope.encontrado].alternative_flow =
-                Object.assign([], $scope.manager_maf.alternative_flow);
+            Object.assign([], $scope.manager_maf.alternative_flow);
 
         $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_normal_flow =
-                Object.assign([], $scope.table_normal_flow);
+            Object.assign([], $scope.table_normal_flow);
         $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_loop =
-                Object.assign([], $scope.table_loop);
+            Object.assign([], $scope.table_loop);
         $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_if =
-                Object.assign([], $scope.table_alternative_if);
+            Object.assign([], $scope.table_alternative_if);
         $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_else =
-                Object.assign([], $scope.table_alternative_else);
+            Object.assign([], $scope.table_alternative_else);
 
         $scope.flag_update = false;
         superInterpret();
@@ -1022,6 +1022,10 @@ controller = app.controller("workAreaController", function ($scope) {
         if (flag)
             $scope.utilWebSocket("interpretUseCaseDescription", {"form": scope_usecase.$modelValue});
         console.log($scope.jsonClass);
+        alertAll({
+            "status": 2,
+            "information": "Text interpreted successfully."
+        });
     };
 
     //funcion para interpretar la accion a editar
@@ -1031,6 +1035,10 @@ controller = app.controller("workAreaController", function ($scope) {
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
         $scope.action_interpret = minjson[0];
+        alertAll({
+            "status": 2,
+            "information": "Text interpreted successfully."
+        });
     };
 
     //funcion para agregar el escenario principal del caso de uso
@@ -1202,7 +1210,7 @@ controller = app.controller("workAreaController", function ($scope) {
                     for (let imethods = 0; imethods < classdiagram.methods.length; imethods++) {
                         let methods = classdiagram.methods[imethods];
                         $scope.secuenceData.package[ipackage].objects[iclass]
-                                .methods.push({methodname: methods.name + "(" + getParamethersSecuence(methods.parameters) + ")"});
+                            .methods.push({methodname: methods.name + "(" + getParamethersSecuence(methods.parameters) + ")"});
                     }
                 }
             }
@@ -1696,9 +1704,9 @@ controller = app.controller("workAreaController", function ($scope) {
         for (let iusecase = 0; iusecase < data.useCase.length; iusecase++) {
             let usecaseNode = data.useCase[iusecase];
             for (let iusecasediagram = 0; iusecasediagram < arrayUseCase.length; iusecasediagram++) {
-                if(usecaseNode.name_i === undefined)
+                if (usecaseNode.name_i === undefined)
                     usecaseNode["name_i"] = usecaseNode.name;
-                    
+
                 if (usecaseNode.name_i === arrayUseCase[iusecasediagram].obj.getName()) {
                     usecaseNode.obj_usecase = arrayUseCase[iusecasediagram].obj;
                     let secuence_diagram = createDiagram({
@@ -2206,7 +2214,7 @@ controller = app.controller("workAreaController", function ($scope) {
             let from = $scope.jsonClass.relationships[x].from;
             let to = $scope.jsonClass.relationships[x].to;
             if ((from === form.class_from.$modelValue.className && to === form.class_to.$modelValue.className) ||
-                    (from === form.class_to.$modelValue.className && to === form.class_from.$modelValue.className)) {
+                (from === form.class_to.$modelValue.className && to === form.class_from.$modelValue.className)) {
                 flag = true;
             }
         }
@@ -2516,7 +2524,8 @@ controller = app.controller("workAreaController", function ($scope) {
             //var range = document.createRange();
             //range.selectNode(table);
 
-            navigator.clipboard.writeText(text).catch(function () { });
+            navigator.clipboard.writeText(text).catch(function () {
+            });
         }
         console.log("COPIADO !!");
         alertAll({"status": 2, "information": "Content successfully copied."});
