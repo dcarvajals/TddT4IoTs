@@ -21,29 +21,29 @@ app.controller("myprojects_controller", function ($scope, $http) {
 
     $scope.selected_project = {};
     $scope.flag_selected_project = false;
-    
-    $scope.loadEntregablesProject = () => {        
-        if($scope.selected_project !== undefined && $scope.selected_project !== null){
-            
+
+    $scope.loadEntregablesProject = () => {
+        if ($scope.selected_project !== undefined && $scope.selected_project !== null) {
+
             window.sessionStorage.setItem("id_project", $scope.selected_project.idproj);
             window.location = "app.html#!/entregablesproject";
-            
+
             /*$.ajax({
-                method:"POST",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                url: urlWebServicies + 'entregable/selectEntregables',
-                data: JSON.stringify({
-                    "idmasterproject": $scope.selected_project.idproj
-                }),
-                success: function(data){
-                    window.location = "app.html#!/home";
-                }
-            });*/
+             method:"POST",
+             dataType: "json",
+             contentType: "application/json; charset=utf-8",
+             url: urlWebServicies + 'entregable/selectEntregables',
+             data: JSON.stringify({
+             "idmasterproject": $scope.selected_project.idproj
+             }),
+             success: function(data){
+             window.location = "app.html#!/home";
+             }
+             });*/
         }
-        
+
     };
-  
+
     //funcion para cargar los proyectos existentes
     $scope.loadProjects = () => {
         var dataUser = store.session.get("user_tddm4iotbs");
@@ -66,7 +66,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     $scope.$apply(function () {
                         $scope.myprojects = data.data;
                     });
-                     
+
                     alertAll(data);
                     console.log($scope.myprojects);
                 },
@@ -106,7 +106,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     console.log(data);
                     $scope.flag_selected_project = true;
                     console.log(objetct_selected_project);
-                    
+
                     $scope.$apply(() => {
                         $scope.selected_project = {
                             "idproj": objetct_selected_project.id_masterproject,
@@ -116,7 +116,9 @@ app.controller("myprojects_controller", function ($scope, $http) {
                             "code_mp": objetct_selected_project.code_mp,
                             "permit_mp": objetct_selected_project.permit_pm,
                             "uml": {data: data.data.dataUml, "msgUml": data.data.msgUml},
-                            "iot": {data: data.data.dataIoT, "msgIoT": data.data.msgIoT}
+                            "iot": {data: data.data.dataIoT, "msgIoT": data.data.msgIoT},
+                            "download": objetct_selected_project.download,
+                            "id_masterproject" : objetct_selected_project.id_masterproject
                         };
                         $scope.mavenProject = rutasStorage.projects + objetct_selected_project.path_mp + "/ProjectMvnSpr.zip";
                     });
@@ -397,11 +399,61 @@ app.controller("myprojects_controller", function ($scope, $http) {
             }
         }
     };
-    
+
+    // descargar
+    $scope.downloadPrjMav = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        let api_data = {
+            "user_token": dataUser.user_token,
+            "idProj": $scope.selected_project.id_masterproject,
+            "module": 'DownloadMvn'
+        };
+        apiencapsulateProject(api_data);
+    };
+
+    apiencapsulateProject = (api_param) => {
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'projects/MavenProject',
+            data: JSON.stringify({...api_param}),
+            beforeSend: () => {
+                loading();
+            },
+            success: (data) => {
+                swal.close();
+                alertAll(data);
+                //$("#modal_package_maven").modal("show");
+                $scope.$apply(() => {
+                    swal.close();
+                    console.log(data);
+                    $("#modal_package_maven").modal("hide");
+                    $("#modal_download_maven").modal("hide");
+                    $scope.mavenProject = data.data.MavenApplication;
+                    download("ProjectMvnSpr.zip", data.data.MavenApplication);
+                });
+            },
+            error: (objXMLHttpRequest) => {
+                console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+
+    function download(filename, textInput) {
+        var element = document.createElement('a');
+        //element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
+        element.setAttribute('href', location.origin + "/storageTddm4IoTbs/" + textInput);
+        element.setAttribute('download', filename);
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
     $scope.listEntregablesProject = (selected_project) => {
         alert(selected_project);
     };
-    
+
     /* *
      * Abrir modal para mostrar los entregables existentes 
      * para el proyecto seleccionado

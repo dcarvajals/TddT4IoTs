@@ -85,8 +85,6 @@ function importDiagram(diagram, xml, typeMenu) {
 
     var xmlnode = (new DOMParser()).parseFromString(xml, 'text/xml');
 
-    console.log(xmlnode);
-
     diagram.setXML(xmlnode);
 
     if (typeMenu === "UseCase") {
@@ -97,7 +95,6 @@ function importDiagram(diagram, xml, typeMenu) {
         setMenuClass(diagram._relations, "relations");
     }
 
-    console.log(diagram);
 
     let div = document.getElementById("areaDiagram");
     diagram.initialize(0, div, mainContext, motionContext, width, height);
@@ -230,7 +227,6 @@ function selectedActor(obj, modal) {
         ac.actor_name = obj.getName();
         ac.utilWebSocket("selectedActor", {"name": obj.getName()});
     });
-    console.log(ac.object_update.getName());
     $('#modal_actor').modal();
 }
 
@@ -285,14 +281,11 @@ function deleteObjectClass(obj, type) {
                                 }
                             }
                             ac.jsonClass.diagram[0].class.splice(indexobj[1], 1);
-                            console.log(ac.jsonClass.diagram[0].class);
                             obj.remove();
                             alertAll({status: 2, information: "Object successfully removed"});
                         }
                     }
                 } else if (type === 5) {
-                    console.log(obj.getElementA().getName());
-                    console.log(obj.getElementB().getName());
                     let fromRel = obj.getElementA().getName().split(" ")[1];
                     let toRel = obj.getElementB().getName().split(" ")[1];
                     let validation = fromToEquals(ac.jsonClass.relationships, fromRel, toRel);
@@ -310,7 +303,6 @@ function deleteObjectClass(obj, type) {
                         deleteAttrGraph(attributesA[2]._childs, ac.jsonClass.relationships[validation[1]].from_fk);
                         deleteAttrGraph(attributesB[2]._childs, ac.jsonClass.relationships[validation[1]].to_fk);
                         ac.jsonClass.relationships.splice(validation[1], 1);
-                        console.log(ac.jsonClass);
                         obj.remove();
                         alertAll({status: 2, information: "Object successfully removed"});
                     }
@@ -393,23 +385,40 @@ function deleteObject(obj, type) {
                         ac.angularSuperInterpret();
                         ac.angularUpdateClassDiagram();
                         obj.remove();
+
+                        alertAll({status: 2, information: "Object successfully removed"});
+                        diagramUseCase.draw();
+                    } else {
+                        alertAll({status: 3, information: "The object you tried to delete could not be found."});
+                        diagramUseCase.draw();
                     }
                 } else if (type === 2) { // actores
                     indexobj = searchPositionEqualsObject(ac.jsonUseCase.actors, "name", obj.getName()) // searchObjeEquals(type, ac, obj); // buscar los casos de uso o actores o relaciones
                     if (indexobj[0]) {
                         ac.jsonUseCase.actors.splice(indexobj[1], 1);
+                        obj.remove();
+                        alertAll({status: 2, information: "Object successfully removed"});
+                        diagramUseCase.draw();
+                    } else {
+                        alertAll({status: 3, information: "The object you tried to delete could not be found."});
+                        diagramUseCase.draw();
                     }
-                    obj.remove();
+
                 } else if (type === 3) { // relaciones de los casos de uso
                     let indexrel = searchObjeEquals(ac, obj); // buscar las relaciones
                     if (indexrel >= 0) {
                         ac.jsonUseCase.relations.splice(indexrel, 1);
+                        obj.remove();
+                        alertAll({status: 2, information: "Object successfully removed"});
+                        diagramUseCase.draw();
+                    } else {
+                        alertAll({status: 3, information: "The object you tried to delete could not be found."});
+                        diagramUseCase.draw();
                     }
-                    obj.remove();
+
                 }
             });
-            alertAll({status: 2, information: "Object successfully removed"});
-            diagramUseCase.draw();
+
         }
     });
 }
@@ -425,8 +434,15 @@ function searchPositionEqualsObject(array, key, name) {
 
 function searchTabName(ac, obj) {
     for (let i = 0; i < ac.btnDiagramUml.length; i++) {
+
         let namebtn = ac.btnDiagramUml[i].name.split(" - ")[1];
-        let otroname = obj.getName();
+
+        if (namebtn === undefined)
+            namebtn = ac.btnDiagramUml[i].name;
+        
+        namebtn = getHackDiagram(namebtn)[0].trim();
+
+        let otroname = obj.getName().trim();
         if (namebtn === otroname) {
             return i;
         }
@@ -486,25 +502,23 @@ function viewUseCase(obj) {
     let relations_usecase = obj.getRelations();
     //preguntamos si el caso de uso esta realcionado con algun actor
     if (relations_usecase.length > 0) {
-        console.log("tiene relacion");
         let encontrado = -1;
         ac.$apply(function () {
             ac.actorsUseCase.length = 0;
             //buscamos los actores que estan relacionados con el actor
             for (let index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
-                if(relations_usecase[index_Y]._elemA._type === "UMLActor"){
-                ac.actorsUseCase.push({
-                    "obj_actor": relations_usecase[index_Y]._elemA,
-                    "name": relations_usecase[index_Y]._elemA.getName()
-                });
-            }
+                if (relations_usecase[index_Y]._elemA._type === "UMLActor") {
+                    ac.actorsUseCase.push({
+                        "obj_actor": relations_usecase[index_Y]._elemA,
+                        "name": relations_usecase[index_Y]._elemA.getName()
+                    });
+                }
             }
         });
-        console.log(ac.actorsUseCase);
     } else {
-        console.log("no tiene relacion");
+
     }
-    
+
     $('#modal_view_usecase').modal();
 }
 
@@ -524,8 +538,6 @@ function selectedUseCase(obj, flag) {
         ac.flag_update = true;
 
         ac.object_update = obj;
-        console.log(obj.getRelations());
-
         //buscar la descripcion del caso de uso seleccionado
         for (let index_X = 0; index_X < ac.jsonUseCase.useCase.length; index_X++) {
             if (ac.jsonUseCase.useCase[index_X].obj_usecase.getName() === undefined) {
@@ -692,7 +704,6 @@ function createEnum(attributes) {
 }
 
 function selectedClass(node) {
-    console.log(node.getName());
     node.removeContextualMenu();
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
     if (!ac.editionClasDiagram) {
@@ -771,8 +782,7 @@ function createRelationClass(attributes) {
         rel.setEnd(new OpenTip());
     } else if (attributes.typeRelatioship === "association" && attributes.type === undefined) {
         rel = new UMLAssociation({a: attributes.a, b: attributes.b});
-    }
-    else {
+    } else {
         rel = new attributes.type({a: attributes.a, b: attributes.b});
     }
     rel.setMenu([

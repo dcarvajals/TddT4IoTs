@@ -278,8 +278,9 @@
                             <img src="resources/img/img-app/classDiagramPro.png" class="w-100 border-dark" alt="useCaseExample">
                         </div>
                     </div>
-                    <span>Download an executable project with the logic applied to the generated class diagram.</span>
-                    <div class="alert alert-success mt-2" role="alert">
+        
+                    <span ng-show="selected_project.download === 'T'">Download an executable project with the logic applied to the generated class diagram.</span>
+                    <div class="alert alert-success mt-2" role="alert" ng-show="selected_project.download === 'T'">
                         <div class="media mb-2">
                             <img src="resources/img/img-app/projectJava.png" class="align-self-center mr-3" alt="..."
                                  width="70">
@@ -289,13 +290,13 @@
                                     <strong> Framework: </strong> Spring Boot /
                                     <strong> Package management </strong> Maven /
                                 </div>
-                                <h5 class="mt-0 text-dark"><strong> Source code for web application (business logic for mobile) with Maven and Spring Boot </strong></h5>
+                                <h5 class="mt-0 text-dark"><strong> Project Spring Boot</strong></h5>
                                 <div class="row">
                                     <div class="col-xl-4 col-md-3 mb-2">
-                                        <a class="btn button-dt btn-sm w-100" download='ProjectMvnSpr.zip'
-                                           ng-href="{{mavenProject}}">
+                                        <button class="btn button-dt btn-sm w-100"
+                                                ng-click="downloadPrjMav()">
                                             Download  Project
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -125,7 +125,9 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                             "code_mp": objetct_selected_projectup.code_mp,
                             "permit_mp": objetct_selected_projectup.permit_pm,
                             "uml": {data: data.data.dataUml, "msgUml": data.data.msgUml},
-                            "iot": {data: data.data.dataIoT, "msgIoT": data.data.msgIoT}
+                            "iot": {data: data.data.dataIoT, "msgIoT": data.data.msgIoT},
+                            "download": objetct_selected_projectup.download,
+                            "id_masterproject" : objetct_selected_projectup.id_masterproject
                         };
                     });
                     console.log($scope.selected_projectup);
@@ -273,6 +275,56 @@ app.controller("shareprojects_controller", function ($scope, $http) {
         console.log(selected_project);
         //selected_project.iot.status = "A";
     };
+    
+    // descargar
+    $scope.downloadPrjMav = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        let api_data = {
+            "user_token": dataUser.user_token,
+            "idProj": $scope.selected_project.id_masterproject,
+            "module": 'DownloadMvn'
+        };
+        apiencapsulateProject(api_data);
+    };
+
+    apiencapsulateProject = (api_param) => {
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'projects/MavenProject',
+            data: JSON.stringify({...api_param}),
+            beforeSend: () => {
+                loading();
+            },
+            success: (data) => {
+                swal.close();
+                alertAll(data);
+                //$("#modal_package_maven").modal("show");
+                $scope.$apply(() => {
+                    swal.close();
+                    console.log(data);
+                    $("#modal_package_maven").modal("hide");
+                    $("#modal_download_maven").modal("hide");
+                    $scope.mavenProject = data.data.MavenApplication;
+                    download("ProjectMvnSpr.zip", data.data.MavenApplication);
+                });
+            },
+            error: (objXMLHttpRequest) => {
+                console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+
+    function download(filename, textInput) {
+        var element = document.createElement('a');
+        //element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
+        element.setAttribute('href', location.origin + "/storageTddm4IoTbs/" + textInput);
+        element.setAttribute('download', filename);
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 
     $scope.openIoT = function () {
         location.href = "jobsAreaIoT.html?identifiquer=" + $scope.selected_projectup.idproj;

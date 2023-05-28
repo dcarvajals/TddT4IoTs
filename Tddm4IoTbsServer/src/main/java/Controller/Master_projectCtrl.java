@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 
 import models.Master_project;
 import util.DataStatic;
@@ -366,7 +367,7 @@ public class Master_projectCtrl {
         return new String[]{status, message, data};
     }
 
-    public String[] loadJsonModule(String idUser, String idProj, String module, String path) {
+    public String[] loadJsonModule(String idUser, String idProj, String module, String path) throws UnsupportedEncodingException {
         String status = "4", message = "Error loading the modules of the selected project", data = "{}";
         System.out.println("MASTER PROJECT => " + idProj);
         idProj = codec.textDecryptor(idProj);
@@ -412,6 +413,10 @@ public class Master_projectCtrl {
 
                 status = "2";
                 message = "Project modules successfully loaded.";
+                
+                //byte[] isoBytes = fileData.getBytes("ISO-8859-1");
+                //fileData = new String(isoBytes, "UTF-8");
+                
                 data = Methods.stringToJSON(fileData).toString();
 
             } else {
@@ -449,12 +454,14 @@ public class Master_projectCtrl {
                 data = "{\"idProj\":\"idProj\"}";
                 if (params.equals("1")) {
                     System.out.println("RUTA POR DEFECTO => " + path);
-                    MakerProjects.createMavenProject(path, relpath, resp[1], info);
+                    String nameProject = master.getNameProject(idProj);
+                    MakerProjects.createMavenProject(path, relpath, nameProject, info);
                     //MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
                 } else if (params.equals("2")) {
                     System.out.println("RUTA SOURCE: " + path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring);
                     System.out.println("RUTA TARGET: " + path + DataStatic.folderProyect + resp[1]);
                     MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
+                    master.updateStatusDownload(idProj);
                     data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + resp[1] + ".zip" + "\"}";
                     System.out.println(data);
                 } else if (params.equals("4")) {

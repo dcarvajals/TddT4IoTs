@@ -47,12 +47,12 @@ app.expandControllerMavenProject = function ($scope) {
             "module": 'CreateMvn'
         };
         apiencapsulateProject(api_data);
-        setTimeout(function(){
+        /*setTimeout(function(){
             swal.close();
             console.log("TERMINANDO...");
             $("#modal_package_maven").modal("show");
         }, 8000);
-        loadingMvn();
+        loadingMvn();*/
     };
 
     apiencapsulateProject = (api_param) => {
@@ -63,16 +63,22 @@ app.expandControllerMavenProject = function ($scope) {
             url: urlWebServicies + 'projects/MavenProject',
             data: JSON.stringify({...api_param}),
             beforeSend: () => {
-                loading();
+                if(api_param.module === "CreateMvn")
+                    loadingMvn();
+                else
+                    loading();
             },
             success: (data) => {
+                swal.close();
                 console.log(data);
                 alertAll(data);
+                //$("#modal_package_maven").modal("show");
                 $scope.$apply(() => {
                     /*$scope.mavenProject = rutasStorage.projects + data.data.MavenApplication;
                     console.log($scope.mavenProject);*/
-                    if(api_param.module === "CreateMvn") {
+                    if (api_param.module === "CreateMvn") {
                         $("#modal_class_conecction").modal("hide");
+                        $("#modal_package_maven").modal("show");
                         //$scope.downloadPrjMav();
                         $scope.mavenProject = data.MavenApplication;
                     } else if (api_param.module === "ZipMvn") {
@@ -85,6 +91,8 @@ app.expandControllerMavenProject = function ($scope) {
                     } else if (api_param.module === "DownloadMvn") {
                         swal.close();
                         console.log(data);
+                        $("#modal_package_maven").modal("hide");
+                        $("#modal_download_maven").modal("hide");
                         $scope.mavenProject = data.data.MavenApplication;
                         download("ProjectMvnSpr.zip", data.data.MavenApplication);
                     }
@@ -115,25 +123,27 @@ app.expandControllerMavenProject = function ($scope) {
         // aumentar los nuevos parametros
         $scope.addNewParams($scope.jsonMavenProject.entities);
         // validar campos de la tabla de los atributos
-        $scope.addClassFront( $scope.jsonMavenProject.entities);
+        $scope.addClassFront($scope.jsonMavenProject.entities);
         console.log("JSON MANVE PROJEECT", $scope.jsonMavenProject);
     };
-    
+
     $scope.addClassFront = (entities) => {
-        for(let i = 0; i < entities.length; i++){
+        for (let i = 0; i < entities.length; i++) {
             entities[i]["classFront"] = "btn btn-sm button-dt mr-2 mt-1";
         }
     };
-    
+
     $scope.removeClassFront = (entities, index) => {
-        for(let i = 0; i < entities.length; i++){
+        for (let i = 0; i < entities.length; i++) {
             entities[i]["classFront"] = index === i ? "btn btn-sm button-active mr-2 mt-1" : "btn btn-sm button-dt mr-2 mt-1";
         }
     };
-    
+
     $scope.cancelDownload = () => {
         $('#modal_download_maven').modal('hide');
     };
+    
+    $scope.cancelPackage = () => { $("#modal_package_maven").modal("hide"); };
 
     // funcion para obtener los atributos de la clase seleccionada
     $scope.selectedEntitie = (entitie, index) => {
@@ -166,9 +176,9 @@ app.expandControllerMavenProject = function ($scope) {
 
     // actualizar el length/preicison
     $scope.updateLengthMavenProject = (attribute, index) => {
-      let newLength =   $("#length_maven" + index).val();
-      console.log(newLength);
-      attribute["length_precision"] = parseInt(newLength);
+        let newLength = $("#length_maven" + index).val();
+        console.log(newLength);
+        attribute["length_precision"] = parseInt(newLength);
     };
 
     // actualizar el notnull
@@ -180,33 +190,33 @@ app.expandControllerMavenProject = function ($scope) {
     $scope.updatePrimaryKeyMavenProject = (attribute, index) => {
         let checkpk = $("#notNull_" + index);
 
-        if(attribute["not_null"] && !attribute["primary_key"]){
+        if (attribute["not_null"] && !attribute["primary_key"]) {
             attribute["primary_key"] = !attribute["primary_key"];
             // aseguramos que este en verdadero
             attribute["not_null"] = true
             // aseguramos que el check en la interfaz este en true
             checkpk.prop('checked', true);
             // deshabilitamos el check
-            checkpk.attr('disabled','disabled');
+            checkpk.attr('disabled', 'disabled');
         } else {
             attribute["primary_key"] = !attribute["primary_key"];
             attribute["not_null"] = !attribute["not_null"];
             checkpk.prop('checked', attribute["not_null"]);
-            if(attribute["not_null"] === true){
-                checkpk.attr('disabled','disabled');
-            } else{
+            if (attribute["not_null"] === true) {
+                checkpk.attr('disabled', 'disabled');
+            } else {
                 checkpk.prop('checked', false);
                 checkpk.removeAttr('disabled');
             }
         }
 
         // desactivar el check de primary key a los demas
-        for(let x = 0; x < $scope.selectedEntitieObj.attributes.length; x++){
+        for (let x = 0; x < $scope.selectedEntitieObj.attributes.length; x++) {
             let checkAllPk = $("#primary_key" + x);
             let checkAllNotNull = $("#notNull_" + x);
             let attributteAll = $scope.selectedEntitieObj.attributes[x]
-            if(x !== index){
-                if(attributteAll["not_null"] && attributteAll["primary_key"]){
+            if (x !== index) {
+                if (attributteAll["not_null"] && attributteAll["primary_key"]) {
                     checkAllPk.prop('checked', false);
                     checkAllNotNull.removeAttr('disabled');
                     checkAllNotNull.prop('checked', false);
@@ -218,8 +228,8 @@ app.expandControllerMavenProject = function ($scope) {
     };
 
     $scope.nextStep = () => {
-      $("#modal_create_mavenproject").modal("hide");
-      $("#modal_class_conecction").modal();
+        $("#modal_create_mavenproject").modal("hide");
+        $("#modal_class_conecction").modal();
     };
 
     $scope.returnStep = () => {
@@ -231,18 +241,18 @@ app.expandControllerMavenProject = function ($scope) {
         let url_data_base = "";
         let jdbc = "";
 
-        switch (form.db_driver.$modelValue){
+        switch (form.db_driver.$modelValue) {
             case "pg":
                 url_data_base = "org.postgresql.Driver";
-                jdbc = "jdbc:postgresql://"+form.db_server.$modelValue+":"+form.db_port.$modelValue+"/"+form.db_name.$modelValue;
+                jdbc = "jdbc:postgresql://" + form.db_server.$modelValue + ":" + form.db_port.$modelValue + "/" + form.db_name.$modelValue;
                 break;
             case "mq":
                 url_data_base = "com.mysql.jdbc.Driver";
-                jdbc = "jdbc:mysql://"+form.db_server.$modelValue+":"+form.db_port.$modelValue+"/"+form.db_name.$modelValue;
+                jdbc = "jdbc:mysql://" + form.db_server.$modelValue + ":" + form.db_port.$modelValue + "/" + form.db_name.$modelValue;
                 break;
             case "sq":
                 url_data_base = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-                jdbc = "jdbc:sqlserver://"+form.db_server.$modelValue+":"+form.db_port.$modelValue+";databaseName="+form.db_name.$modelValue;
+                jdbc = "jdbc:sqlserver://" + form.db_server.$modelValue + ":" + form.db_port.$modelValue + ";databaseName=" + form.db_name.$modelValue;
                 break;
         }
 
@@ -253,7 +263,7 @@ app.expandControllerMavenProject = function ($scope) {
             db_password: form.db_password.$modelValue,
             db_server: form.db_server.$modelValue,
             db_port: form.db_port.$modelValue,
-            url_data_base:  url_data_base,
+            url_data_base: url_data_base,
             jdbc: jdbc
         };
         console.log($scope.jsonMavenProject);

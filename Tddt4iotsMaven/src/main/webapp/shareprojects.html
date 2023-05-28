@@ -153,10 +153,10 @@
             </div>
             <div ng-show="flag_selected_projectup === true">
                 <div style="font-size: 12px">
-                    <strong> Creation date: </strong> {{selected_projectup.creationdate_mp}} -
-                    <strong> Update date: </strong> {{selected_projectup.updatedate_mp}}
+                    <strong> Creation date: </strong> {{selected_projectup.creationdate_mp.split('T')[0]}} -
+                    <strong> Update date: </strong> {{selected_projectup.updatedate_mp.split('T')[0]}}
                 </div>
-                <h5 class="mt-0 text-dark"><strong> {{selected_projectup.name_mp}} </strong></h5>
+                <h5 class="mt-0 text-dark"><strong> Project name: {{selected_projectup.name_mp}} </strong></h5>
             </div>
             <div class="media" ng-show="selected_projectup.uml.data.length === 0">
                 <div class="media-body">
@@ -175,28 +175,47 @@
             </div>
             <div class="media" ng-show="selected_projectup.uml.data.length > 0">
                 <div class="media-body">
+                    <div class="float-right" style="display: flex; margin-top: -3.3rem">
+                        <button ng-click="openUml()" class="btn button-d d-block ">
+                            <i class="fas fa-folder-open"></i>
+                            Open module
+                        </button>
+                    </div>
                     <h5 class="mt-0"><strong> Module Diagramas Uml </strong></h5>
-                    <span>Download the files in json format so that another developer can import your research and improve it.</span>
-                    <div class="alert alert-primary mt-2" role="alert">
-                        <a href="">diagram_use_case.json</a>
+                    <span>Generate and edit class diagrams by entering the respective descriptions of a use case diagram.</span>
+                    <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
+                        <div class="col-3 border mr-3 pl-0">
+                            <img src="resources/img/img-app/useCaseDPro.png" class="w-100 border-dark" alt="useCaseExample">
+                        </div>
+                        <div class="col-3 border pl-0">
+                            <img src="resources/img/img-app/classDiagramPro.png" class="w-100 border-dark" alt="useCaseExample">
+                        </div>
                     </div>
-                    <div class="alert alert-primary" role="alert">
-                        <a href="">diagram_class.json</a>
+                    
+                    <span ng-show="selected_projectup.download === 'T'">Download an executable project with the logic applied to the generated class diagram.</span>
+                    <div class="alert alert-success mt-2" role="alert" ng-show="selected_projectup.download === 'T'">
+                        <div class="media mb-2">
+                            <img src="resources/img/img-app/projectJava.png" class="align-self-center mr-3" alt="..."
+                                 width="70">
+                            <div class="media-body">
+                                <div style="font-size: 12px">
+                                    <strong> Language: </strong> Java /
+                                    <strong> Framework: </strong> Spring Boot /
+                                    <strong> Package management </strong> Maven /
+                                </div>
+                                <h5 class="mt-0 text-dark"><strong> Project Spring Boot</strong></h5>
+                                <div class="row">
+                                    <div class="col-xl-4 col-md-3 mb-2">
+                                        <button class="btn button-dt btn-sm w-100"
+                                                ng-click="downloadPrjMav()">
+                                            Download  Project
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span>Download a file containing java code based on class diagram.</span>
-                    <div class="alert alert-info mt-2" role="alert">
-                        <a href="">code.java</a>
-                    </div>
-                    <span>Download a file containing the srcipt sql based on class diagram</span>
-                    <div class="alert alert-warning mt-2" role="alert">
-                        <a href="">script.sql</a>
-                    </div>
-                    <button ng-click="openUml()" ng-disabled="selected_projectup.permit_mp === 'R'"
-                            ng-hide="selected_projectup.permit_mp === 'R'"
-                            class="btn btn-success d-block"><i
-                            class="fas fa-folder-open"></i>
-                        Open module
-                    </button>
+                    
                     <span ng-show="selected_projectup.permit_mp === 'R'" class="small text-danger">
                                 You do not have the necessary permission to create edit the module,
                                 <strong>

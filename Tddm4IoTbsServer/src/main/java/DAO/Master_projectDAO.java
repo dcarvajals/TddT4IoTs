@@ -152,6 +152,16 @@ public class Master_projectDAO {
             return new String[]{"4", ""};
         }
     }
+    
+    public String getNameProject (String idproj){
+        String query = "SELECT name_mp FROM master_project WHERE id_masterproject = " + idproj;
+        return conex.returnRecord(query).getValueAt(0, 0).toString().replaceAll(" ", "");
+    } 
+    
+    public boolean updateStatusDownload (String idproj) {
+        String query = "update master_project set download = 'T' where id_masterproject = "+idproj+";";
+        return conex.modifyBD(query);
+    }
 
     public String[] selectHomeProject(String id_type) {
         String query = String.format("select * from master_project_select_home(%s)", id_type);

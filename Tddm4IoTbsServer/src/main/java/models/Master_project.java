@@ -23,6 +23,7 @@ public class Master_project {
     String path_mp = "";
     String tatus_uml = "";
     String status_iot = "";
+    String download = "";
 
     public String getId_masterproject() {
         return id_masterproject;
@@ -95,6 +96,15 @@ public class Master_project {
     public void setStatus_iot(String status_iot) {
         this.status_iot = status_iot;
     }
+
+    public String getDownload() {
+        return download;
+    }
+
+    public void setDownload(String download) {
+        this.download = download;
+    }
+
     
     public String returnXml() {
         JSONObject jsonU = new JSONObject(this);

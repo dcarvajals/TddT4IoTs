@@ -2290,7 +2290,7 @@
                             <i class="fas fa-folder"></i> Package Zip project </button>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-danger" ng-click="cancelDownload()">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-danger" ng-click="cancelPackage()">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -2348,8 +2348,11 @@
                                 <i class="fab fa-java"></i>
                                 Create maven project <span class="badge badge-pill badge-danger">NEW</span>
                             </button>
-                            <a class="btn badge badge-primary" download='MavenProject.zip' ng-show="mavenProject !== ''"
-                               ng-href="{{'../' + mavenProject}}"> <i class="fas fa-download"></i> Download maven project </a>
+                            <button class="btn badge badge-pill badge-warning" ng-show="dataProject.download === 'T'"
+                                    ng-click="downloadPrjMav()"> 
+                                <i class="fas fa-download"></i> 
+                                Download maven project 
+                            </button>
 
                             <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i
                                     class="fas fa-sign-out-alt"></i> Close </a>

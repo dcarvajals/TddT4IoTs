@@ -44,8 +44,8 @@ function setNotifications(status, information, data) {
     notification.information = information;
     notification.data = data;
     notification.type = status === 0 ? "information" : status === 1 ? "success"
-        : status === 2 ? "warning" : "error";
-    console.log(notification);
+            : status === 2 ? "warning" : "error";
+    //console.log(notification);
     notifications.push(notification);
 }
 
@@ -300,7 +300,7 @@ function count(text, character) {
  * @param {string} characters
  * */
 function manualPartition(beging, end, characters) {
-    console.log("################### MANUAL PARTITION ########################");
+    //console.log("################### MANUAL PARTITION ########################");
     var subs = {x1: 0, x2: 0};
     var elements = [];
     var open = true;
@@ -315,8 +315,8 @@ function manualPartition(beging, end, characters) {
                 if (characters[rec - 1] === "*" && characters[rec] === beging) {
                     subs.x1 = rec - 1;
                 }
-                console.log(open);
-                console.log("subs.x1: ", subs.x1);
+                //console.log(open);
+                //console.log("subs.x1: ", subs.x1);
             }
             if (characters[rec] === end && open === false && subs.x1 !== rec) {
                 open = true;
@@ -327,7 +327,7 @@ function manualPartition(beging, end, characters) {
         }
     } else {
         setNotifications(3, "An opening but not a closing symbol was detected. => begin: "
-            + beging + ", end: " + end + ". Near: " + characters + "", []);
+                + beging + ", end: " + end + ". Near: " + characters + "", []);
     }
     return elements;
 }
@@ -337,7 +337,7 @@ function packages(text) {
     var pack;
     var enumsx;
     var parts = manualPartition("^", "^", unsupportedCharacters(text, 1));
-    console.log("Cantidad: ", parts.length);
+    //console.log("Cantidad: ", parts.length);
     superText = text;
     for (var row = 0; row < parts.length; row++) {
         var data = parts[row].toString().replace(/\^.*\~/g, "").replace(/[\^\~]/g, "");
@@ -420,7 +420,7 @@ function increadingClassData(classObject, objects) {
 function classx(text) {
     var classx_p = [];
     text = unsupportedCharacters(text, 2);
-    console.log("### ENVIANDO LOS SIMBOLOS PARA INDENTIFICAR LAS CLASES")
+    //console.log("### ENVIANDO LOS SIMBOLOS PARA INDENTIFICAR LAS CLASES")
     var parts = manualPartition("(", ")", unsupportedCharacters(text, 3));
     var parts2 = manualPartition("(", ")", unsupportedCharacters(text, 2));
     var text2 = text;
@@ -515,10 +515,10 @@ function textNatural(text) {
     if (text[0] === "*") {
         let textManualPartition = manualPartition("/", "/", text);
         return textManualPartition.join(" ").toString()
-            .replace(/[\/\\\]\}]/g, "").toString()
-            .replace(/[\.\[\{\(\)\&\+\¡\!¿?\-\$\#]/g, "").toString()
-            .replace(/=.*/g, "")
-            .replace(/\:.*/g, "");
+                .replace(/[\/\\\]\}]/g, "").toString()
+                .replace(/[\.\[\{\(\)\&\+\¡\!¿?\-\$\#]/g, "").toString()
+                .replace(/=.*/g, "")
+                .replace(/\:.*/g, "");
     } else { // ¿?
         return text.toString().replace(/[\!\(\)¿?]/g, "").toString().replace(/\{.*\}/g, "").toString().replace(/\[.*\]/g, "").replace(/\:.*/g, "");
     }
@@ -556,7 +556,7 @@ function getParameter(text) {
             var itempo = {
                 name: paramName,
                 type: searchDataType(getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")), getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) !== "" ?
-                    getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) : "String")
+                        getClassName(subText[1].toString().replace(/[\%\}\]\s\/]/g, "")) : "String")
             };
             parameters.push(itempo);
         }
@@ -575,10 +575,10 @@ function getMethods(text) {
         // verificar si existe el metodo ya declarado en la clase
         for (let posMetodos = 0; posMetodos < metodox.length; posMetodos++) {
             if (methodName === metodox[posMetodos].name
-                && searchDataType(subText[1] === undefined ? "" :
-                        getClassName(subText[1].toString().trim().replace(/[\{\.].*/g, "")),
-                    "void") === metodox[posMetodos].type
-                && JSON.stringify(getParameter(parts[row])) === JSON.stringify(metodox[posMetodos].parameters)) {
+                    && searchDataType(subText[1] === undefined ? "" :
+                            getClassName(subText[1].toString().trim().replace(/[\{\.].*/g, "")),
+                            "void") === metodox[posMetodos].type
+                    && JSON.stringify(getParameter(parts[row])) === JSON.stringify(metodox[posMetodos].parameters)) {
                 metodoExistente = true;
                 posicionExistente = posMetodos;
                 break;
@@ -644,11 +644,11 @@ function getClassName(text) {
         text = text.replace(/[!@¬º\?\(\*\:\^\~`]/g, "").replace(/[\/\{\[\:\)\%].*/g, "");
 
         text = unsupportedCharacters(text, 3);
-////console.log("1"+unsupportedCharacters(text,3));
-////console.log("x"+unsupportedCharacters(text,1));
+//////console.log("1"+unsupportedCharacters(text,3));
+//////console.log("x"+unsupportedCharacters(text,1));
 
         text = nameFormat(text, 1);
-////console.log("2"+text);
+//////console.log("2"+text);
 
         return text;
     } else {
@@ -660,7 +660,7 @@ function typeOfRelationships(text, txtnatural) {
     var relations = [];
     var partsRelations = manualPartition("¡", "!", text);
 
-    console.log(partsRelations);
+    //console.log(partsRelations);
     let uno = "1";
 
     let description = txtnatural;
@@ -672,7 +672,7 @@ function typeOfRelationships(text, txtnatural) {
         // buscar el texto entre la relacion
         let text_relations = "";
         text_relations = manualPartition("[", "]", partsRelations[row]);
-        console.log("texto entre las relaciones: " + text_relations);
+        //console.log("texto entre las relaciones: " + text_relations);
         partsRelations[row] = partsRelations[row].toString().replace(/\¡/g, "");
         partsRelations[row] = partsRelations[row].toString().replace(text_relations, "");
         let splitType = {};
@@ -690,7 +690,7 @@ function typeOfRelationships(text, txtnatural) {
 
         partsRelations[row] = partsRelations[row].toString().replaceAll("/", "");
         let minrel = partsRelations[row].toString().split(splitType.simbol);
-        console.log(splitType, minrel);
+        //console.log(splitType, minrel);
         if (minrel.length === 2) {
             if (minrel[0].length > 0 && minrel[1].length > 0) {
                 // agregado por duval (22/03/2022)
@@ -702,11 +702,11 @@ function typeOfRelationships(text, txtnatural) {
                     from_fk = nameFormatAux(getClassName(minrel[1]), 2) + ":" + getClassName(minrel[1]);
                     to_fk = nameFormatAux(getClassName(minrel[0]), 2) + ":" + getClassName(minrel[0]);
                 } else if (splitType.cardinalidate === "1..*") {
-                    from_fk = nameFormatAux(minrel[1], 1) + ":" + getClassName(minrel[1]) + "[]";
-                    to_fk = nameFormatAux(minrel[0], 1) + ":" + getClassName(minrel[0]);
+                    from_fk = nameFormatAux(getClassName(minrel[1], 1)) + ":" + getClassName(minrel[1]) + "[]";
+                    to_fk = nameFormatAux(getClassName(minrel[0], 1)) + ":" + getClassName(minrel[0]);
                 } else if (splitType.cardinalidate === "*..1") {
-                    from_fk = nameFormatAux(minrel[1], 1) + ":" + getClassName(minrel[1]);
-                    to_fk = nameFormatAux(minrel[0], 1) + ":" + getClassName(minrel[0]) + "[]";
+                    from_fk = nameFormatAux(getClassName(minrel[1], 1)) + ":" + getClassName(minrel[1]);
+                    to_fk = nameFormatAux(getClassName(minrel[0], 1)) + ":" + getClassName(minrel[0]) + "[]";
                 } else if (splitType.cardinalidate === " .. ") {
                     from_fk = nameFormatAux(getClassName(minrel[1]), 2) + ":" + getClassName(minrel[1]);
                     to_fk = nameFormatAux(getClassName(minrel[0]), 2) + ":" + getClassName(minrel[0]);
@@ -722,7 +722,7 @@ function typeOfRelationships(text, txtnatural) {
                     to: getClassName(minrel[1]),
                     typeRelatioship: splitType.name,
                     value: text_relations.length > 0 ?
-                        text_relations.toString()
+                            text_relations.toString()
                             .replace("[", "")
                             .replace("]", "")
                             .replaceAll("/", "") : splitType.name,
@@ -732,9 +732,9 @@ function typeOfRelationships(text, txtnatural) {
                     simbol: splitType.simbol
                 });
                 setNotifications(1, "The " + splitType.name + " relationship between objects from: "
-                    + getClassName(minrel[0]) + " " + splitType.simbol + " to: " + getClassName(minrel[1]) + " was successfully generated.", []);
+                        + getClassName(minrel[0]) + " " + splitType.simbol + " to: " + getClassName(minrel[1]) + " was successfully generated.", []);
             } else {
-                console.log("no ta completo");
+                //console.log("no ta completo");
             }
         }
     }
@@ -783,7 +783,7 @@ function validateCardinalidate(text, symbol_relation) {
         response.flag = true;
     }
     response.data = jsonType;
-    console.log(response.data, response.flag);
+    //console.log(response.data, response.flag);
     return response;
 }
 
@@ -815,13 +815,13 @@ function getRelationship(myObject) {
                 var rtempy = searchDataClass(relationshipx[rel].type, myObject);
                 if (rtempy[1].length > 0) {
                     result.push(
-                        {
-                            from: myObject[packages].class[classis].className,
-                            to: rtempy[1],
+                            {
+                                from: myObject[packages].class[classis].className,
+                                to: rtempy[1],
 //                                from_packName: myObject[packages].packName,
 //                                to_packName: rtempy[0],
-                            typeRelatioship: "Aggregation"
-                        }
+                                typeRelatioship: "Aggregation"
+                            }
                     );
                 }
             }
@@ -830,30 +830,30 @@ function getRelationship(myObject) {
             for (var rel = 0; rel < relationshipx.length; rel++) {
                 var rtempy;
                 for (var rel2 = 0; rel2 < relationshipx[rel].parameters.length; rel2++) {
-                    //console.log(relationshipx[rel].parameters[rel2]);
+                    ////console.log(relationshipx[rel].parameters[rel2]);
                     rtempy = searchDataClass(relationshipx[rel].parameters[rel2].type, myObject);
                     if (rtempy[1].length > 0) {
                         result.push(
-                            {
-                                from: myObject[packages].class[classis].className,
-                                to: rtempy[1],
+                                {
+                                    from: myObject[packages].class[classis].className,
+                                    to: rtempy[1],
 //                                    from_packName: myObject[packages].packName,
 //                                    to_packName: rtempy[0],
-                                typeRelatioship: "Dependence"
-                            }
+                                    typeRelatioship: "Dependence"
+                                }
                         );
                     }
                 }
                 rtempy = searchDataClass(relationshipx[rel].type, myObject);
                 if (rtempy[1].length > 0) {
                     result.push(
-                        {
-                            from: myObject[packages].class[classis].className,
-                            to: rtempy[1],
+                            {
+                                from: myObject[packages].class[classis].className,
+                                to: rtempy[1],
 //                                from_packName: myObject[packages].packName,
 //                                to_packName: rtempy[0],
-                            typeRelatioship: "Composition"
-                        }
+                                typeRelatioship: "Composition"
+                            }
                     );
                 }
             }
@@ -890,12 +890,12 @@ function getHackDiagram(text) {
     var rel = typeOfRelationships(text, packs[0]);
 
     return [rel[1], {
-        diagram: packs[1],
-        xmldiagram: "<package>" + OBJtoXML({diagram: packs[1], relations: rel[0]}) + "</package>",
-        relationships: rel[0],
-        action: [],
-        notifications: getNotifications()
-    }];
+            diagram: packs[1],
+            xmldiagram: "<package>" + OBJtoXML({diagram: packs[1], relations: rel[0]}) + "</package>",
+            relationships: rel[0],
+            action: [],
+            notifications: getNotifications()
+        }];
 }
 
 function OBJtoXML(obj) {
@@ -920,9 +920,9 @@ function OBJtoXML(obj) {
 }
 
 function mergeClassDiagram(bigJson, minJson) {
-    console.log("-------------------------------------");
-    console.log(bigJson, minJson);
-    console.log("-------------------------------------");
+    //console.log("-------------------------------------");
+    //console.log(bigJson, minJson);
+    //console.log("-------------------------------------");
     if (Object.keys(bigJson).length > 0) {
         mergeDiagram(bigJson.diagram, minJson.diagram);
         mergeRelationships(bigJson.relationships, minJson.relationships);
@@ -969,7 +969,7 @@ function joinPackages(bigPackage, minPackage) {
             }
         }
         if (find === false) {
-            console.log(minPackage);
+            //console.log(minPackage);
             bigPackage.push({...minPackage[ind2]});
         }
     }
@@ -986,7 +986,7 @@ function joinConstructors(bigPackage, minPackage) {
             }
         }
         if (find === false) {
-            console.log(minPackage);
+            //console.log(minPackage);
             bigPackage.push({...minPackage[ind2]});
         }
     }
@@ -1003,7 +1003,7 @@ function joinEnums(bigPackage, minPackage) {
             }
         }
         if (find === false) {
-            console.log(minPackage);
+            //console.log(minPackage);
             bigPackage.push({...minPackage[ind2]});
         }
     }
@@ -1023,7 +1023,7 @@ function joinElements(bigElemn, minElem) {
                         }
                     }
                     minElem[i].name = minElem[i].name + (countm > 0 ? countm : "");
-                    console.log("lista de las clases", bigElemn);
+                    //console.log("lista de las clases", bigElemn);
                     minElem[i].visibility = classVisibilityPriority(minElem[i].visibility, bigElemn[j].visibility);
                     bigElemn.push({...minElem[i]});
                 } else {
@@ -1052,7 +1052,7 @@ function joinAttributes(bigAttr, minAttr) {
                         }
                     }
                     minAttr[ind].name = minAttr[ind].name + (countm > 0 ? countm : "");
-                    console.log("lista de las clases", bigAttr);
+                    //console.log("lista de las clases", bigAttr);
                     minAttr[ind].visibility = classVisibilityPriority(minAttr[ind].visibility, bigAttr[ind2].visibility);
                     bigAttr.push({...minAttr[ind]});
                 } else {
@@ -1077,42 +1077,63 @@ function joinMethods(bigAttr, minAttr) {
         for (var ind = 0; ind < bigAttr.length; ind++) {
             if (minAttr[ind2].name === bigAttr[ind].name) {
                 find = true;
-//name - type - parameters
+                //name - type - parameters
                 if (minAttr[ind2].type === bigAttr[ind].type) {
 
                     let eqParam = true;
                     if (minAttr[ind2].parameters.length === bigAttr[ind].parameters.length) {
-                        console.log("Param length iguales");
-                        for (var i = 0; i < minAttr[i].parameters; i++) {
+                        //console.log("Param length iguales");
+                        for (var i = 0; i < minAttr[ind2].parameters.length; i++) {
                             if (minAttr[ind2].parameters[i].type !== bigAttr[ind].parameters[i].type) {
                                 eqParam = false;
                             }
                         }
                         if (eqParam === false) {
-                            console.log("sobrecarga");
+                            //console.log("sobrecarga");
                             bigAttr.push(minAttr[ind2].slice());
 
                         } else {
-                            console.log("los metodos son equivalentes");
+                            //console.log("los metodos son equivalentes");
                             bigAttr[ind].visibility = classVisibilityPriority(minAttr[ind2].visibility, bigAttr[ind].visibility);
                         }
                         find = true;
                     } else {
                         find = false;
-                        console.log("Número de parámetros diferente");
+                        //console.log("Número de parámetros diferente");
                     }
                 } else {
                     let countm = 0;
                     for (var ind3 = 0; ind3 < bigAttr.length; ind3++) {
-                        if (minAttr[ind3].name === bigAttr[ind].name) {
+                        if (minAttr[ind2].name === bigAttr[ind3].name) {
                             countm = countm + 1;
-                            ind3 = bigAttr.length;
+                            if (minAttr[ind2].parameters.length === bigAttr[ind3].parameters.length) {
+                                let eqParam = true;
+                                for (var i = 0; i < minAttr[ind2].parameters.length; i++) {
+                                    if (minAttr[ind2].parameters[i].type !== bigAttr[ind3].parameters[i].type) {
+                                        eqParam = false;
+                                    }
+                                }
+
+                                if (eqParam === false) {
+                                    //console.log("sobrecarga");
+                                    bigAttr.push(minAttr[ind2].slice());
+
+                                } else {
+                                    //console.log("los metodos son equivalentes");
+                                    bigAttr[ind].visibility = classVisibilityPriority(minAttr[ind2].visibility, bigAttr[ind].visibility);
+                                }
+                                find = true;
+
+                            } else {
+                                if (minAttr[ind2].type === bigAttr[ind3].type) {
+                                    minAttr[ind2].name = minAttr[ind2].name + (countm > 0 ? countm : "");
+                                    bigAttr.push({...minAttr[ind2]});
+                                } else
+                                    find = false;
+                            }
                         }
                     }
-                    minAttr[ind2].name = minAttr[ind2].name + (countm > 0 ? countm : "");
-                    console.log(minAttr[ind2].name);
-                    bigAttr.push({...minAttr[ind2]});
-                    find = true;
+
                 }
             }
         }
@@ -1148,15 +1169,17 @@ function mergeRelationships(bigRel, minRel) {
             let ind;
             for (let ind2 = 0; ind2 < minRel.length; ind2++) {
                 for (ind = 0; ind < cant; ind++) {
-                    resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
-                        minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
-                    if (resp[0] === false) {
-                        noExisteRelacion = true;
-                        relationEncontrada = ind2;
-                    } else {
-                        // dejar de buscar poq si existe la relaion en alguna posicion de las relaciones totales
-                        ind = cant;
-                        noExisteRelacion = false;
+                    if (bigRel[ind] !== undefined && minRel[ind2] !== undefined) {
+                        resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
+                                minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
+                        if (resp[0] === false) {
+                            noExisteRelacion = true;
+                            relationEncontrada = ind2;
+                        } else {
+                            // dejar de buscar poq si existe la relaion en alguna posicion de las relaciones totales
+                            ind = cant;
+                            noExisteRelacion = false;
+                        }
                     }
                 }
                 if (noExisteRelacion) {
@@ -1169,7 +1192,7 @@ function mergeRelationships(bigRel, minRel) {
 
         } else {
             for (var ind2 = 0; ind2 < minRel.length; ind2++) {
-//            console.log(minRel[ind2]);
+//            //console.log(minRel[ind2]);
                 bigRel.push({...minRel[ind2]});
             }
         }

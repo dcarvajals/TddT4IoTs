@@ -8,6 +8,7 @@ package apis;
 import Controller.Master_projectCtrl;
 import Controller.PersonaCtrl;
 import com.google.gson.JsonObject;
+import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -209,14 +210,7 @@ public class Master_projectApis {
             String state = Methods.JsonToString(Jso, "state", "");
 
             String rute = DataStatic.getLocation(request.getServletContext().getRealPath(""));
-            System.out.print("asdasdasd");
-            System.out.print("asdasdasd");
-            System.out.print("asdasdasd");
-            System.out.print("asdasdasd");
-            System.out.print("asdasdasd");
-            System.out.print("asdasdasd");
             
-
             System.out.println("project Path: " + rute);
 
             String[] res = Methods.validatePermit(clains[0], clains[1], 1);
@@ -413,7 +407,7 @@ public class Master_projectApis {
     @POST
     @Path("/loadModuleFile")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response loadModuleFile(String data) {
+    public Response loadModuleFile(String data) throws UnsupportedEncodingException {
         String message;
         System.out.println("loadModuleFile()");
         System.out.println(data);

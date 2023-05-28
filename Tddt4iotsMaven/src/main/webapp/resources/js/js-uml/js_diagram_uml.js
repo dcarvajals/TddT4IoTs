@@ -82,12 +82,10 @@ controller = app.controller("workAreaController", function ($scope) {
             loading();
             let urlParams = new URLSearchParams(window.location.search);
             id_project = urlParams.get('identifiquer');
-            console.log(id_project);
             $scope.$apply(() => {
                 $scope.DatoUsuario = getDataSession();
-                console.log($scope.DatoUsuario);
             });
-            $scope.loadDataProject(id_project);
+            $scope.loadDataProject(id_project, $scope.DatoUsuario.user_token);
             initDiagramUml();
             $scope.loadUseCase();
             $scope.loadInterpret();
@@ -100,8 +98,9 @@ controller = app.controller("workAreaController", function ($scope) {
         }
     });
 
-    $scope.loadDataProject = (idProject) => {
+    $scope.loadDataProject = (idProject, user_token) => {
         let dataLoadDataProject = {
+            "user_token": user_token,
             "typeSelect": "4",
             "idProject": idProject
         };
@@ -125,10 +124,10 @@ controller = app.controller("workAreaController", function ($scope) {
                     ...api_param
                 }),
                 beforeSend: function (xhr) {
-                    loading();
+                    //loading();
                 },
                 success: function (data) {
-                    swal.close();
+                    //swal.close();
                     console.log(data);
                     $scope.$apply(() => {
                         $scope.dataProject = data.data[0];
@@ -149,7 +148,6 @@ controller = app.controller("workAreaController", function ($scope) {
         $.getJSON("resources/js/js-uml/diagramsUml.json", function (data) {
             $scope.$apply(function () {
                 $scope.diagramsUml = data;
-                console.log($scope.diagramsUml);
             });
 
             for (let posDiagram = 0; posDiagram < $scope.diagramsUml.length; posDiagram++) {
@@ -160,7 +158,7 @@ controller = app.controller("workAreaController", function ($scope) {
                             "height": 81,
                             "id_div": "areaDiagram",
                             "diagram": $scope.diagramsUml[posDiagram].type === "UMLUseCaseDiagram" ? UMLUseCaseDiagram :
-                                $scope.diagramsUml[posDiagram].type === "UMLClassDiagram" ? UMLClassDiagram : undefined,
+                                    $scope.diagramsUml[posDiagram].type === "UMLClassDiagram" ? UMLClassDiagram : undefined,
                             "name": $scope.diagramsUml[posDiagram].name,
                             "interaction": $scope.diagramsUml[posDiagram].interaction,
                             "draw": $scope.diagramsUml[posDiagram].draw
@@ -175,11 +173,6 @@ controller = app.controller("workAreaController", function ($scope) {
 
             diagramUseCase = getDiagramUseCase();
             diagramClass = getDiagramClass();
-
-            console.log($scope.btnDiagramUml);
-
-            console.log("USECASE", diagramUseCase);
-            console.log("CLASSDIAGRAM", diagramClass);
         });
     };
 
@@ -249,7 +242,6 @@ controller = app.controller("workAreaController", function ($scope) {
             case "actor":
                 $("#modal_actor").modal();
                 statusDropEnd = "";
-                console.log("me soltaste");
                 break;
             case "usecase":
                 $scope.actorsUseCase.length = 0;
@@ -356,7 +348,6 @@ controller = app.controller("workAreaController", function ($scope) {
         $.getJSON("resources/json/interpret.json", function (data) {
             $scope.$apply(function () {
                 $scope.interpret = data;
-                console.log($scope.interpret);
             });
         });
     };
@@ -535,17 +526,25 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para editar los actores
     $scope.updateActor = function (form, flag) {
-        if (form.$valid) {
-            if ($scope.nameEquals(form.actor_name.$modelValue, -1)) {
-                return;
-            }
-            $scope.object_update.setName(form.actor_name.$modelValue);
+        try {
+            if (form.$valid) {
+                if ($scope.nameEquals(form.actor_name.$modelValue, -1)) {
+                    return;
+                }
+                $scope.object_update.setName(form.actor_name.$modelValue);
 
-            diagramUseCase.draw();
-            $scope.flag_update = false;
-            $("#modal_actor").modal('hide');
-            if (flag)
-                $scope.utilWebSocket("updateActor", {"form": JSON.decycle(form)});
+                diagramUseCase.draw();
+                $scope.flag_update = false;
+                $("#modal_actor").modal('hide');
+                if (flag)
+                    $scope.utilWebSocket("updateActor", {"form": JSON.decycle(form)});
+            }
+        } catch (ErrorMessage) {
+            console.log(ErrorMessage);
+            alertAll({
+                "status": 4,
+                "information": "[updateActor]: " + ErrorMessage.message
+            });
         }
     };
 
@@ -557,33 +556,42 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para crear los actores dentro de la descripcion de los casos de uso
     $scope.createActorUC = function (flag) {
-        if ($scope.usecase_actorname !== undefined && $scope.usecase_actorname.trim() !== '') {
+        try {
+            if ($scope.usecase_actorname !== undefined && $scope.usecase_actorname.trim() !== '') {
 
-            if (!$scope.nameEquals($scope.usecase_actorname, -1)) {
-                //crear lista de actores
-                let actorobject = createActorTools({
-                    "name": $scope.usecase_actorname,
-                    "pos_Y": randomPosition(400, 70)
-                });
+                if (!$scope.nameEquals($scope.usecase_actorname, -1)) {
+                    //crear lista de actores
+                    let actorobject = createActorTools({
+                        "name": $scope.usecase_actorname,
+                        "pos_Y": randomPosition(400, 70)
+                    });
 
-                $scope.actorsUseCase.push({
-                    "obj_actor": actorobject,
-                    "name": actorobject.getName()
-                });
+                    $scope.actorsUseCase.push({
+                        "obj_actor": actorobject,
+                        "name": actorobject.getName()
+                    });
 
-                $scope.jsonUseCase.actors.push({
-                    "obj_actor": actorobject,
-                    "name": actorobject.getName()
-                });
+                    $scope.jsonUseCase.actors.push({
+                        "obj_actor": actorobject,
+                        "name": actorobject.getName()
+                    });
 
-                if (flag)
-                    $scope.utilWebSocket("createActorUC", {"form": $scope.usecase_actorname});
+                    if (flag)
+                        $scope.utilWebSocket("createActorUC", {"form": $scope.usecase_actorname});
 
-                $scope.usecase_actorname = "";
-            } else {
-                alertAll({"status": 3, "information": "Enter at least one actor's name"});
+                    $scope.usecase_actorname = "";
+                } else {
+                    alertAll({"status": 3, "information": "Enter at least one actor's name"});
+                }
             }
+        } catch (ErrorMessage) {
+            console.log(ErrorMessage);
+            alertAll({
+                "status": 4,
+                "information": "[createActorUC]: " + ErrorMessage.message
+            });
         }
+
     };
 
     $scope.addActorCreated = function (actorobject) {
@@ -597,120 +605,130 @@ controller = app.controller("workAreaController", function ($scope) {
     // funcion para crear los casos de uso y reelacionarlo con los actores que desee de forma automatica
     $scope.createUseCaseUC = function (form, flag) {
 
-        if ($scope.nameEquals(form.usecase_name_i.$modelValue, -1)) {
-            return;
-        }
+        try {
 
-        //crear objeto use case
-        let usecase = createUseCase({
-            "name": form.usecase_name_i.$modelValue,
-            "pos_Y": randomPosition(400, 70)
-        });
+            if ($scope.nameEquals(form.usecase_name_i.$modelValue, -1)) {
+                return;
+            }
 
-        /**
-         * recorre todos los actores que fueron agregados dentro de la descripcion del caso de uso para realizar su
-         * respectiva relacion a todos los actores
-         **/
-        for (let index = 0; index < $scope.actorsUseCase.length; index++) {
-            let actorUC = $scope.actorsUseCase[index].obj_actor;
-            console.log("ACTOR USE CASE", actorUC);
-            let relation = {};
-            relation = createRelation({
-                "a": actorUC,
-                "b": usecase,
-                "type": UMLCommunication
+            //crear objeto use case
+            let usecase = createUseCase({
+                "name": form.usecase_name_i.$modelValue,
+                "pos_Y": randomPosition(400, 70)
             });
 
-            //agrega las relaciones al json de los datos para el diagrama de casos de uso
-            $scope.jsonUseCase.relations.push({
-                "type": "UMLCommunication",
-                "obj_relation": relation
-            });
-
-            if (!$scope.nameEqualsNoMess(actorUC.getName(), -1)) {
-                //agrega los actores que fueron creados por la descripcion del caso de uso existente
-                $scope.jsonUseCase.actors.push({
-                    "obj_actor": actorUC,
-                    "name": actorUC.getName()
+            /**
+             * recorre todos los actores que fueron agregados dentro de la descripcion del caso de uso para realizar su
+             * respectiva relacion a todos los actores
+             **/
+            for (let index = 0; index < $scope.actorsUseCase.length; index++) {
+                let actorUC = $scope.actorsUseCase[index].obj_actor;
+                console.log("ACTOR USE CASE", actorUC);
+                let relation = {};
+                relation = createRelation({
+                    "a": actorUC,
+                    "b": usecase,
+                    "type": UMLCommunication
                 });
+
+                //agrega las relaciones al json de los datos para el diagrama de casos de uso
+                $scope.jsonUseCase.relations.push({
+                    "type": "UMLCommunication",
+                    "obj_relation": relation
+                });
+
+                if (!$scope.nameEqualsNoMess(actorUC.getName(), -1)) {
+                    //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                    $scope.jsonUseCase.actors.push({
+                        "obj_actor": actorUC,
+                        "name": actorUC.getName()
+                    });
+                }
+
+
             }
-
-
-        }
-        /**
-         * Agrega finalmente el objeto del caso de uso y los datos de la descripcion del caso de uso al json de los
-         * DATOS del json del diagrama de casos de uso
-         **/
+            /**
+             * Agrega finalmente el objeto del caso de uso y los datos de la descripcion del caso de uso al json de los
+             * DATOS del json del diagrama de casos de uso
+             **/
             //variable para agregar los diagramas de secuencia por cada caso de uso
-        let secuence_diagram = {};
+            let secuence_diagram = {};
 
-        secuence_diagram = createDiagram({
-            "width": 100,
-            "height": 81,
-            "id_div": "areaDiagram",
-            "diagram": UMLSequenceDiagram,
-            "name": "Secuence Diagram - " + form.usecase_name_i.$modelValue,
-            "interaction": false,
-            "draw": false
-        });
-
-        $scope.btnDiagramUml.push({
-            diagram: secuence_diagram,
-            "name": "Secuence Diagram - " + form.usecase_name_i.$modelValue,
-            "type": "UMLSequenceDiagram",
-            "status": "C",
-            "btnactive": "btn btn-sm button-dt mr-2 mt-1"
-        });
-
-        $scope.jsonUseCase.useCase.push({
-            "obj_usecase": usecase,
-            "name": form.usecase_name.$modelValue,
-            "name_i": usecase.getName(),
-            "porpuse": form.usecase_porpuse.$modelValue,
-            "porpuse_i": form.usecase_porpuse_i.$modelValue,
-            "pre_condition": form.usecase_precondition.$modelValue,
-            "pre_condition_i": form.usecase_precondition_i.$modelValue,
-            "post_condition": form.usecase_postcondition.$modelValue,
-            "post_condition_i": form.usecase_postcondition_i.$modelValue,
-            "description_interpret": form.usecase_description_interpret.$modelValue,
-            "description_original": form.usecase_description_original.$modelValue,
-            "main_stage": Object.assign([], $scope.manager_maf.main_stage),
-            "alternative_flow": Object.assign([], $scope.manager_maf.alternative_flow),
-            "secuence_diagram": secuence_diagram,
-            "secuence_data": {
-                "table_normal_flow": Object.assign([], $scope.table_normal_flow),
-                "table_loop": Object.assign([], $scope.table_loop),
-                "table_alternative_if": Object.assign([], $scope.table_alternative_if),
-                "table_alternative_else": Object.assign([], $scope.table_alternative_else)
-            }
-        });
-        superInterpret();
-        if (flag)
-            $scope.utilWebSocket("createUseCase", {
-                "form": JSON.decycle(form),
-                "manager_maf": Object.assign({}, $scope.manager_maf),
-                "table_normal_flow": Object.assign([], $scope.table_normal_flow),
-                "table_loop": Object.assign([], $scope.table_loop),
-                "table_alternative_if": Object.assign([], $scope.table_alternative_if),
-                "table_alternative_else": Object.assign([], $scope.table_alternative_else)
+            secuence_diagram = createDiagram({
+                "width": 100,
+                "height": 81,
+                "id_div": "areaDiagram",
+                "diagram": UMLSequenceDiagram,
+                "name": "Secuence Diagram - " + usecase.getName(),
+                "interaction": false,
+                "draw": false
             });
 
-        clearFormUseCase(form, flag);
-        updateClassDiagram($scope.jsonClass, "C");
+            $scope.btnDiagramUml.push({
+                diagram: secuence_diagram,
+                "name": "Secuence Diagram - " + usecase.getName(),
+                "type": "UMLSequenceDiagram",
+                "status": "C",
+                "btnactive": "btn btn-sm button-dt mr-2 mt-1"
+            });
 
-        for (ipack = 0; ipack < $scope.jsonClass.diagram.length; ipack++) {
-            for (isec = 0; isec < $scope.jsonUseCase.useCase.length; isec++) {
-                let secuence = $scope.jsonUseCase.useCase[isec];
-                if (secuence.name === usecase.getName())
-                    updateSecuenceDiagram(secuence.secuence_diagram, secuence.secuence_data);
+            $scope.jsonUseCase.useCase.push({
+                "obj_usecase": usecase,
+                "name": form.usecase_name.$modelValue,
+                "name_i": usecase.getName(),
+                "porpuse": form.usecase_porpuse.$modelValue,
+                "porpuse_i": form.usecase_porpuse_i.$modelValue,
+                "pre_condition": form.usecase_precondition.$modelValue,
+                "pre_condition_i": form.usecase_precondition_i.$modelValue,
+                "post_condition": form.usecase_postcondition.$modelValue,
+                "post_condition_i": form.usecase_postcondition_i.$modelValue,
+                "description_interpret": form.usecase_description_interpret.$modelValue,
+                "description_original": form.usecase_description_original.$modelValue,
+                "main_stage": Object.assign([], $scope.manager_maf.main_stage),
+                "alternative_flow": Object.assign([], $scope.manager_maf.alternative_flow),
+                "secuence_diagram": secuence_diagram,
+                "secuence_data": {
+                    "table_normal_flow": Object.assign([], $scope.table_normal_flow),
+                    "table_loop": Object.assign([], $scope.table_loop),
+                    "table_alternative_if": Object.assign([], $scope.table_alternative_if),
+                    "table_alternative_else": Object.assign([], $scope.table_alternative_else)
+                }
+            });
+            superInterpret();
+            if (flag)
+                $scope.utilWebSocket("createUseCase", {
+                    "form": JSON.decycle(form),
+                    "manager_maf": Object.assign({}, $scope.manager_maf),
+                    "table_normal_flow": Object.assign([], $scope.table_normal_flow),
+                    "table_loop": Object.assign([], $scope.table_loop),
+                    "table_alternative_if": Object.assign([], $scope.table_alternative_if),
+                    "table_alternative_else": Object.assign([], $scope.table_alternative_else)
+                });
+
+            clearFormUseCase(form, flag);
+            updateClassDiagram($scope.jsonClass, "C");
+
+            for (ipack = 0; ipack < $scope.jsonClass.diagram.length; ipack++) {
+                for (isec = 0; isec < $scope.jsonUseCase.useCase.length; isec++) {
+                    let secuence = $scope.jsonUseCase.useCase[isec];
+                    if (secuence.name === usecase.getName())
+                        updateSecuenceDiagram(secuence.secuence_diagram, secuence.secuence_data);
+                }
             }
-        }
 
-        //$scope.flag_update = true;
-        diagramUseCase.draw();
-        //cerramos el modal del caso de uso
-        $("#modal_usecase").modal('hide');
-        console.log($scope.jsonUseCase);
+            //$scope.flag_update = true;
+            diagramUseCase.draw();
+            //cerramos el modal del caso de uso
+            $("#modal_usecase").modal('hide');
+            console.log($scope.jsonUseCase);
+
+        } catch (ErrorMessage) {
+            console.log(ErrorMessage);
+            alertAll({
+                "status": 4,
+                "information": "[createUseCaseUC]: " + ErrorMessage.message
+            });
+        }
     };
 
     $scope.angularSuperInterpret = function () {
@@ -723,60 +741,73 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para interpretar la descripcion del caso de uso y sus acciones
     function superInterpret() {
-        $scope.jsonClass.diagram.length = 0; // siempre reiniciar el json de las clases al momento de editar
-        $scope.jsonClass.relationships.length = 0; // siempre reiniciar el json de las clases al momento de editar
-        let useCase = $scope.jsonUseCase.useCase;
-        let minjson = [];
-        for (let x = 0; x < useCase.length; x++) {
-            let usecase_name = useCase[x].name;
-            let description_interpret = useCase[x].description_interpret;
-            let usecase_postcondition_i = useCase[x].postcondition;
-            let usecase_precondition_i = useCase[x].precondition;
-            let usecase_porpuse_i = useCase[x].porpuse;
-            minjson = getHackDiagram(usecase_name === undefined ? "" : usecase_name);
-            //$scope.notifications.push(minjson)
-            console.log("NOTIFICACIONES !! - " + minjson);
+        try {
+            $scope.jsonClass.diagram.length = 0; // siempre reiniciar el json de las clases al momento de editar
+            $scope.jsonClass.relationships.length = 0; // siempre reiniciar el json de las clases al momento de editar
+            let useCase = $scope.jsonUseCase.useCase;
+            let minjson = [];
+            for (let x = 0; x < useCase.length; x++) {
+                let usecase_name = useCase[x].name;
+                let description_interpret = useCase[x].description_interpret;
+                let usecase_postcondition_i = useCase[x].postcondition;
+                let usecase_precondition_i = useCase[x].precondition;
+                let usecase_porpuse_i = useCase[x].porpuse;
+                minjson = getHackDiagram(usecase_name === undefined ? "" : usecase_name);
+                //$scope.notifications.push(minjson)
+                console.log("NOTIFICACIONES !! - " + minjson);
 
-            mergeClassDiagram($scope.jsonClass, minjson[1]);
-            minjson = getHackDiagram(usecase_porpuse_i === undefined ? "" : usecase_porpuse_i);
-            mergeClassDiagram($scope.jsonClass, minjson[1]);
-            minjson = getHackDiagram(usecase_precondition_i === undefined ? "" : usecase_precondition_i);
-            mergeClassDiagram($scope.jsonClass, minjson[1]);
-            minjson = getHackDiagram(usecase_postcondition_i === undefined ? "" : usecase_postcondition_i);
-            mergeClassDiagram($scope.jsonClass, minjson[1]);
-            minjson = getHackDiagram(description_interpret == undefined ? "" : description_interpret);
-            mergeClassDiagram($scope.jsonClass, minjson[1]);
-            for (let y = 0; y < useCase[x].main_stage.length; y++) {
-                // action_original
-                let action_original = useCase[x].main_stage[y].action_original;
-                minjson = getHackDiagram(action_original);
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
+                minjson = getHackDiagram(usecase_porpuse_i === undefined ? "" : usecase_porpuse_i);
+                mergeClassDiagram($scope.jsonClass, minjson[1]);
+                minjson = getHackDiagram(usecase_precondition_i === undefined ? "" : usecase_precondition_i);
+                mergeClassDiagram($scope.jsonClass, minjson[1]);
+                minjson = getHackDiagram(usecase_postcondition_i === undefined ? "" : usecase_postcondition_i);
+                mergeClassDiagram($scope.jsonClass, minjson[1]);
+                minjson = getHackDiagram(description_interpret == undefined ? "" : description_interpret);
+                mergeClassDiagram($scope.jsonClass, minjson[1]);
+                for (let y = 0; y < useCase[x].main_stage.length; y++) {
+                    // action_original
+                    let action_original = useCase[x].main_stage[y].action_original;
+                    minjson = getHackDiagram(action_original);
+                    mergeClassDiagram($scope.jsonClass, minjson[1]);
+                }
+
+                for (let z = 0; z < useCase[x].alternative_flow.length; z++) {
+                    // action_original
+                    let action_original = useCase[x].alternative_flow[z].action_original;
+                    minjson = getHackDiagram(action_original);
+                    mergeClassDiagram($scope.jsonClass, minjson[1]);
+                }
             }
 
-            for (let z = 0; z < useCase[x].alternative_flow.length; z++) {
-                // action_original
-                let action_original = useCase[x].alternative_flow[z].action_original;
-                minjson = getHackDiagram(action_original);
-                mergeClassDiagram($scope.jsonClass, minjson[1]);
+            if ($scope.jsonClass.diagram.length > 0) {
+                // agregar ls fk a las tablas relacionadas
+                $scope.addForeingKey($scope.jsonClass.diagram[0].class, $scope.jsonClass.relationships);
             }
-        }
 
-        if ($scope.jsonClass.diagram.length > 0) {
-            // agregar ls fk a las tablas relacionadas
-            $scope.addForeingKey($scope.jsonClass.diagram[0].class, $scope.jsonClass.relationships);
-        }
+            console.log($scope.jsonClass);
 
-        console.log($scope.jsonClass);
+        } catch (ErrorMessage) {
+            console.log(ErrorMessage);
+            alertAll({
+                "status": 4,
+                "information": "[superInterpret]: " + ErrorMessage.message
+            });
+        }
     }
 
     $scope.addForeingKey = (arrayClass, arrayRelations) => {
         for (let positionRel = 0; positionRel < arrayRelations.length; positionRel++) {
-            let nameClassFrom = arrayRelations[positionRel].from;
-            let nameClassTo = arrayRelations[positionRel].to;
-            let from_fk = arrayRelations[positionRel].from_fk;
-            let to_fk = arrayRelations[positionRel].to_fk;
-            let simbol = arrayRelations[positionRel].simbol;
-            let type = "fk";
+            
+            let rel = arrayRelations[positionRel];
+            
+            let nameClassFrom = rel.from === undefined ? "" : rel.from;
+            let nameClassTo = rel.to === undefined ? "" : rel.to;
+            let from_fk = rel.from_fk === undefined ? "" : rel.from_fk; 
+            let to_fk = rel.to_fk === undefined ? "" : rel.to_fk;
+            let simbol = rel.simbol === undefined ? "" : rel.simbol;
+            let type = "fk"; 
+
             if (simbol === "->") {
                 type = "enumeration";
             }
@@ -792,13 +823,16 @@ controller = app.controller("workAreaController", function ($scope) {
                             idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].to)
                         });
                     } else if (objectClass.className === nameClassTo) {
+                        let cardinalidate = arrayRelations[positionRel].cardinalidate;
+                        let cardSplit = cardinalidate.toString().split("..");
+
                         objectClass.attributes.push({
-                                name: to_fk,
-                                type: type,
-                                visibility: "private",
-                                cardinalidate: arrayRelations[positionRel].cardinalidate,
-                                idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
-                            }
+                            name: to_fk,
+                            type: type,
+                            visibility: "private",
+                            cardinalidate: cardSplit[1] + ".." + cardSplit[0],
+                            idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
+                        }
                         );
                     }
                 }
@@ -834,127 +868,137 @@ controller = app.controller("workAreaController", function ($scope) {
     //funcion para editar los casos de uso
     $scope.updateUseCase = function (form, flag) {
 
-        if ($scope.nameEquals(form.usecase_name_i.$modelValue, $scope.encontrado)) {
-            return;
-        }
+        try {
 
-        //asignamos el nuevo nombre del caso de uso
-        $scope.object_update.setName(form.usecase_name_i.$modelValue);
-        diagramUseCase.draw();
-        //asignamos los nuevos datos al casos de uso
-        $scope.jsonUseCase.useCase[$scope.encontrado].name = form.usecase_name.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].name_i = form.usecase_name_i.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].porpuse = form.usecase_porpuse.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].porpuse_i = form.usecase_porpuse_i.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].pre_condition = form.usecase_precondition.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].precondition_i = form.usecase_precondition_i.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].post_condition = form.usecase_postcondition.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].post_condition_i = form.usecase_postcondition_i.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].description_interpret = form.usecase_description_interpret.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].description_original = form.usecase_description_original.$modelValue;
-        $scope.btnDiagramUml[$scope.encontrado + 2].name = "Secuence Diagram - " + form.usecase_name_i.$modelValue;
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_diagram.setName("Secuence Diagram - " + form.usecase_name_i.$modelValue);
+            if ($scope.nameEquals(form.usecase_name_i.$modelValue, $scope.encontrado)) {
+                return;
+            }
 
-        //preguntaremos si se agregaron nuevos actores dentro del caso de uso
-        let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
-        let index_Y = 0, index_actor_relation = 0;
-        console.log(relations_usecase);
-        if (relations_usecase.length > 0) {
-            for (let index_X = 0; index_X < $scope.actorsUseCase.length;
-                 index_Y === relations_usecase.length ? index_X++ : index_X) {
-                for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
-                    //pregunto si este actor no se encuentra en las relaciones de este caso de uso
-                    if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
-                        relations_usecase[index_Y]._elemA.getName()) {
-                        index_actor_relation++;
-                    }
+            //asignamos el nuevo nombre del caso de uso
+            $scope.object_update.setName(form.usecase_name_i.$modelValue);
+            diagramUseCase.draw();
+            //asignamos los nuevos datos al casos de uso
+            $scope.jsonUseCase.useCase[$scope.encontrado].name = form.usecase_name.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].name_i = form.usecase_name_i.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].porpuse = form.usecase_porpuse.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].porpuse_i = form.usecase_porpuse_i.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].pre_condition = form.usecase_precondition.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].precondition_i = form.usecase_precondition_i.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].post_condition = form.usecase_postcondition.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].post_condition_i = form.usecase_postcondition_i.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].description_interpret = form.usecase_description_interpret.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].description_original = form.usecase_description_original.$modelValue;
+            $scope.btnDiagramUml[$scope.encontrado + 2].name = "Secuence Diagram - " + form.usecase_name_i.$modelValue;
+            $scope.jsonUseCase.useCase[$scope.encontrado].secuence_diagram.setName("Secuence Diagram - " + form.usecase_name_i.$modelValue);
 
-                    if (index_actor_relation === relations_usecase.length) {
-                        let relation = createRelation({
-                            "a": $scope.actorsUseCase[index_X].obj_actor,
-                            "b": $scope.object_update,
-                            "type": UMLCommunication
-                        });
-
-                        //agrega las relaciones al json de los datos para el diagrama de casos de uso
-                        $scope.jsonUseCase.relations.push({
-                            "obj_relation": relation
-                        });
-
-                        if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
-                            //agrega los actores que fueron creados por la descripcion del caso de uso existente
-                            $scope.jsonUseCase.actors.push({
-                                "obj_actor": $scope.actorsUseCase[index_X].obj_actor
-                            });
+            //preguntaremos si se agregaron nuevos actores dentro del caso de uso
+            let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
+            let index_Y = 0, index_actor_relation = 0;
+            console.log(relations_usecase);
+            if (relations_usecase.length > 0) {
+                for (let index_X = 0; index_X < $scope.actorsUseCase.length;
+                        index_Y === relations_usecase.length ? index_X++ : index_X) {
+                    for (index_Y = 0; index_Y < relations_usecase.length; index_Y++) {
+                        //pregunto si este actor no se encuentra en las relaciones de este caso de uso
+                        if ($scope.actorsUseCase[index_X].obj_actor.getName() !==
+                                relations_usecase[index_Y]._elemA.getName()) {
+                            index_actor_relation++;
                         }
-                        index_actor_relation = 0;
+
+                        if (index_actor_relation === relations_usecase.length) {
+                            let relation = createRelation({
+                                "a": $scope.actorsUseCase[index_X].obj_actor,
+                                "b": $scope.object_update,
+                                "type": UMLCommunication
+                            });
+
+                            //agrega las relaciones al json de los datos para el diagrama de casos de uso
+                            $scope.jsonUseCase.relations.push({
+                                "obj_relation": relation
+                            });
+
+                            if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
+                                //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                                $scope.jsonUseCase.actors.push({
+                                    "obj_actor": $scope.actorsUseCase[index_X].obj_actor
+                                });
+                            }
+                            index_actor_relation = 0;
+                        }
+                    }
+                    index_actor_relation = 0;
+                }
+            } else {
+                for (let index_X = 0; index_X < $scope.actorsUseCase.length; index_X++) {
+                    let relation = createRelation({
+                        "a": $scope.actorsUseCase[index_X].obj_actor,
+                        "b": $scope.object_update,
+                        "type": UMLCommunication
+                    });
+
+                    //agrega las relaciones al json de los datos para el diagrama de casos de uso
+                    $scope.jsonUseCase.relations.push({
+                        "obj_relation": relation
+                    });
+
+                    if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
+                        //agrega los actores que fueron creados por la descripcion del caso de uso existente
+                        $scope.jsonUseCase.actors.push({
+                            "obj_actor": $scope.actorsUseCase[index_X].obj_actor
+                        });
                     }
                 }
-                index_actor_relation = 0;
             }
-        } else {
-            for (let index_X = 0; index_X < $scope.actorsUseCase.length; index_X++) {
-                let relation = createRelation({
-                    "a": $scope.actorsUseCase[index_X].obj_actor,
-                    "b": $scope.object_update,
-                    "type": UMLCommunication
+
+            $scope.jsonUseCase.useCase[$scope.encontrado].main_stage =
+                    Object.assign([], $scope.manager_maf.main_stage);
+            $scope.jsonUseCase.useCase[$scope.encontrado].alternative_flow =
+                    Object.assign([], $scope.manager_maf.alternative_flow);
+
+            $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_normal_flow =
+                    Object.assign([], $scope.table_normal_flow);
+            $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_loop =
+                    Object.assign([], $scope.table_loop);
+            $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_if =
+                    Object.assign([], $scope.table_alternative_if);
+            $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_else =
+                    Object.assign([], $scope.table_alternative_else);
+
+            $scope.flag_update = false;
+            superInterpret();
+
+            if (flag)
+                $scope.utilWebSocket("updateUseCase", {
+                    "form": JSON.decycle(form),
+                    "encontrado": $scope.encontrado,
+                    "main_stage": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].main_stage),
+                    "alternative_flow": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].alternative_flow),
+                    "table_normal_flow": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_normal_flow),
+                    "table_loop": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_loop),
+                    "table_alternative_if": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_alternative_if),
+                    "table_alternative_else": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_alternative_else)
                 });
 
-                //agrega las relaciones al json de los datos para el diagrama de casos de uso
-                $scope.jsonUseCase.relations.push({
-                    "obj_relation": relation
-                });
-
-                if (!$scope.nameEqualsNoMess($scope.actorsUseCase[index_X].obj_actor.getName(), -1)) {
-                    //agrega los actores que fueron creados por la descripcion del caso de uso existente
-                    $scope.jsonUseCase.actors.push({
-                        "obj_actor": $scope.actorsUseCase[index_X].obj_actor
-                    });
+            clearFormUseCase(form, flag);
+            updateClassDiagram($scope.jsonClass, "U");
+            for (ipack = 0; ipack < $scope.jsonClass.diagram.length; ipack++) {
+                for (isec = 0; isec < $scope.jsonUseCase.useCase.length; isec++) {
+                    let secuence = $scope.jsonUseCase.useCase[isec];
+                    if (secuence.name === form.usecase_name_i.$modelValue)
+                        updateSecuenceDiagram(secuence.secuence_diagram, secuence.secuence_data);
                 }
             }
-        }
-
-        $scope.jsonUseCase.useCase[$scope.encontrado].main_stage =
-            Object.assign([], $scope.manager_maf.main_stage);
-        $scope.jsonUseCase.useCase[$scope.encontrado].alternative_flow =
-            Object.assign([], $scope.manager_maf.alternative_flow);
-
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_normal_flow =
-            Object.assign([], $scope.table_normal_flow);
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_loop =
-            Object.assign([], $scope.table_loop);
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_if =
-            Object.assign([], $scope.table_alternative_if);
-        $scope.jsonUseCase.useCase[$scope.encontrado].secuence_data.table_alternative_else =
-            Object.assign([], $scope.table_alternative_else);
-
-        $scope.flag_update = false;
-        superInterpret();
-
-        if (flag)
-            $scope.utilWebSocket("updateUseCase", {
-                "form": JSON.decycle(form),
-                "encontrado": $scope.encontrado,
-                "main_stage": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].main_stage),
-                "alternative_flow": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].alternative_flow),
-                "table_normal_flow": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_normal_flow),
-                "table_loop": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_loop),
-                "table_alternative_if": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_alternative_if),
-                "table_alternative_else": Object.assign([], $scope.jsonUseCase.useCase[$scope.encontrado].table_alternative_else)
+            diagramUseCase.draw();
+            //cerramos el modal del caso de uso
+            $("#modal_usecase").modal('hide');
+        } catch (ErrorMessage) {
+            console.log(ErrorMessage);
+            alertAll({
+                "status": 4,
+                "information": "[updateUseCase]: " + ErrorMessage.message
             });
-
-        clearFormUseCase(form, flag);
-        updateClassDiagram($scope.jsonClass, "U");
-        for (ipack = 0; ipack < $scope.jsonClass.diagram.length; ipack++) {
-            for (isec = 0; isec < $scope.jsonUseCase.useCase.length; isec++) {
-                let secuence = $scope.jsonUseCase.useCase[isec];
-                if (secuence.name === form.usecase_name_i.$modelValue)
-                    updateSecuenceDiagram(secuence.secuence_diagram, secuence.secuence_data);
-            }
         }
-        diagramUseCase.draw();
-        //cerramos el modal del caso de uso
-        $("#modal_usecase").modal('hide');
+
     };
 
     //funcion para limpiar el formuario de caso de uso
@@ -1210,11 +1254,10 @@ controller = app.controller("workAreaController", function ($scope) {
                     for (let imethods = 0; imethods < classdiagram.methods.length; imethods++) {
                         let methods = classdiagram.methods[imethods];
                         $scope.secuenceData.package[ipackage].objects[iclass]
-                            .methods.push({methodname: methods.name + "(" + getParamethersSecuence(methods.parameters) + ")"});
+                                .methods.push({methodname: methods.name + "(" + getParamethersSecuence(methods.parameters) + ")"});
                     }
                 }
             }
-            console.log($scope.secuenceData);
         }
     };
 
@@ -1573,8 +1616,7 @@ controller = app.controller("workAreaController", function ($scope) {
                 //loading();
             },
             success: function (data) {
-                console.log(data);
-                console.log(isObjEmpty(data.data));
+
                 switch (api_param.module) {
                     case "DiagramUml":
                         if (!isObjEmpty(data.data)) {
@@ -1585,10 +1627,8 @@ controller = app.controller("workAreaController", function ($scope) {
                             });
                             importDiagram(diagramUseCase, data.data.graph, "UseCase");
                             getDataDiagram(diagramUseCase, $scope.jsonUseCase);
-                            console.log("JSON USECASE", $scope.jsonUseCase);
                         } else {
                             // crea el sistema principal dentro del diagrama (rectangulo central)
-                            console.log("DATOS DEL PROYECTO", nameProject);
                             createSystem(nameProject);
                         }
                         diagramUseCase.draw();
@@ -1599,8 +1639,6 @@ controller = app.controller("workAreaController", function ($scope) {
                             importDiagram(diagramClass, data.data.graph, "ClassDiagram");
                             if (!isObjEmpty(data.data.data)) {
                                 let jsonresponse = data.data.data;
-                                console.log(jsonresponse);
-                                console.log(JSON.stringify(jsonresponse));
                                 $scope.jsonClass = Object.assign([], jsonresponse);
                                 // eliminar las relaciones por la parte grafica
                                 diagramClass._relations.length = 0;
@@ -1617,18 +1655,14 @@ controller = app.controller("workAreaController", function ($scope) {
                                 // actualizar la grafica de las lineas de las relaciones
                                 relationsClass($scope.jsonClass.relationships);
                                 $scope.editionClasDiagram = $scope.jsonClass.edition;
-                                console.log(elementsClass);
-                                console.log("JSON CLASSDIAGRAM", $scope.jsonClass);
                             }
                             diagramUseCase.draw();
                             $scope.loadSecuence();
-                            console.log("DIAGRAMA DE CLASES SUPER PRO", diagramClass);
                         }
                         break;
                     case "SeguenceDiagram":
                         if (!isObjEmpty(data.data.data)) {
                             let jsonresponse = data.data.data;
-                            console.log("SECUENCE DIAGRAM", $scope.secuenceData);
                             for (let isecuence = 2; isecuence < $scope.btnDiagramUml.length; isecuence++) {
                                 let secuence = $scope.btnDiagramUml[isecuence];
                                 //importDiagram(secuence.diagram, data.data.graph[isecuence - 2].graph, "SequenceDiagram");
@@ -1645,16 +1679,13 @@ controller = app.controller("workAreaController", function ($scope) {
                             $scope.jsonTdd = Object.assign({}, jsonresponse);
                             $scope.classTdd = Object.assign([], jsonresponse.receiveTDDJSOM);
                             $scope.jsonTdd["receiveTDDJSOM"] = $scope.classTdd;
-                            console.log("VAR ANGULAR", $scope.jsonTdd);
-                            console.log(jsonresponse);
                         }
                         alertAll(data);
                         break;
                 }
             },
             error: function (objXMLHttpRequest) {
-                console.log("error", objXMLHttpRequest);
-                swal.fire("!Oh no¡", "Se ha producido un problema.", "error");
+                swal.fire("!Oh no¡", "Se ha producido un problema: " + objXMLHttpRequest, "error");
             }
         });
     };
@@ -1685,7 +1716,7 @@ controller = app.controller("workAreaController", function ($scope) {
             let actorNode = data.actors[idata];
             for (let iobj = 0; iobj < arrayActors.length; iobj++) {
                 if (actorNode.name === arrayActors[iobj].obj.getName()) {
-                    actorNode.obj_actor = arrayActors[idata].obj;
+                    actorNode.obj_actor = arrayActors[iobj].obj;
                 }
             }
         }
@@ -2214,7 +2245,7 @@ controller = app.controller("workAreaController", function ($scope) {
             let from = $scope.jsonClass.relationships[x].from;
             let to = $scope.jsonClass.relationships[x].to;
             if ((from === form.class_from.$modelValue.className && to === form.class_to.$modelValue.className) ||
-                (from === form.class_to.$modelValue.className && to === form.class_from.$modelValue.className)) {
+                    (from === form.class_to.$modelValue.className && to === form.class_from.$modelValue.className)) {
                 flag = true;
             }
         }
