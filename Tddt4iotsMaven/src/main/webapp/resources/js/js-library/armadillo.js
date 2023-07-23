@@ -5,9 +5,9 @@
 
 // Global variables
 var DataPrimitive_Armadillo = ["String", "string", "byte", "short", "int",
-    "Int", "long", "Long", "float", "Float", "double", "Double", "boolean",
+     "long", "Long", "float", "Float", "double", "Double", "boolean",
     "Boolean", "date", "Date", "list", "List", "array", "Array", "arrayList",
-    "ArrayList"];
+    "ArrayList", "json", "JSON"];
 var DataTypeVisibility = [
     {simbol: "+", text: "public"},
     {simbol: "-", text: "private"},
@@ -1090,7 +1090,7 @@ function joinMethods(bigAttr, minAttr) {
                         }
                         if (eqParam === false) {
                             //console.log("sobrecarga");
-                            bigAttr.push(minAttr[ind2].slice());
+                            bigAttr.push(minAttr[ind2]);
 
                         } else {
                             //console.log("los metodos son equivalentes");
@@ -1116,7 +1116,7 @@ function joinMethods(bigAttr, minAttr) {
 
                                 if (eqParam === false) {
                                     //console.log("sobrecarga");
-                                    bigAttr.push(minAttr[ind2].slice());
+                                    bigAttr.push(minAttr[ind2]);
 
                                 } else {
                                     //console.log("los metodos son equivalentes");

@@ -3,8 +3,10 @@ package com.app.tddt4iots.entities;{$s}
 import com.app.tddt4iots.enums.*;{$s}
 import lombok.Data;{$s}
 import lombok.NoArgsConstructor;{$s}
+import java.util.*;{$s}
+import java.lang.*;{$s}
 {$s}
-import javax.persistence.*;{$s}
+import jakarta.persistence.*;{$s}
 ${imports}
 {$s}
 @Entity{$s}

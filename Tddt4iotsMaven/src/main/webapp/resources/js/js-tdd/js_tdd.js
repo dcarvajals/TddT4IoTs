@@ -113,6 +113,7 @@ app.expandControllerA = function ($scope) {
                 "return": [{"type": $scope.methodSelected.type, "value": $scope.returnMethod}]
             });
         }
+        $scope.returnMethod = "";
         console.log($scope.jsonTdd);
 
     }

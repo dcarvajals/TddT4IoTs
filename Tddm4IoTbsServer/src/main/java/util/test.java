@@ -23,30 +23,30 @@ import models.Project_Entregable;
 public class test {
 
     public static void main(String[] args) {
-        String path = "D:/0_universidad/0_repositorio/umleasyiotrep/storageTddm4IoTbs/target/storageTddm4IoTbs-1.0-SNAPSHOT/";
-
-        String rel = "tddm4iotbs_projects/velocmetroEolPoOSkpYUoEolrZbErTtjyCNZYUotjyZaiZaioJZpfEhoSk22/UmlDiagram/";
-
-//        MakerProjects.generateMavenProject(path, rel, "PruebaVehículoAlgo");
-        MakerProjects.MaketarMaven(path, rel); 
-        
-        
-        Project_EntregableCtrl entregable = new Project_EntregableCtrl();        
-        
-        Project_Entregable entregableProg = new Project_Entregable();
-        entregableProg.setId_masterproject("1242");
-        entregableProg.setName_entregable("Creación de módulo de compras");
-        entregableProg.setDescription_entregable("Descripcion nueva para mi entregable");
-        entregableProg.setPath_entregable("ruta");
-        entregableProg.setStatus_entregable("A");
-        entregableProg.setPrioritylevel_entregable("1");
-        entregableProg.setBase_percentage_entregable("20");
-        entregableProg.setActual_percentage_entregable("100");
-        entregableProg.setStimateddate_entregable("2022-12-15");
-        entregableProg.setFinishdate_entregable("2022-12-19");
-        
-        System.out.println(entregableProg.returnXml());
-        System.out.println(entregableProg.returnXml());
+//        String path = "D:/0_universidad/0_repositorio/umleasyiotrep/storageTddm4IoTbs/target/storageTddm4IoTbs-1.0-SNAPSHOT/";
+//
+//        String rel = "tddm4iotbs_projects/velocmetroEolPoOSkpYUoEolrZbErTtjyCNZYUotjyZaiZaioJZpfEhoSk22/UmlDiagram/";
+//
+////        MakerProjects.generateMavenProject(path, rel, "PruebaVehículoAlgo");
+//        MakerProjects.MaketarMaven(path, rel); 
+//        
+//        
+//        Project_EntregableCtrl entregable = new Project_EntregableCtrl();        
+//        
+//        Project_Entregable entregableProg = new Project_Entregable();
+//        entregableProg.setId_masterproject("1242");
+//        entregableProg.setName_entregable("Creación de módulo de compras");
+//        entregableProg.setDescription_entregable("Descripcion nueva para mi entregable");
+//        entregableProg.setPath_entregable("ruta");
+//        entregableProg.setStatus_entregable("A");
+//        entregableProg.setPrioritylevel_entregable("1");
+//        entregableProg.setBase_percentage_entregable("20");
+//        entregableProg.setActual_percentage_entregable("100");
+//        entregableProg.setStimateddate_entregable("2022-12-15");
+//        entregableProg.setFinishdate_entregable("2022-12-19");
+//        
+//        System.out.println(entregableProg.returnXml());
+//        System.out.println(entregableProg.returnXml());
 
         //entregable.insertNewEntregable(entregableProg.returnXml());
         //entregable.insertNewEntregable(entregableProg.returnXml());
@@ -96,6 +96,11 @@ public class test {
         String [] response = memberCtrl.selectMembersEntregable("1","6");
         
         System.out.println(response[0] + "  "  + response[1]);        */
+       
+       //WeEncoder encoder = new WeEncoder();
+        System.out.println("PRUEBA CONTRASENIA: \n");
+        System.out.println(WeEncoder.encodeANGY("megadatos"));
+        System.out.println(WeEncoder.decodeANGY("d29xa25rZHlj"));
         
     }
 }

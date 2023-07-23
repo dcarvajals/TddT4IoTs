@@ -2,7 +2,7 @@ app.expandControllerMavenProject = function ($scope) {
 
     $scope.mavenProject = '';
     $scope.selectedEntitieObj = {};
-    $scope.jsonMavenProject = {entities: [], conectionDB: {}};
+    $scope.jsonMavenProject = {entities: [], conectionDB: {}, test: []};
 
     /**
      * ##############################################################################################################
@@ -119,7 +119,10 @@ app.expandControllerMavenProject = function ($scope) {
         $("#modal_create_mavenproject").modal();
         // realizar una copia del json del diagrama de clases
         $scope.jsonMavenProject.entities = Object.assign([], $scope.jsonClass.diagram[0].class);
+        // realizar una copia del json de los enums
         $scope.jsonMavenProject.enums = Object.assign([], $scope.jsonClass.diagram[0].enums);
+        // realizar una copia del json de las test
+        $scope.jsonMavenProject.test = Object.assign([], $scope.jsonTdd.receiveTDDJSOM); 
         // aumentar los nuevos parametros
         $scope.addNewParams($scope.jsonMavenProject.entities);
         // validar campos de la tabla de los atributos
@@ -263,6 +266,9 @@ app.expandControllerMavenProject = function ($scope) {
             db_password: form.db_password.$modelValue,
             db_server: form.db_server.$modelValue,
             db_port: form.db_port.$modelValue,
+            db_port_app: form.db_port_app.$modelValue,
+            create: form.create.$modelValue,
+            createDrop: form.createDrop.$modelValue,
             url_data_base: url_data_base,
             jdbc: jdbc
         };

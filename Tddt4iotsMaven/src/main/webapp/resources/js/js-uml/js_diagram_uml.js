@@ -84,6 +84,7 @@ controller = app.controller("workAreaController", function ($scope) {
             id_project = urlParams.get('identifiquer');
             $scope.$apply(() => {
                 $scope.DatoUsuario = getDataSession();
+                $scope.showLS = false;
             });
             $scope.loadDataProject(id_project, $scope.DatoUsuario.user_token);
             initDiagramUml();
@@ -798,42 +799,45 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.addForeingKey = (arrayClass, arrayRelations) => {
         for (let positionRel = 0; positionRel < arrayRelations.length; positionRel++) {
-            
+
             let rel = arrayRelations[positionRel];
-            
-            let nameClassFrom = rel.from === undefined ? "" : rel.from;
-            let nameClassTo = rel.to === undefined ? "" : rel.to;
-            let from_fk = rel.from_fk === undefined ? "" : rel.from_fk; 
-            let to_fk = rel.to_fk === undefined ? "" : rel.to_fk;
-            let simbol = rel.simbol === undefined ? "" : rel.simbol;
-            let type = "fk"; 
 
-            if (simbol === "->") {
-                type = "enumeration";
-            }
-            for (let positionClass = 0; positionClass < arrayClass.length; positionClass++) {
-                if (arrayClass[positionClass].modifiers === "") {
-                    let objectClass = arrayClass[positionClass];
-                    if (objectClass.className === nameClassFrom) {
-                        objectClass.attributes.push({
-                            name: from_fk,
-                            type: type,
-                            visibility: "private",
-                            cardinalidate: arrayRelations[positionRel].cardinalidate,
-                            idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].to)
-                        });
-                    } else if (objectClass.className === nameClassTo) {
-                        let cardinalidate = arrayRelations[positionRel].cardinalidate;
-                        let cardSplit = cardinalidate.toString().split("..");
+            if (rel !== undefined) {
 
-                        objectClass.attributes.push({
-                            name: to_fk,
-                            type: type,
-                            visibility: "private",
-                            cardinalidate: cardSplit[1] + ".." + cardSplit[0],
-                            idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
+                let nameClassFrom = rel.from === undefined ? "" : rel.from;
+                let nameClassTo = rel.to === undefined ? "" : rel.to;
+                let from_fk = rel.from_fk === undefined ? "" : rel.from_fk;
+                let to_fk = rel.to_fk === undefined ? "" : rel.to_fk;
+                let simbol = rel.simbol === undefined ? "" : rel.simbol;
+                let type = "fk";
+
+                if (simbol === "->") {
+                    type = "enumeration";
+                }
+                for (let positionClass = 0; positionClass < arrayClass.length; positionClass++) {
+                    if (arrayClass[positionClass].modifiers === "") {
+                        let objectClass = arrayClass[positionClass];
+                        if (objectClass.className === nameClassFrom) {
+                            objectClass.attributes.push({
+                                name: from_fk,
+                                type: type,
+                                visibility: "private",
+                                cardinalidate: arrayRelations[positionRel].cardinalidate,
+                                idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].to)
+                            });
+                        } else if (objectClass.className === nameClassTo) {
+                            let cardinalidate = arrayRelations[positionRel].cardinalidate;
+                            let cardSplit = cardinalidate.toString().split("..");
+
+                            objectClass.attributes.push({
+                                name: to_fk,
+                                type: type,
+                                visibility: "private",
+                                cardinalidate: cardSplit[1] + ".." + cardSplit[0],
+                                idToOrFrom: $scope.getIdClass(arrayRelations[positionRel].from)
+                            }
+                            );
                         }
-                        );
                     }
                 }
             }
@@ -1190,26 +1194,63 @@ controller = app.controller("workAreaController", function ($scope) {
         });
     };
 
-    //funcion para abrir el modal y editar la acciono
+    
+    /**
+     * funcion para abrir el modal y editar la acciono
+     * @param {obj} obj
+     * @param {fluje} fluje 
+     * 
+     * @version 1.0.1 - 22-07-2023
+     * */
     $scope.openModalUpdateAction = function (obj, fluje) {
         $("#modal_update_duc").modal();
         $scope.update_action = obj;
+        console.log("$scope.manager_maf.main_stage", $scope.manager_maf.main_stage);
+        console.log($scope.manager_maf.main_stage.indexOf(obj));
         if (fluje === 'M') {
             $scope.action_interpret = $scope.update_action.action_interpret;
             $scope.action_original = $scope.update_action.action_original;
+            $scope.actor = $scope.update_action.actor;
+            $scope.position = $scope.manager_maf.main_stage.indexOf(obj);
+            $scope.positionActual = $scope.manager_maf.main_stage.indexOf(obj) + 1;
+            console.log($scope.position);
             console.log($scope.update_action);
         } else {
             $scope.action_interpret = $scope.update_action.action_interpret;
             $scope.action_original = $scope.update_action.action_original;
+            $scope.actor = $scope.update_action.actor;
+            $scope.position = $scope.manager_maf.main_stage.indexOf(obj);
+            $scope.positionActual = $scope.manager_maf.main_stage.indexOf(obj) + 1;
             console.log($scope.update_action);
         }
     };
+    
+    /**
+     * funcion para editar las acciones del flujo normal de eventos
+     * */ 
 
     //funcion para actualizar los datos de la accion editada
     $scope.updateActionMSFA = function (form) {
         if (form.$valid) {
             $scope.update_action.action_interpret = form.action_interpret.$viewValue;
             $scope.update_action.action_original = form.action_original.$viewValue;
+            $scope.update_action.actor = form.actor.$viewValue;
+            
+            let objectActual =  $scope.manager_maf.main_stage.splice($scope.positionActual - 1, 1)[0];
+            $scope.manager_maf.main_stage.splice($scope.position, 0, objectActual);
+            
+            // buscar la posicion a donde se va cambiar los datos
+            /*let objetoCambiarPosicion =  $scope.manager_maf.main_stage[$scope.position];
+            let objectActual = $scope.update_action;*/
+            
+            /*objectActual.action_interpret = objetoCambiarPosicion.action_interpret;
+            objectActual.action_original = objetoCambiarPosicion.action_original;
+            objectActual.actor = objetoCambiarPosicion.actor;
+            
+            $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
+            $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
+            $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
+            */
             $("#modal_update_duc").modal('hide');
         }
     };
@@ -1503,7 +1544,7 @@ controller = app.controller("workAreaController", function ($scope) {
         if ($scope.jsonClass["relationships"] === undefined) {
             $scope.jsonClass["relationships"] = [];
         }
-        console.log("PORQUE LO VACIAS", $scope.jsonClass);
+
         let api_param = {
             "user_token": $scope.DatoUsuario.user_token,
             "idproj": id_project,
@@ -1561,7 +1602,7 @@ controller = app.controller("workAreaController", function ($scope) {
             },
             error: function (objXMLHttpRequest) {
                 console.log("error", objXMLHttpRequest);
-                swal.fire("!Oh no¡", "Se ha producido un problema.", "error");
+                swal.fire("Error Severe", "Details: " + objXMLHttpRequest, "error");
             }
         });
     };

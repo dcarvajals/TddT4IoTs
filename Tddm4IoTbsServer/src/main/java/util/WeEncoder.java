@@ -471,7 +471,7 @@ public class WeEncoder {
     }
 
     public static String encodeANGY(String texto) {
-        texto = transfor(texto);
+        //texto = transfor(texto);
 
         texto = cifradoCesar(texto);
         texto = cifradoCesar(texto, 619);
@@ -483,7 +483,7 @@ public class WeEncoder {
         byte[] valueDecoded = Base64.decodeBase64(texto);
         texto = descifradoCesar(new String(valueDecoded), 619);
         texto = descifradoCesar(texto);
-        texto = des_transfor(texto);
+        //texto = des_transfor(texto);
         return texto;
     }
 

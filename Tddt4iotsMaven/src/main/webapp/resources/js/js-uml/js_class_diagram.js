@@ -166,14 +166,24 @@ function deleteRelationsRedundant(relations) {
         let newRelations = [];
         let relationsSuccess = [];
         for (let positionRelation = 0; positionRelation < relations.length; positionRelation++) {
-            let from = relations[positionRelation].from;
-            let to = relations[positionRelation].to;
-            for (let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++) {
-                let fromx = relations[positionRelationAux].from;
-                let tox = relations[positionRelationAux].to;
-                if (positionRelationAux !== positionRelation) {
-                    if ((from === fromx && to === tox) || (from === tox && to === fromx)) {
-                        relationsSuccess.push(positionRelationAux);
+            let rel_origi = relations[positionRelation];
+
+            if (rel_origi !== undefined) {
+
+                let from = rel_origi.from;
+                let to = rel_origi.to;
+                for (let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++) {
+                    let rela = relations[positionRelationAux];
+
+                    if (rela !== undefined) {
+                        let fromx = rela.from;
+                        let tox = rela.to;
+
+                        if (positionRelationAux !== positionRelation) {
+                            if ((from === fromx && to === tox) || (from === tox && to === fromx)) {
+                                relationsSuccess.push(positionRelationAux);
+                            }
+                        }
                     }
                 }
             }
@@ -200,44 +210,48 @@ function deleteRelationsRedundant(relations) {
 
 function relationsClass(relations) {
     for (let irelation = 0; irelation < relations.length; irelation++) {
-        if (relations[irelation].from !== undefined && relations[irelation].to !== undefined) {
-            let from = getFromToRelation(relations[irelation].from);
-            let to = getFromToRelation(relations[irelation].to);
+        if (relations[irelation] !== null) {
+            if (relations[irelation] !== undefined) {
+                if (relations[irelation].from !== undefined && relations[irelation].to !== undefined) {
+                    let from = getFromToRelation(relations[irelation].from);
+                    let to = getFromToRelation(relations[irelation].to);
 
-            if (from === undefined || to === undefined) {
-                console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
-            } else {
+                    if (from === undefined || to === undefined) {
+                        console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
+                    } else {
 
-                if (relations[irelation].cardinalidate === undefined) {
-                    relations[irelation]["cardinalidate"] = "u..u";
+                        if (relations[irelation].cardinalidate === undefined) {
+                            relations[irelation]["cardinalidate"] = "u..u";
+                        }
+
+                        if (relations[irelation].from_fk === undefined) {
+                            relations[irelation]["from_fk"] = relations[irelation].to.toString().toLowerCase() + ":" + relations[irelation].to;
+                        }
+
+                        if (relations[irelation].simbol === undefined) {
+                            relations[irelation]["simbol"] = "";
+                        }
+
+                        if (relations[irelation].to_fk === undefined) {
+                            relations[irelation]["from_fk"] = relations[irelation].from.toString().toLowerCase() + ":" + relations[irelation].from;
+                        }
+
+                        if (relations[irelation].value === undefined) {
+                            relations[irelation]["value"] = relations[irelation].typeRelatioship;
+                        }
+
+                        let relation = createRelationClass({
+                            type: relationsGlobal[relations[irelation].typeRelatioship],
+                            a: from,
+                            b: to,
+                            card_A: relations[irelation].cardinalidate.split("..")[0],
+                            card_B: relations[irelation].cardinalidate.split("..")[1],
+                            value: relations[irelation].value,
+                            typeRelatioship: relations[irelation].typeRelatioship
+                        });
+                        elementsClass.push({"element": relation});
+                    }
                 }
-
-                if (relations[irelation].from_fk === undefined) {
-                    relations[irelation]["from_fk"] = relations[irelation].to.toString().toLowerCase() + ":" + relations[irelation].to;
-                }
-
-                if (relations[irelation].simbol === undefined) {
-                    relations[irelation]["simbol"] = "";
-                }
-
-                if (relations[irelation].to_fk === undefined) {
-                    relations[irelation]["from_fk"] = relations[irelation].from.toString().toLowerCase() + ":" + relations[irelation].from;
-                }
-
-                if (relations[irelation].value === undefined) {
-                    relations[irelation]["value"] = relations[irelation].typeRelatioship;
-                }
-
-                let relation = createRelationClass({
-                    type: relationsGlobal[relations[irelation].typeRelatioship],
-                    a: from,
-                    b: to,
-                    card_A: relations[irelation].cardinalidate.split("..")[0],
-                    card_B: relations[irelation].cardinalidate.split("..")[1],
-                    value: relations[irelation].value,
-                    typeRelatioship: relations[irelation].typeRelatioship
-                });
-                elementsClass.push({"element": relation});
             }
         }
     }
