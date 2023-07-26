@@ -79,7 +79,7 @@ app.controller('controllerSingUp', function ($scope, $http) {
             },
             success: (data) => {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 if(data.status === 2) {
                     location.href = "messageSingUp.html";
                 } else {
@@ -90,7 +90,7 @@ app.controller('controllerSingUp', function ($scope, $http) {
                 });*/
             },
             error: (objXMLHttpRequest) => {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };

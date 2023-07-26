@@ -10,7 +10,7 @@ app.controller('controller', function ($scope, $http) {
         //=anthony.pachay2017@uteq.edu.ec&
         //=cRleotRURL
         let params = getUrlParams(location.href, ["op", "usr", "code"]);
-        console.log(params);
+        // console.log(params);
     });
 
     $scope.changePanle = (val, form) => {
@@ -45,7 +45,7 @@ app.controller('controller', function ($scope, $http) {
             },
             success: (data) => {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 alertAll(data);
                 $scope.$apply(() => {
                     $scope.user_email = "";
@@ -54,7 +54,7 @@ app.controller('controller', function ($scope, $http) {
                 });
             },
             error: (objXMLHttpRequest) => {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     }
@@ -83,7 +83,7 @@ app.controller('controller', function ($scope, $http) {
             },
             success: (data) => {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 if(data.status === 2){
                     $scope.$apply(() => {
                         $scope.cleanFormReset();
@@ -94,7 +94,7 @@ app.controller('controller', function ($scope, $http) {
                 alertAll(data);
             },
             error: (objXMLHttpRequest) => {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };

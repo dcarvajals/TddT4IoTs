@@ -112,7 +112,7 @@ $scope.loadComponentsEntregable =null;
                     loading();
                 },
                 success: function (data) {
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.project_entregable = data.data;
                         swal.close();
@@ -147,13 +147,13 @@ $scope.loadComponentsEntregable =null;
                     $scope.$apply(function () {
                         $scope.project_entregable_components = data.data;
                       
-                        console.log(data);
+                        // console.log(data);
                     });
                     swal.close();
                     //alertAll(data.information);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         }
@@ -180,7 +180,7 @@ $scope.loadComponentsEntregable =null;
                     //alertAll(data.information);                   
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         }
@@ -204,7 +204,7 @@ $scope.loadComponentsEntregable =null;
                     alertAll(data.information);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         }
@@ -244,7 +244,7 @@ $scope.loadComponentsEntregable =null;
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         }        
@@ -384,7 +384,7 @@ $scope.loadComponentsEntregable =null;
                         }
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error: ", objXMLHttpRequest);
+                        // console.log("error: ", objXMLHttpRequest);
                     }
                 });
             } else {
@@ -446,7 +446,7 @@ $scope.loadComponentsEntregable =null;
                         $("#modalEditEntre").modal('hide');
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error: ", objXMLHttpRequest);
+                        // console.log("error: ", objXMLHttpRequest);
                     }
                 });
             } else {
@@ -500,7 +500,7 @@ $scope.loadComponentsEntregable =null;
                         alertAll(data);
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error: ", objXMLHttpRequest);
+                        // console.log("error: ", objXMLHttpRequest);
                     }
                 });
             } else {
@@ -615,7 +615,7 @@ $scope.loadComponentsEntregable =null;
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error", objXMLHttpRequest);
+                    // console.log("error", objXMLHttpRequest);
                 }
             });
         }
@@ -693,7 +693,7 @@ $scope.loadComponentsEntregable =null;
                     $('#progress_bar_component_task').load();
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error", objXMLHttpRequest);
+                    // console.log("error", objXMLHttpRequest);
                 }
             });
         }
@@ -778,7 +778,7 @@ $scope.loadComponentsEntregable =null;
 
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error", objXMLHttpRequest);
+                    // console.log("error", objXMLHttpRequest);
                 }
             });
         }
@@ -809,7 +809,7 @@ $scope.loadComponentsEntregable =null;
                     
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         }
@@ -854,7 +854,7 @@ $scope.loadComponentsEntregable =null;
                     $('#progress_bar_component_task').load();
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error", objXMLHttpRequest);
+                    // console.log("error", objXMLHttpRequest);
                 }
             });
         }
@@ -897,7 +897,7 @@ $scope.loadComponentsEntregable =null;
                 swal.close();
             },
             error: function (objXMLHttpRequest) {
-                console.log("error", objXMLHttpRequest);
+                // console.log("error", objXMLHttpRequest);
             }
         });
     };
@@ -991,7 +991,7 @@ $scope.loadComponentsEntregable =null;
                         swal.close();
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error", objXMLHttpRequest);
+                        // console.log("error", objXMLHttpRequest);
                     }
                 });
             }
@@ -1035,7 +1035,7 @@ $scope.loadComponentsEntregable =null;
                         $('#progress_bar_project_entregable').load();
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error", objXMLHttpRequest);
+                        // console.log("error", objXMLHttpRequest);
                     }
                 });
             }
@@ -1082,7 +1082,7 @@ $scope.loadComponentsEntregable =null;
                         $('#progress_bar_component_task').load();
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error", objXMLHttpRequest);
+                        // console.log("error", objXMLHttpRequest);
                     }
                 });
             }
@@ -1198,7 +1198,7 @@ $scope.loadComponentsEntregable =null;
             else
                 $("#tituloReport").html(nameEntregable);
         }   // alert(urlWebServicies + `reportes/exportarPdf?select=${select}&type=${type}&part=${part}&rutap=${$scope.pathProj}`);
-        console.log($scope.cadena+" este es el reporte");
+        // console.log($scope.cadena+" este es el reporte");
         $.ajax({
             method: "GET",
             xhrFields: {responseType: "arraybuffer"},
@@ -1208,13 +1208,13 @@ $scope.loadComponentsEntregable =null;
             },
             success: function (data) {                
                 var blob = new Blob([data], {type: 'application/pdf'});
-//                console.log($scope.trustAsResourceUrl(window.URL.createObjectURL(blob)));
+//                // console.log($scope.trustAsResourceUrl(window.URL.createObjectURL(blob)));
                 //  $("#viewFiles").attr("href",window.URL.createObjectURL(blob));
                 $("#obj").attr("src", window.URL.createObjectURL(blob));
                 $("#modalpdf").modal();
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -1236,7 +1236,7 @@ $scope.loadComponentsEntregable =null;
             success: function (data) {               
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -1261,7 +1261,7 @@ $scope.loadComponentsEntregable =null;
                 }),
                 error: function (objXMLHttpRequest)
                 {
-                    console.log("error", objXMLHttpRequest);
+                    // console.log("error", objXMLHttpRequest);
                 },
                 success: function (data) {
                     alertAll(data);
@@ -1288,10 +1288,10 @@ $scope.loadComponentsEntregable =null;
             }),
             error: function (objXMLHttpRequest)
             {
-                console.log("error", objXMLHttpRequest);
+                // console.log("error", objXMLHttpRequest);
             },
             success: function (data) {
-                console.log(data);
+                // console.log(data);
             }
         });
     };

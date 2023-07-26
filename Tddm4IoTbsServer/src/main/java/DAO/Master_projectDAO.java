@@ -38,7 +38,7 @@ public class Master_projectDAO {
      */
     public String[] selectProjects(String idtype, String idquery) {
         String query = String.format("select * from master_project_select(%s, %s)", idtype, idquery);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -70,7 +70,7 @@ public class Master_projectDAO {
      */
     public String[] insertProject(Master_project proj, String id_user) {
         String query = String.format("select * from master_project_insert('%s', %s)", proj.returnXml(), id_user);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -108,7 +108,7 @@ public class Master_projectDAO {
     public String[] updateModule(String idproj, String module, String state, String iduser) {
         String query = String.format("select * from master_project_select_path(%s, %s, %s,'%s')",
                 idproj, iduser, module, state);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -129,7 +129,7 @@ public class Master_projectDAO {
      */
     public String[] getHome(String idquery) {
         String query = String.format("select * from query_home(%s)", idquery);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -142,7 +142,7 @@ public class Master_projectDAO {
 
     public String[] valitPermitEditJson(String idproj, String id_person) {
         String query = String.format("select * from permit_master_valid(%s, %s)", idproj, id_person);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -158,8 +158,8 @@ public class Master_projectDAO {
         return conex.returnRecord(query).getValueAt(0, 0).toString().replaceAll(" ", "");
     } 
     
-    public boolean updateStatusDownload (String idproj) {
-        String query = "update master_project set download = 'T' where id_masterproject = "+idproj+";";
+    public boolean updateStatusDownload (String idproj, String param_download) {
+        String query = "update master_project set "+param_download+" = 'T' where id_masterproject = "+idproj+";";
         return conex.modifyBD(query);
     }
 
@@ -177,7 +177,7 @@ public class Master_projectDAO {
 
     public String[] deleteProject(String id_type, String id_project, String id_person) {
         String query = String.format("select * from master_project_delete(%s, %s, %s)", id_type, id_project, id_person);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -190,7 +190,7 @@ public class Master_projectDAO {
 
     public String[] deleteModule(String id_type, String id_subtype, String id_project, String id_person) {
         String query = String.format("select * from master_project_delete_module(%s, %s, %s, %s)", id_type, id_subtype, id_project, id_person);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -203,7 +203,7 @@ public class Master_projectDAO {
 
     public String[] shareProjectforEmail(String idUser, String emailShare, String idproj, String permitShare, String stateShare) {
         String query = String.format("select * from permit_master_insert_participant('%s', %s, '%s', '%s')", emailShare, idproj, permitShare, stateShare);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -216,7 +216,7 @@ public class Master_projectDAO {
 
     public String[] listShareProject(String idType, String idUser, String idMProject) {
         String query = String.format("select * from permit_master_select(%s, %s, %s)", idType, idUser, idMProject);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) {
             return new String[]{
@@ -235,7 +235,7 @@ public class Master_projectDAO {
     
     public String getprojectProperty(String idperson, String idmasterproject) {
         String query = String.format("select * from project_user_property('%s', '%s')", idperson, idmasterproject);
-        System.out.println(query);
+        
         DefaultTableModel tab = conex.returnRecord(query);
         if (tab.getRowCount() > 0) 
             return tab.getValueAt(0, 0).toString();

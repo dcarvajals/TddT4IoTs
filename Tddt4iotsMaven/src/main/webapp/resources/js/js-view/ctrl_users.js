@@ -26,13 +26,13 @@ app.controller("users_controller", function ($scope, $http) {
                     $scope.$apply(function () {// Se puede optimizar con una sola petición en un ArrayJSON
                         $scope.arrayAdmins = data.data.admins;
                         $scope.arrayUsers = data.data.users;
-                        console.log($scope.arrayAdmins);
-                        console.log($scope.arrayUsers);
+                        // console.log($scope.arrayAdmins);
+                        // console.log($scope.arrayUsers);
                     });
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -75,13 +75,13 @@ app.controller("users_controller", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 alertAll(data);
                 $scope.loadUsers();
 
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };

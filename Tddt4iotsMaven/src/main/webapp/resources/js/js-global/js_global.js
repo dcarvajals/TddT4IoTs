@@ -66,7 +66,19 @@ function getCheckSession() {
  * */
 function loading() {
     let containerLoading = document.createElement('div');
-    containerLoading.innerHTML = "<div class='spinner-border text-success' role='status'> <span class='sr-only'>Loading...</span></div> <br> <strong> Loading... </strong>";
+    containerLoading.innerHTML = " <img src='resources/img/logo-app/logoTDDT4IOTSicon.svg' width='100' alt='logo'/> <img src='resources/img/img-app/loadingPro.gif' width='40' alt='load'/>";
+    swal.fire({
+        width: 200,
+        html: containerLoading,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        background: "",
+    });
+}
+
+function loadingMvn () {
+    let containerLoading = document.createElement('div');
+    containerLoading.innerHTML = "<img src='resources/img/img-app/gifSpring.gif' alt='load' width='100'> <br> <img src='resources/img/img-app/springLogo.png ' alt='load' width='200'> <br> <strong> Creating maven project with spring boot. </strong>";
     swal.fire({
         width: 400,
         html: containerLoading,
@@ -75,9 +87,9 @@ function loading() {
     });
 }
 
-function loadingMvn () {
+function loadingAng () {
     let containerLoading = document.createElement('div');
-    containerLoading.innerHTML = "<img src='resources/img/img-app/gifSpring.gif' alt='load' width='100'> <br> <img src='resources/img/img-app/springLogo.png ' alt='load' width='200'> <br> <strong> Creating maven project with spring boot. </strong>";
+    containerLoading.innerHTML = "<img src='resources/img/img-app/gifSpring.gif' alt='load' width='100'> <br> <img src='resources/img/img-app/loadAngular.png ' alt='load' width='200'> <br> <strong> Creating angular project. </strong>";
     swal.fire({
         width: 400,
         html: containerLoading,

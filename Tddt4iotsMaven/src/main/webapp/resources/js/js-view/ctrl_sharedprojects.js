@@ -42,15 +42,15 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     //swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.listSharesWithMe = data.data;
-                        console.log($scope.listSharesWithMe);
+                        // console.log($scope.listSharesWithMe);
                     });
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else
@@ -77,15 +77,15 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.listInvitations = data.data;
-                        console.log($scope.listInvitations);
+                        // console.log($scope.listInvitations);
                     });
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else
@@ -113,9 +113,9 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.flag_selected_projectup = true;
-                    console.log(objetct_selected_projectup);
+                    // console.log(objetct_selected_projectup);
                     $scope.$apply(() => {
                         $scope.selected_projectup = {
                             "idproj": objetct_selected_projectup.id_masterproject,
@@ -130,17 +130,17 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                             "id_masterproject" : objetct_selected_projectup.id_masterproject
                         };
                     });
-                    console.log($scope.selected_projectup);
+                    // console.log($scope.selected_projectup);
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
-        console.log($scope.selected_project);
+        // console.log($scope.selected_project);
     };
     
     $scope.selectProjectEntregables = function (objetct_selected_projectup){
@@ -160,7 +160,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
 
                 var dataUser = store.session.get("user_tddm4iotbs");
                 if (dataUser !== undefined && dataUser !== null) {
-                    console.log(objetct_selected_project);
+                    // console.log(objetct_selected_project);
                     $.ajax({
                         method: "POST",
                         dataType: "json",
@@ -176,7 +176,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                         },
                         success: function (data) {
                             swal.close();
-                            console.log(data);
+                            // console.log(data);
 //                    $scope.$apply(() => {
 //
 //                    });
@@ -184,7 +184,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                             alertAll(data);
                         },
                         error: function (objXMLHttpRequest) {
-                            console.log("error: ", objXMLHttpRequest);
+                            // console.log("error: ", objXMLHttpRequest);
                         }
                     });
 
@@ -198,7 +198,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
     };
 
     $scope.createModuleUml = function (selected_project) {
-        console.log(selected_project.idproj);
+        // console.log(selected_project.idproj);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
@@ -217,7 +217,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     if (data.status === 2) {
                         $scope.$apply(() => {
                             selected_project.uml.data.push("true");
@@ -226,19 +226,19 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                     }
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
 
-        console.log(selected_project);
+        // console.log(selected_project);
         //selected_project.uml.status = "A";
     };
 
     $scope.createModuleIoT = function (selected_project) {
-        console.log(selected_project.idproj);
+        // console.log(selected_project.idproj);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
@@ -257,7 +257,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     if (data.status === 2) {
                         $scope.$apply(() => {
                             selected_project.iot.data.push("true");
@@ -266,13 +266,13 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                     }
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
-        console.log(selected_project);
+        // console.log(selected_project);
         //selected_project.iot.status = "A";
     };
     
@@ -303,15 +303,15 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 //$("#modal_package_maven").modal("show");
                 $scope.$apply(() => {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $("#modal_package_maven").modal("hide");
                     $("#modal_download_maven").modal("hide");
                     $scope.mavenProject = data.data.MavenApplication;
-                    download("ProjectMvnSpr.zip", data.data.MavenApplication);
+                    download(data.data.nameFileZip, data.data.MavenApplication);
                 });
             },
             error: (objXMLHttpRequest) => {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -353,7 +353,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                     "permit": project.permit_pm,
                     "joinActive": "A"
                 };
-                console.log(dataAceptInvitation);
+                // console.log(dataAceptInvitation);
                 wsAceptInvitation(dataAceptInvitation);
                 $scope.$apply(() => {
                     $scope.listShareProjects();
@@ -381,7 +381,7 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                     "permit": project.permit_pm,
                     "joinActive": "I"
                 };
-                console.log(dataAceptInvitation);
+                // console.log(dataAceptInvitation);
                 wsAceptInvitation(dataAceptInvitation);
                 $scope.$apply(() => {
                     $scope.listShareProjects();
@@ -406,11 +406,11 @@ app.controller("shareprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {

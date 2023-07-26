@@ -62,16 +62,16 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.myprojects = data.data;
                     });
 
                     alertAll(data);
-                    console.log($scope.myprojects);
+                    // console.log($scope.myprojects);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -103,9 +103,9 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.flag_selected_project = true;
-                    console.log(objetct_selected_project);
+                    // console.log(objetct_selected_project);
 
                     $scope.$apply(() => {
                         $scope.selected_project = {
@@ -122,17 +122,17 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         };
                         $scope.mavenProject = rutasStorage.projects + objetct_selected_project.path_mp + "/ProjectMvnSpr.zip";
                     });
-                    console.log("PATH DEEL RPOYECTO ", objetct_selected_project.path_mp);
+                    // console.log("PATH DEEL RPOYECTO ", objetct_selected_project.path_mp);
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
-        console.log($scope.selected_project);
+        // console.log($scope.selected_project);
     };
 
     $scope.deleteProject = function (objetct_selected_project) {
@@ -161,7 +161,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         },
                         success: function (data) {
                             swal.close();
-                            console.log(data);
+                            // console.log(data);
 //                    $scope.$apply(() => {
 //
 //                    });
@@ -169,7 +169,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                             alertAll(data);
                         },
                         error: function (objXMLHttpRequest) {
-                            console.log("error: ", objXMLHttpRequest);
+                            // console.log("error: ", objXMLHttpRequest);
                         }
                     });
                 } else {
@@ -194,7 +194,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
 
                 var dataUser = store.session.get("user_tddm4iotbs");
                 if (dataUser !== undefined && dataUser !== null) {
-                    console.log(objetct_selected_project);
+                    // console.log(objetct_selected_project);
                     $.ajax({
                         method: "POST",
                         dataType: "json",
@@ -210,7 +210,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         },
                         success: function (data) {
                             swal.close();
-                            console.log(data);
+                            // console.log(data);
 //                    $scope.$apply(() => {
 //
 //                    });
@@ -218,7 +218,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                             alertAll(data);
                         },
                         error: function (objXMLHttpRequest) {
-                            console.log("error: ", objXMLHttpRequest);
+                            // console.log("error: ", objXMLHttpRequest);
                         }
                     });
 
@@ -233,7 +233,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
 
 
     $scope.createModuleUml = function (selected_project) {
-        console.log(selected_project.idproj);
+        // console.log(selected_project.idproj);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
@@ -252,7 +252,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     if (data.status === 2) {
                         $scope.$apply(() => {
                             selected_project.uml.data.push("true");
@@ -261,19 +261,19 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     }
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
 
-        console.log(selected_project);
+        // console.log(selected_project);
         //selected_project.uml.status = "A";
     };
 
     $scope.createModuleIoT = function (selected_project) {
-        console.log(selected_project.idproj);
+        // console.log(selected_project.idproj);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
@@ -292,7 +292,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     if (data.status === 2) {
                         $scope.$apply(() => {
                             selected_project.iot.data.push("true");
@@ -301,13 +301,13 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     }
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
             location.href = "index";
         }
-        console.log(selected_project);
+        // console.log(selected_project);
         //selected_project.iot.status = "A";
     };
 
@@ -342,7 +342,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     },
                     success: function (data) {
                         swal.close();
-                        console.log(data);
+                        // console.log(data);
                         //actualizar la tabla de los proyectos
                         $scope.loadProjects();
                         alertAll(data);
@@ -351,7 +351,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         $("#modalCreateProject").modal('hide');
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error: ", objXMLHttpRequest);
+                        // console.log("error: ", objXMLHttpRequest);
                     }
                 });
             } else {
@@ -385,13 +385,13 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     },
                     success: function (data) {
                         swal.close();
-                        console.log(data);
+                        // console.log(data);
                         alertAll(data);
                         $scope.shared_np = "";
                         $("#modalShareProject").modal('hide');
                     },
                     error: function (objXMLHttpRequest) {
-                        console.log("error: ", objXMLHttpRequest);
+                        // console.log("error: ", objXMLHttpRequest);
                     }
                 });
             } else {
@@ -427,7 +427,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 //$("#modal_package_maven").modal("show");
                 $scope.$apply(() => {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $("#modal_package_maven").modal("hide");
                     $("#modal_download_maven").modal("hide");
                     $scope.mavenProject = data.data.MavenApplication;
@@ -435,7 +435,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                 });
             },
             error: (objXMLHttpRequest) => {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };

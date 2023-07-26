@@ -39,7 +39,7 @@ app.controller('controllerIndex', function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 if (data.status === 2) {
                     store.session.set("user_tddm4iotbs", data.data[0]);
                     location.href = 'app.html';
@@ -47,7 +47,7 @@ app.controller('controllerIndex', function ($scope, $http) {
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };

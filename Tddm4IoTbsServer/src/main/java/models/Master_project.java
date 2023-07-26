@@ -24,6 +24,8 @@ public class Master_project {
     String tatus_uml = "";
     String status_iot = "";
     String download = "";
+    String download_ang = "";
+    String download_all = "";
 
     public String getId_masterproject() {
         return id_masterproject;
@@ -110,4 +112,22 @@ public class Master_project {
         JSONObject jsonU = new JSONObject(this);
         return "<master_project>" + XML.toString(jsonU) + "</master_project>";
     }
+
+    public String getDownload_ang() {
+        return download_ang;
+    }
+
+    public void setDownload_ang(String download_ang) {
+        this.download_ang = download_ang;
+    }
+
+    public String getDownload_all() {
+        return download_all;
+    }
+
+    public void setDownload_all(String download_all) {
+        this.download_all = download_all;
+    }
+    
+    
 }

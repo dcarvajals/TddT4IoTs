@@ -35,15 +35,15 @@ app.controller("home_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.projects_recent = data.data;
                     });
                     alertAll(data);
-                    console.log($scope.projects_recent);
+                    // console.log($scope.projects_recent);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else
@@ -70,15 +70,15 @@ app.controller("home_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.queryHome = data.data[0];
                     });
                     alertAll(data);
-                    console.log($scope.queryHome[0]);
+                    // console.log($scope.queryHome[0]);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else
@@ -89,17 +89,17 @@ app.controller("home_controller", function ($scope, $http) {
 
     $scope.interpret = [];
     $scope.loadInterpret = function () {
-//        console.log("buscar el:"+valuex);
+//        // console.log("buscar el:"+valuex);
         $.getJSON("resources/json/interpret.json", function (data) {
             $scope.$apply(function () {
                 $scope.interpret = data;
-                console.log($scope.interpret);
+                // console.log($scope.interpret);
             });
         });
     };
 
     $scope.loadExample = (simbol) => {
-        console.log(simbol);
+        // console.log(simbol);
         let message = '<div style="font-family: math;font-size: 16px;">' + simbol.example + '<div>';
         Swal.fire({
             title: '<strong>' + simbol.description + ' example <span class="badge badge-info">' + simbol.simbol + '</span> </strong>',

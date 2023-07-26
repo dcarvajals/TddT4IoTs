@@ -1,3 +1,5 @@
+/* global urlWebServicies, swal, app */
+
 app.expandControllerMavenProject = function ($scope) {
 
     $scope.mavenProject = '';
@@ -47,12 +49,6 @@ app.expandControllerMavenProject = function ($scope) {
             "module": 'CreateMvn'
         };
         apiencapsulateProject(api_data);
-        /*setTimeout(function(){
-            swal.close();
-            console.log("TERMINANDO...");
-            $("#modal_package_maven").modal("show");
-        }, 8000);
-        loadingMvn();*/
     };
 
     apiencapsulateProject = (api_param) => {
@@ -94,7 +90,7 @@ app.expandControllerMavenProject = function ($scope) {
                         $("#modal_package_maven").modal("hide");
                         $("#modal_download_maven").modal("hide");
                         $scope.mavenProject = data.data.MavenApplication;
-                        download("ProjectMvnSpr.zip", data.data.MavenApplication);
+                        download(data.data.nameFileZip, data.data.MavenApplication);
                     }
                 });
             },
@@ -217,7 +213,7 @@ app.expandControllerMavenProject = function ($scope) {
         for (let x = 0; x < $scope.selectedEntitieObj.attributes.length; x++) {
             let checkAllPk = $("#primary_key" + x);
             let checkAllNotNull = $("#notNull_" + x);
-            let attributteAll = $scope.selectedEntitieObj.attributes[x]
+            let attributteAll = $scope.selectedEntitieObj.attributes[x];
             if (x !== index) {
                 if (attributteAll["not_null"] && attributteAll["primary_key"]) {
                     checkAllPk.prop('checked', false);

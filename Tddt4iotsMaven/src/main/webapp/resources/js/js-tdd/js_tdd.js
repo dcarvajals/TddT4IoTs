@@ -162,7 +162,7 @@ app.expandControllerA = function ($scope) {
             }
             return [];
         }
-    }
+    };
 
     // metodo que verifica su un metodo ya existe con test
     $scope.existMethod = (array, key, name) => {
@@ -172,7 +172,7 @@ app.expandControllerA = function ($scope) {
             }
         }
         return [-1, false];
-    }
+    };
 
     //#endregion FUNCIONES UTILITARIAS
 
@@ -181,7 +181,7 @@ app.expandControllerA = function ($scope) {
         loadCodeTDD(codeJUnit);
         $("#modal_code_tdd").modal();
         console.log(codeJUnit);
-    }
+    };
 
     // funcion para visualziar el codigo tdd de una clase seleccionada
     $scope.viewCodeTddClass = (className) => {

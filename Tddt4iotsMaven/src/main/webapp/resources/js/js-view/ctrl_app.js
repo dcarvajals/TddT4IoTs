@@ -76,8 +76,8 @@ app.controller("application", function ($scope, $http) {
         let nameUser = document.getElementById("nameUser");
         //permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
         nameUser.innerHTML = $scope.nameUser($scope.DatoUsuario);
-        console.log($scope.DatoUsuario);
-        console.log("tddm4iots iniciado correctamente");
+        // console.log($scope.DatoUsuario);
+        // console.log("tddm4iots iniciado correctamente");
     });
 
     $scope.changeTittlePage = function (tittle, apply) {
@@ -104,12 +104,12 @@ app.controller("application", function ($scope, $http) {
 });
 
 function verpunto(val) {
-    console.log("llamar a", val);
+    // console.log("llamar a", val);
     angular.element($('[ng-view')).scope().verinfopunto(val);
 }
 
 function verRuta(val) {
-    console.log("llamar a", val);
+    // console.log("llamar a", val);
     angular.element($('[ng-view')).scope().verinforuta(val);
 }
 

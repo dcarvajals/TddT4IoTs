@@ -11,6 +11,9 @@ controller = app.controller("workAreaController", function ($scope) {
 
     // expandir el controlador al script de maven project
     app.expandControllerMavenProject($scope);
+    
+    // expandir el controlador al script de angular project
+    app.expandControllerAngularProject($scope);
 
     $scope.DatoUsuario = {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;

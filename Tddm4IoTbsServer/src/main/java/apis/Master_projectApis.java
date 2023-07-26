@@ -61,7 +61,7 @@ public class Master_projectApis {
     public Response getProjects(String data) {
         String message;
         System.out.println("getProjects()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -128,7 +128,7 @@ public class Master_projectApis {
     public Response initProjectModule(String data) {
         String message;
         System.out.println("initProjectModule()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -165,7 +165,7 @@ public class Master_projectApis {
     public Response updateInfoProject(String data) {
         String message;
         System.out.println("updateInfoProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -199,7 +199,7 @@ public class Master_projectApis {
     public Response updateModule(String data) {
         String message;
         System.out.println("updateModule()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -237,7 +237,7 @@ public class Master_projectApis {
     public Response getModules(String data) {
         String message;
         System.out.println("getModules()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -275,7 +275,7 @@ public class Master_projectApis {
     public Response deleteProject(String data) {
         String message;
         System.out.println("deleteProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -307,7 +307,7 @@ public class Master_projectApis {
     public Response deleteModules(String data) {
         String message;
         System.out.println("deleteModules()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -340,7 +340,7 @@ public class Master_projectApis {
     public Response getHome(String data) {
         String message;
         System.out.println("getHome()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -370,7 +370,7 @@ public class Master_projectApis {
     public Response saveModuleFile(String data) {
         String message;
         System.out.println("saveModuleFile()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -410,7 +410,7 @@ public class Master_projectApis {
     public Response loadModuleFile(String data) throws UnsupportedEncodingException {
         String message;
         System.out.println("loadModuleFile()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -444,7 +444,7 @@ public class Master_projectApis {
     public Response selectHomeProject(String data) {
         String message;
         System.out.println("selectHomeProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -475,7 +475,6 @@ public class Master_projectApis {
     public Response MavenProject(String data) {
         String message;
         System.out.println("MavenProject()");
-        System.out.println(data);
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -505,6 +504,45 @@ public class Master_projectApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/angularProject")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response angularProject(String data) {
+        String message;
+        System.out.println("angularProject()");
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+            String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+
+            String idProj = Methods.JsonToString(Jso, "idProj", "");
+            String module = Methods.JsonToString(Jso, "module", "");
+            String info = Methods.JsonToString(Jso, "info", "");
+
+            String path = DataStatic.getLocation(request.getServletContext().getRealPath(""));
+            //String path = DataStatic.pathTemp;
+
+            String[] clains = Methods.getDataToJwt(sessionToken);
+            String[] res = Methods.validatePermit(clains[0], clains[1], 1);
+            if (res[0].equals("2")) {
+                res = mpControl.angularProject(clains[0], idProj, module, path, info);
+                message = Methods.getJsonMessage(res[0], res[1], res[2]);
+            } else {
+                message = Methods.getJsonMessage("4", "Error in the request parameters.", "[]");
+            }
+
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    
 
     @Produces(MediaType.APPLICATION_JSON)
     @POST
@@ -513,7 +551,7 @@ public class Master_projectApis {
     public Response shareProject(String data) {
         String message;
         System.out.println("shareProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -549,7 +587,7 @@ public class Master_projectApis {
     public Response listShareProject(String data) {
         String message;
         System.out.println("listShareProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -582,7 +620,7 @@ public class Master_projectApis {
     public Response aceptInvitation(String data) {
         String message;
         System.out.println("aceptInvitation()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
@@ -643,7 +681,7 @@ public class Master_projectApis {
     public Response shareProjectMembers(String data) {
         String message;
         System.out.println("shareProject()");
-        System.out.println(data);
+        
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
 //            String SsessionToken = Methods.JsonToString(Jso, "user_token", "");

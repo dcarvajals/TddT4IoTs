@@ -71,12 +71,14 @@ public class DataStatic {
     public static String folderTasks = "Tasks/";
     public static String folderUml = "UmlDiagram/";
     public static String folderEasy = "EasyIoT/";
-    public static String folderMvmSpring = "/ProjectMvnSpr/";
+    public static String folderMvmSpring = "SprProject";
+    public static String folderAngular = "AngProject";
     public static String pathTemp = "D:\\Repositorios\\TddT4IoTs\\storageTddm4IoTbs\\src\\main\\webapp\\";
 
     public static String folderTemplate = "tddm4iotbs_template/";
     public static String folderMvn = "mvn_config/";
     public static String folferTempateJava = "template_java/";
+    public static String folferTempateAngular = "template_angular/";
 
     public static String getLocation(String context) {
         if (!fileLocation.equals("")) {

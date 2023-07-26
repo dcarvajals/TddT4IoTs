@@ -369,9 +369,7 @@ public class Master_projectCtrl {
 
     public String[] loadJsonModule(String idUser, String idProj, String module, String path) throws UnsupportedEncodingException {
         String status = "4", message = "Error loading the modules of the selected project", data = "{}";
-        System.out.println("MASTER PROJECT => " + idProj);
         idProj = codec.textDecryptor(idProj);
-        System.out.println("MASTER PROJECT decryptor => " + idProj);
         String[] resp = master.valitPermitEditJson(idProj, idUser);
 
         if (resp[0].equals("2") && !resp[1].equals("")) {
@@ -388,7 +386,6 @@ public class Master_projectCtrl {
                 params = "5";
             }
 
-            System.out.println(params);
             if (params.matches("[12345]")) {
                 String modulePath = path + DataStatic.folderProyect + resp[1] + "/";
 
@@ -405,18 +402,12 @@ public class Master_projectCtrl {
                     fileModule = modulePath + DataStatic.folderUml + "junitTest.json";
                 }
 
-                System.out.println("fileRead: " + fileModule);
                 FileAccess fac = new FileAccess();
-
                 String fileData = fac.readFileText(fileModule, "f");
-                System.out.println(fileData);
 
                 status = "2";
                 message = "Project modules successfully loaded.";
-                
-                //byte[] isoBytes = fileData.getBytes("ISO-8859-1");
-                //fileData = new String(isoBytes, "UTF-8");
-                
+
                 data = Methods.stringToJSON(fileData).toString();
 
             } else {
@@ -428,54 +419,143 @@ public class Master_projectCtrl {
         return new String[]{status, message, data};
     }
 
-    public String[] MavenProject(String idUser, String idProj, String module, String path, String info) {
+    public String[] angularProject(String idUser, String idProj, String module, String path, String info) {
         String status = "4", message = "Error generating maven project", data = "{}";
         idProj = codec.textDecryptor(idProj);
         String[] resp = master.valitPermitEditJson(idProj, idUser);
-
+        System.out.println("resp[1] = " + resp[1]);
         if (resp[0].equals("2") && !resp[1].equals("")) {
             String params = " ";
-            if (module.equals("CreateMvn")) {
+            if (module.equals("createAng")) {
                 params = "1";
-            } else if (module.equals("ZipMvn")) {
+            } else if (module.equals("zipAng")) {
                 params = "2";
-            } else if (module.equals("DownloadMvn")) {
-                params = "4";
-            } else if (module.equals("UpdateMvn")) {
+            } else if (module.equals("downloadAng")) {
                 params = "3";
+            } else if (module.equals("zipAll")) {
+                params = "4";
+            } else if (module.equals("downloadAll")) {
+                params = "5";
             }
 
-            System.out.println(params);
-            if (params.matches("[1234]")) {
-                String relpath = DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring;
+            String nameProject = master.getNameProject(idProj);
+            if (params.matches("[12345]")) {
+                String relpath = DataStatic.folderProyect + resp[1] + "/";
 
                 status = "2";
                 message = "Project successfully completed.";
                 data = "{\"idProj\":\"idProj\"}";
                 if (params.equals("1")) {
-                    System.out.println("RUTA POR DEFECTO => " + path);
-                    String nameProject = master.getNameProject(idProj);
-                    MakerProjects.createMavenProject(path, relpath, nameProject, info);
-                    //MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
+                    MakerProjects.createAngularProject(path, relpath, nameProject, info);
                 } else if (params.equals("2")) {
-                    System.out.println("RUTA SOURCE: " + path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring);
-                    System.out.println("RUTA TARGET: " + path + DataStatic.folderProyect + resp[1]);
-                    MakerProjects.MaketarMaven(path + DataStatic.folderProyect + resp[1] + DataStatic.folderMvmSpring, path + DataStatic.folderProyect + resp[1] + "/" + resp[1]);
-                    master.updateStatusDownload(idProj);
-                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + resp[1] + ".zip" + "\"}";
-                    System.out.println(data);
+                    MakerProjects.encapsularProyectoZip(
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular,
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular);
+                    master.updateStatusDownload(idProj, "download_ang");
+                    data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular + ".zip" + "\"}";
+                } else if (params.equals("3")) {
+                    data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular + ".zip" + "\", \"nameFileZip\" : \"" + nameProject + DataStatic.folderAngular + ".zip" + "\"}";
                 } else if (params.equals("4")) {
-                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + resp[1] + ".zip" + "\"}";
+                    MakerProjects.encapsularProyectoZip(
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular,
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll");
+                    MakerProjects.encapsularProyectoZip(
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring,
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll");
+                    data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll" + ".zip" + "\"}";
+                    master.updateStatusDownload(idProj, "download_all");
+
+                } else if (params.equals("5")) {
+                    data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll" + ".zip" + "\", \"nameFileZip\" : \"" + nameProject + "projectAll" + ".zip" + "\"}";
+
                 } else {
                     if (!info.equals("")) {
-                        MakerProjects.setMavenProject(path, relpath, resp[1], info);
+                        //
                     } else {
                         status = "3";
                         message = "No data detected.";
                         data = "{\"idProj\":\"idProj\"}";
                     }
                 }
+            } else {
+                status = "3";
+                message = "You can't access this project.";
+            }
+        }
+        return new String[]{status, message, data};
 
+    }
+
+    /**
+     * Genera y administra un proyecto Maven para un usuario específico.
+     *
+     * Este método permite generar y administrar proyectos Maven para un usuario
+     * identificado por "idUser". Dependiendo del valor del parámetro "module",
+     * se pueden realizar distintas acciones relacionadas con el proyecto Maven.
+     * Las posibles acciones son: - "CreateMvn": Crear un nuevo proyecto Maven.
+     * - "ZipMvn": Generar un archivo .zip del proyecto Maven existente. -
+     * "UpdateMvn": Actualizar un proyecto Maven existente. - "DownloadMvn":
+     * Descargar un archivo .zip del proyecto Maven.
+     *
+     * @param idUser El ID del usuario para el cual se generará o administrará
+     * el proyecto Maven.
+     * @param idProj El ID cifrado del proyecto Maven. Debe ser desencriptado
+     * antes de su uso.
+     * @param module El módulo de acción a realizar en el proyecto. Puede ser
+     * "CreateMvn", "ZipMvn", "UpdateMvn" o "DownloadMvn".
+     * @param path La ruta base del proyecto Maven en el sistema de archivos.
+     * @param info Información adicional, dependiendo del módulo seleccionado.
+     * Puede estar vacío en ciertos casos.
+     * @return Un array de cadenas que contiene tres elementos: - El estado de
+     * la operación ("2" si es exitosa, "3" si hay un problema de acceso o "4"
+     * si hay un error). - El mensaje de estado ("Project successfully
+     * completed.", "You can't access this project." o "Error generating maven
+     * project"). - Datos adicionales relacionados con el resultado de la
+     * operación en formato JSON.
+     */
+    public String[] MavenProject(String idUser, String idProj, String module, String path, String info) {
+        String status = "4", message = "Error generating maven project", data = "{}";
+        idProj = codec.textDecryptor(idProj);
+        String[] resp = master.valitPermitEditJson(idProj, idUser);
+        System.out.println("resp[1] = " + resp[1]);
+        if (resp[0].equals("2") && !resp[1].equals("")) {
+            String params = " ";
+            if (module.equals("CreateMvn")) {
+                params = "1";
+            } else if (module.equals("ZipMvn")) {
+                params = "2";
+            } else if (module.equals("UpdateMvn")) {
+                params = "3";
+            } else if (module.equals("DownloadMvn")) {
+                params = "4";
+            }
+
+            String nameProject = master.getNameProject(idProj);
+            if (params.matches("[1234]")) {
+                String relpath = DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring + "/";
+
+                status = "2";
+                message = "Project successfully completed.";
+                data = "{\"idProj\":\"idProj\"}";
+                if (params.equals("1")) {
+                    MakerProjects.createMavenProject(path, relpath, nameProject, info);
+                } else if (params.equals("2")) {
+                    MakerProjects.encapsularProyectoZip(
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring,
+                            path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring);
+                    master.updateStatusDownload(idProj, "download");
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring + ".zip" + "\"}";
+                } else if (params.equals("4")) {
+                    data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring + ".zip" + "\", \"nameFileZip\" : \"" + nameProject + DataStatic.folderMvmSpring + ".zip" + "\"}";
+                } else {
+                    if (!info.equals("")) {
+                        //
+                    } else {
+                        status = "3";
+                        message = "No data detected.";
+                        data = "{\"idProj\":\"idProj\"}";
+                    }
+                }
             } else {
                 status = "3";
                 message = "You can't access this project.";
@@ -593,10 +673,9 @@ public class Master_projectCtrl {
 
         return new String[]{status, message, data};
     }
-    
-    public String getPropertyProject(String idperson,String idprojectmaster)
-    {
-        String idmastProject=codec.textDecryptor(idprojectmaster);
+
+    public String getPropertyProject(String idperson, String idprojectmaster) {
+        String idmastProject = codec.textDecryptor(idprojectmaster);
         return master.getprojectProperty(idperson, idmastProject);
     }
 }

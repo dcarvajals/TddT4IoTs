@@ -148,7 +148,7 @@
                                     <option value="">----</option>
                                     <option ng-repeat="dom_main_stage in manager_maf.main_stage"
                                             value="{{$index}}">
-                                        {{$index  + 1}}
+                                        {{$index + 1}}
                                     </option>
                                 </select>
                             </div>
@@ -2307,7 +2307,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                                        ng-model="create" name="create" ng-click="createDrop = false">
                                 <label class="custom-control-label" for="create"> Create </label>
                             </div>
-                            
+
                             <div class="form-group custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="createDrop" checked 
                                        ng-model="createDrop" name="createDrop" ng-click="create = false">
@@ -2320,6 +2320,29 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                         <button ng-disabled="formConecction.$invalid" type="button" class="btn btn-sm btn-primary" ng-click="createMavenProject(formConecction)">
                             Create maven project
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal para empaquetar el proyecto angular -->
+        <div class="modal fade" id="modal_package_angular" tabindex="-1" role="dialog"
+             aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
+             aria-hidden="true">
+            <div class="modal-dialog modal modal-dialog-centered modal-dialog-scrollable" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Package project</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="alert alert-success" role="alert">
+                            Project angular successfully created
+                        </div>
+                        <button class="btn button-d btn-sm" ng-click="packagePrjAng()">
+                            <i class="fas fa-folder"></i> Package Zip project </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-danger" >Cancel</button>
                     </div>
                 </div>
             </div>
@@ -2370,6 +2393,29 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                 </div>
             </div>
         </div>
+        
+        <!-- Modal para descargar el proyecto anngular -->
+        <div class="modal fade" id="modal_download_angular" tabindex="-1" role="dialog"
+             aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
+             aria-hidden="true">
+            <div class="modal-dialog modal modal-dialog-centered modal-dialog-scrollable" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Download project</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="alert alert-success" role="alert">
+                            Project angular successfully created
+                        </div>
+                        <button class="btn button-d btn-sm" ng-click="downloadPrjAng()">
+                            <i class="fas fa-download"></i> Download </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-danger">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div id="content-wrapper" class="d-flex flex-column" style="overflow: hidden">
             <!-- Main Content -->
@@ -2385,26 +2431,53 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                             <span class="badge badge-success">{{dataProject.permit_pm === 'A' ? 'OWNER' : dataProject.permit_pm === 'R' ? 'READER' : 'WRITER'}}</span>
                         </h5>
                         <div class="" style="margin-top: 25px">
-                            <button ng-click="saveModeling()" class="btn badge badge-light"><i class="fas fa-save"></i> Save
-                                modeling
-                            </button>
+                            <button ng-click="saveModeling()" class="btn badge badge-light"><i class="fas fa-save"></i> Save all </button>
                             <button class="btn badge badge-light" ng-click="openModalTdd()"><i class="fas fa-cog"></i>
-                                Generate TDD <span class="badge badge-pill badge-danger">NEW</span>
+                                Generate Test
                             </button>
                             <!--<button class="btn badge badge-light"> <i class="fab fa-adversal"></i> Verbs and nouns</button>-->
                             <button class="btn badge badge-light" id="Symbols_use_cases"><i class="fab fa-symfony"></i> Symbols
                                 to
                                 describe use cases
                             </button>
-                            <button class="btn badge badge-light" ng-click="openModalCreateMavenProject()">
-                                <i class="fab fa-java"></i>
-                                Create maven project <span class="badge badge-pill badge-danger">NEW</span>
-                            </button>
-                            <button class="btn badge badge-pill badge-warning" ng-show="dataProject.download === 'T'"
-                                    ng-click="downloadPrjMav()"> 
-                                <i class="fas fa-download"></i> 
-                                Download maven project 
-                            </button>
+                            <div class="btn-group">
+                                <button class="btn badge badge-light" id="dropdownMenu2" 
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fab fa-codepen"></i>
+                                    Generate project
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                    <button class="dropdown-item" type="button" ng-click="openModalCreateMavenProject()">
+                                        <img src="resources/img/img-app/logoSpring.png" width="15" style="margin-top: -2.5px" alt="spring"/>
+                                        Spring App</button>
+                                    <button class="dropdown-item" type="button" ng-click="createAngularProject()">
+                                        <img src="resources/img/img-app/logoAngular.svg" width="15" style="margin-top: -2.5px" alt="angular"/> 
+                                        Angular App</button>
+                                    <button class="dropdown-item" type="button" ng-click="packagePrjAll()"
+                                            ng-show="dataProject.download_ang === 'T' && dataProject.download === 'T'">
+                                        <i class="fa fa-file-archive"></i> 
+                                        Zip the project all</button>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn badge badge-light" id="dropdownMenu3" 
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
+                                    <i class="fas fa-download"></i> 
+                                    Download project 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenu3">
+                                    <button class="dropdown-item" type="button" 
+                                            ng-show="dataProject.download === 'T'" ng-click="downloadPrjMav()">
+                                        <img src="resources/img/img-app/logoSpring.png" width="15" style="margin-top: -2.5px" alt="spring"/>
+                                        Spring download</button>
+                                    <button class="dropdown-item" type="button" ng-click="downloadPrjAng()" ng-show="dataProject.download_ang === 'T'">
+                                        <img src="resources/img/img-app/logoAngular.svg" width="15" style="margin-top: -2.5px" alt="angular"/> 
+                                        Angular download</button>
+                                    <button class="dropdown-item" type="button" ng-click="downloadPrjAll()" ng-show="dataProject.download_all === 'T'">
+                                        <i class="fas fa-arrow-circle-down"></i> 
+                                        Download the project all</button>
+                                </div>
+                            </div>
 
                             <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i
                                     class="fas fa-sign-out-alt"></i> Close </a>
@@ -2672,6 +2745,10 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
 
         <!--begin: mavenproject-->
         <script src="resources/js/js-mavenprojeect/js_mavenproject.js" ></script>
+        <!--end: mavenproject-->
+        
+        <!--begin: mavenproject-->
+        <script src="resources/js/js-angularproject/js_angularproject.js" ></script>
         <!--end: mavenproject-->
 
         <script src="resources/js/js-tdd/js_tdd.js" ></script>

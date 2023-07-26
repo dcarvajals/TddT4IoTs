@@ -12,13 +12,13 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     $scope.DataSession = {};
 
     angular.element(document).ready(function () {
-        console.log("angular on ready");
+        // console.log("angular on ready");
         $scope.chargeCommands();
 
         $scope.DataSession = getDataSession();
         $scope.utilParams.room = $scope.DataSession.email_person;
         websocketInit($scope.utilParams.room);
-        console.log("Datos de Usuarios", $scope.utilParams.room);
+        // console.log("Datos de Usuarios", $scope.utilParams.room);
     });
 
     $scope.deviceActive = {};
@@ -40,7 +40,7 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
                 "config": "conected"
 
             };
-            console.log("enviando", obj);
+            // console.log("enviando", obj);
             MessageSend(obj);
         }
     };
@@ -62,8 +62,8 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
                 $scope.command_list = [];
             }
         }, function (response) {
-            console.log("error");
-            console.log(response);
+            // console.log("error");
+            // console.log(response);
             $scope.command_list = [];
         });
     };
@@ -76,7 +76,7 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
         } else {
             $scope.utilParams.you = value;
         }
-        console.log("xyz", value);
+        // console.log("xyz", value);
     };
     $scope.setDevicesList = function (value, apply) {
         if (apply === true)
@@ -89,7 +89,7 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
             $scope.devices = value;
         }
 
-        console.log("devices", $scope.devices);
+        // console.log("devices", $scope.devices);
     };
     $scope.sendCommand = function () {
         let obj = {
@@ -97,7 +97,7 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
             "content": {"command": $scope.commands.text},
             "config": $scope.deviceActive.identifier
         };
-        console.log("enviando", obj);
+        // console.log("enviando", obj);
         MessageSend(obj);
     };
     $scope.setCommandResult = function (value, apply) {
@@ -126,8 +126,8 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     var ardWs;
     var SessionParams = {};
 
-//console.log(window.location);
-    console.log(url);
+//// console.log(window.location);
+    // console.log(url);
     function websocketInit(UserParams) {
         ardWs = new WebSocket(url);
         ardWs.onopen = onOpen;
@@ -141,19 +141,19 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     }
     function websocketOpen() {
         try {
-            console.log("estado:", ardWs.readyState);
+            // console.log("estado:", ardWs.readyState);
             if (ardWs.readyState === 1)
             {
             }
         } catch (e) {
-            console.log("sin ciadas", e);
+            // console.log("sin ciadas", e);
         }
     }
     function websocketClose() {
         bioWs.close();
     }
     function onOpen() {
-        console.log("conectado...");
+        // console.log("conectado...");
         let objmsg = {
             "header": SessionParams.groupid,
             "content": {
@@ -165,28 +165,28 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
         MessageSend(objmsg);
     }
     function onClose(evt) {
-        console.log("Desconectado...");
-        console.log(evt);
+        // console.log("Desconectado...");
+        // console.log(evt);
     }
     function onError(event) {
-        console.error("Error en el WebSocket detectado:");
-        console.log(event);
+        // console.error("Error en el WebSocket detectado:");
+        // console.log(event);
     }
     function MessageSend(obj) {
-        console.log("enviando...");
+        // console.log("enviando...");
         let objmsg = JSON.stringify(obj);
         if (objmsg.length <= 10000450)
         {
             ardWs.send(objmsg);
-            console.log("enviand mensaje:sock");
-            console.log(objmsg);
+            // console.log("enviand mensaje:sock");
+            // console.log(objmsg);
         } else {
             alertAll({status: 4, information: "The message exceeds the limit."});
         }
     }
     function onMessage(evt) {
         var obj = JSON.parse(evt.data);
-        console.log(obj);
+        // console.log(obj);
         if (obj.config === "mejoin")
         {
             SessionParams.identifiew = obj.content;

@@ -35,15 +35,15 @@ app.controller("diagramsuml_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {
                         $scope.myprojects = data.data;
                     });
                     alertAll(data);
-                    console.log($scope.myprojects);
+                    // console.log($scope.myprojects);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else

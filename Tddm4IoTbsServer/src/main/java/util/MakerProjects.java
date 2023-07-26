@@ -7,10 +7,7 @@ package util;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import java.io.File;
-import java.io.IOException;
-//import java.io.File;
 
 /**
  * @author tonyp
@@ -18,6 +15,126 @@ import java.io.IOException;
 public class MakerProjects {
 
     private static String attrs = "";
+
+    public static void createAngularProject(String contextPath, String relPath, String ProjectName1, String info) {
+        FileAccess fac = new FileAccess();
+        String ProjectName = ProjectName1 + DataStatic.folderAngular;
+        String projectPath = contextPath + relPath;
+
+        // obtener las entities
+        JsonObject entitiesJson = Methods.stringToJSON(info);
+
+        //validar si existe la carpeta madre donde se va guardar el proyecto
+        File folderDad = new File(projectPath + ProjectName);
+        if (folderDad.exists() && folderDad.isDirectory()) { // si existe la carpeta
+            folderDad.delete(); // la eliminamos
+        }
+
+        String[] commands = new String[]{
+            String.format("cd \"%s\"", (projectPath)),
+            String.format("ng new %s --skip-install", ProjectName) // con este comando volvemos a crear la carpeta con lo nuevo que se ha generado
+        };
+
+        JsonArray entitiesJava = Methods.JsonToArray(entitiesJson, "entities");
+
+        System.out.println("#####################################################");
+        System.out.println("##         INICIO GENERACIÓN ANGULAR PROJECT       ##");
+        System.out.println("#####################################################");
+
+        CommandWindow terminal = new CommandWindow();
+        projectPath = projectPath + ProjectName;
+        if (terminal.status) {
+            String logs = terminal.ejecutarComandos(commands);
+            System.out.println(logs);
+
+            String folderTemplateAngular = contextPath + DataStatic.folderTemplate + DataStatic.folferTempateAngular;
+
+            // crear la carpeta donde se crearan los modelos de cada entidad en ts
+            File folderModel = new File(projectPath + "/src/app/Models/");
+            if (!folderModel.exists() && !folderModel.isDirectory()) {
+                folderModel.mkdir(); // creamos la carpeta
+            }
+
+            for (int posEntitie = 0; posEntitie < entitiesJava.size(); posEntitie++) {
+                JsonObject entitie = Methods.JsonElementToJSO(entitiesJava.get(posEntitie));
+                String templateInterface = fac.readFileText(folderTemplateAngular + "interfaceTemplate.txt", "f");
+                templateInterface = templateInterface.replace("{$s}", "\n");
+                String entitieName = Methods.JsonToString(entitie, "className", "");
+                String modifiers = Methods.JsonToString(entitie, "modifiers", "");
+                terminal = new CommandWindow();
+                if (!modifiers.equals("interface") && !entitieName.contains("DAO")) {
+                    commands = new String[]{
+                        String.format("cd \"%s\"", projectPath),
+                        String.format("ng generate component %s", entitieName)
+                    };
+                    logs = terminal.ejecutarComandos(commands);
+                    System.out.println(logs);
+
+                    JsonArray attributes = Methods.JsonToArray(entitie, "attributes");
+                    String imports = "";
+                    String nameAttr = "";
+                    boolean tieneid = false;
+                    for (int posAttr = 0; posAttr < attributes.size(); posAttr++) {
+                        JsonObject attribute = Methods.JsonElementToJSO(attributes.get(posAttr));
+                        String name = Methods.JsonToString(attribute, "name", "");
+                        String primary_key = Methods.JsonToString(attribute, "primary_key", "");
+                        String not_null = Methods.JsonToString(attribute, "not_null", "");
+                        String length_precision = Methods.JsonToString(attribute, "length_precision", "");
+                        String type = Methods.JsonToString(attribute, "type", "");
+                        String cardinalidate = Methods.JsonToString(attribute, "cardinalidate", "");
+
+                        if (!name.equals("")) {
+                            if (type.matches("[int,Int,float,Float,Double,double,Long,long]")) {
+                                type = ": number";
+                            } else if (name.split(":").length == 2) {
+                                String[] nameSplit = name.split(":");
+                                String object = (nameSplit[1].contains("[]") ? nameSplit[1].replace("[]", "") : nameSplit[1]);
+                                imports += "import {" + object+ "} from \"./" + object + "\";\n";
+                                type = "";
+                                if (!name.contains("[]")) {
+                                    if (cardinalidate.equals("1..*")) {
+                                        name = name + "[]";
+                                    }
+                                }
+                            } else {
+                                type = ": string";
+                            }
+
+                            if (!name.contains("DAO")) {
+                                if (primary_key.equals("true") && !tieneid) {
+                                    if (!name.equals("id")) {
+                                        System.out.println("NO TIENE EL ATRIBUTO ID, POR LO TANTO SE LE AGREGARA UNO POR DEFECTO");
+                                        nameAttr += "\t id: number";
+                                        posAttr = -1;
+                                        tieneid = true;
+                                    } else {
+                                        // agregar el id
+                                        nameAttr += "\t " + name + " " + type;
+                                    }
+                                } else {
+                                    nameAttr += "\t " + name + " " + type;
+                                }
+                            }
+                            nameAttr += ((posAttr < attributes.size() - 1) && !name.equals("") ? ", \n" : "\n");
+                        }
+                    }
+                    templateInterface = templateInterface.replace("{$imports}", imports);
+                    templateInterface = templateInterface.replace("{$nameInterface}", entitieName);
+                    templateInterface = templateInterface.replace("{$attributes}", nameAttr);
+                    // crear los archivos .ts para entidad
+                    FileAccess classEntitie = new FileAccess();
+                    classEntitie.writeFileText(projectPath + "\\src\\app\\Models\\" + entitieName + ".ts", templateInterface);
+                    System.out.println("PathZip: " + contextPath + relPath);
+                    System.out.println("Creaando interface ts ->" + entitieName + " \n");
+                }
+            }
+
+            System.out.println("#####################################################");
+            System.out.println("##         FIN GENERACIÓN ANGULAR PROJECT          ##");
+            System.out.println("#####################################################");
+            System.out.println("Maker Maven: " + projectPath);
+        }
+    }
 
     public static void createMavenProject(String contextPath, String relPath, String ProjectName1, String info) {
 
@@ -33,6 +150,15 @@ public class MakerProjects {
         String dependencieDataBase = url_data_base.equals("org.postgresql.Driver") ? "postgresql"
                 : url_data_base.equals("com.microsoft.sqlserver.jdbc.SQLServerDriver") ? "sqlserver" : "mysql";
 
+        //validar si existe la carpeta madre donde se va guardar el proyecto
+        File folderDad = new File(projectPath);
+        if (!folderDad.exists() && !folderDad.isDirectory()) {
+            folderDad.mkdir(); // creamos la carpeta
+        } else {
+            folderDad.delete(); // eliminamos la carpeta
+            folderDad.mkdir(); // la volvemos a crear
+        }
+
         String[] commands = new String[]{
             String.format("cd \"%s\"", (projectPath)),
             String.format("spring init --artifactId=%s --boot-version=3.1.2 --build=maven --dependencies=data-jpa,web,%s,ws,lombok --description=\"Description %s\" --groupId=com.tddt4iots --java-version=17 --language=java --name=%s --packaging=war --package-name=com.app.tddt4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, dependencieDataBase, ProjectName, ProjectName, projectPath)
@@ -41,36 +167,25 @@ public class MakerProjects {
         JsonArray entitiesJava = Methods.JsonToArray(entitiesJson, "entities");
         JsonArray enumsJava = Methods.JsonToArray(entitiesJson, "enums");
         JsonArray testJava = Methods.JsonToArray(entitiesJson, "test");
-        System.out.println("ENTIDADES PARA GENERAR CODIGO JAVA " + entitiesJava);
-        System.out.println("JTESTUNIT PARA CODIGO JAVA " + testJava);
-        System.out.println("ENUMS PARA GENERAR CODIGO JAVA " + enumsJava);
 
         System.out.println("#####################################################");
         System.out.println("##         INICIO GENERACIÓN MAVEN PROJECT         ##");
         System.out.println("#####################################################");
 
-        //Thread th = new Thread(() -> {
         CommandWindow terminal = new CommandWindow();
         if (terminal.status) {
             String logs = terminal.ejecutarComandos(commands);
+
             System.out.println(logs);
 
-            String metaFolder = contextPath + DataStatic.folderTemplate + DataStatic.folderMvn;
+            //<editor-fold desc="Configuración general del proyecto Spring">
             String folferTempateJava = contextPath + DataStatic.folderTemplate + DataStatic.folferTempateJava;
-
-            System.out.println(folferTempateJava);
-
             File tmpFolder;
-
             // application properties
             FileAccess applicationProperties = new FileAccess();
             String templateApplication = fac.readFileText(folferTempateJava + "applicationProTemplate.txt", "f");
-
-            String databaseName = Methods.JsonToString(conectionDataBase, "db_name", "");
             String passwordDataBase = Methods.JsonToString(conectionDataBase, "db_password", "");
-            String portDataBase = Methods.JsonToString(conectionDataBase, "db_port", "");
             String portApplication = Methods.JsonToString(conectionDataBase, "db_port_app", "");
-            String severDataBase = Methods.JsonToString(conectionDataBase, "db_sever", "");
             String db_user = Methods.JsonToString(conectionDataBase, "db_user", "");
             String jdbc = Methods.JsonToString(conectionDataBase, "jdbc", "");
             String create = Methods.JsonToString(conectionDataBase, "create", "");
@@ -86,30 +201,26 @@ public class MakerProjects {
             templateApplication = templateApplication.replace("{$create-drop-table}", create.equals("true") && createDrop.equals("false") ? "create" : create.equals("false") && createDrop.equals("true") ? "create-drop" : "none");
 
             applicationProperties.writeFileText(projectPath + "\\src\\main\\resources\\application.properties", templateApplication);
+            //</editor-fold>
 
+            //<editor-fold desc="Crear las entidades">
             //Model
             tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\entities");
             tmpFolder.mkdir();
 
-            //<editor-fold desc="Crear las entidades">
             for (int posEntitie = 0; posEntitie < entitiesJava.size(); posEntitie++) {
                 // obtener el json de la posicion respectiva
                 JsonObject entitie = Methods.JsonElementToJSO(entitiesJava.get(posEntitie));
                 String entitieName = Methods.JsonToString(entitie, "className", "");
-
                 String modifiers = Methods.JsonToString(entitie, "modifiers", "");
-
                 if (!modifiers.equals("interface") && !entitieName.contains("DAO")) {
-
                     // buscar la platilla para las entites
                     String templateEntitie = fac.readFileText(folferTempateJava + "entitieTemplate.txt", "f");
                     templateEntitie = templateEntitie.replace("{$s}", "\n");
                     // nombre de la clase
                     templateEntitie = templateEntitie.replace("{$nameClass}", entitieName);
-                    System.out.println(templateEntitie);
                     // crear los atributos de las clases
                     JsonArray attributes = Methods.JsonToArray(entitie, "attributes");
-                    System.out.println("ATRIBUTOS " + attributes);
                     String nameAttr = "";
                     String imports = "";
                     boolean tieneid = false;
@@ -239,7 +350,6 @@ public class MakerProjects {
                 templateEnum = templateEnum.replace("{$s}", "\n");
                 templateEnum = templateEnum.replace("{$nameClass}", nameEnum);
                 templateEnum = templateEnum.replace("{$params}", elementos.replaceAll("\"", ""));
-                System.out.println(templateEnum);
                 FileAccess classEntitie = new FileAccess();
                 classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\enums\\" + nameEnum + ".java", templateEnum);
                 System.out.println("PathZip: " + contextPath + relPath);
@@ -311,9 +421,9 @@ public class MakerProjects {
                             String dataTypeParam = Methods.JsonToString(parametersObject, "type", "");
                             dataTypeParam = dataTypeParam.equals("Int") ? "int" : dataTypeParam;
                             String nameParam = Methods.JsonToString(parametersObject, "name", "");
-                            parametersText += (dataTypeParam + " " + nameParam) + (posParam < parameters.size() - 1  ? ", " :"");
+                            parametersText += (dataTypeParam + " " + nameParam) + (posParam < parameters.size() - 1 ? ", " : "");
                         }
-                        
+
                         if (parametersText.length() > 0) {
                             methodsClass += "(" + parametersText + "); \n \n";
                         } else {
@@ -354,7 +464,7 @@ public class MakerProjects {
                         String nameMehotd = Methods.JsonToString(methodObject, "name", "");
                         String visibility = Methods.JsonToString(methodObject, "visibility", "");
                         methodsClass += "\t@Override \n";
-                        methodsClass += "\t" +visibility + " " + dataType + " " + nameMehotd;
+                        methodsClass += "\t" + visibility + " " + dataType + " " + nameMehotd;
                         String parametersText = "";
                         // buscar los parametros
                         JsonArray parameters = Methods.JsonToArray(methodObject, "parameters");
@@ -363,17 +473,17 @@ public class MakerProjects {
                             String dataTypeParam = Methods.JsonToString(parametersObject, "type", "");
                             dataTypeParam = dataTypeParam.equals("Int") ? "int" : dataTypeParam;
                             String nameParam = Methods.JsonToString(parametersObject, "name", "");
-                            parametersText += (dataTypeParam + " " + nameParam) + (posParam < parameters.size() - 1 ? ", " :"");
+                            parametersText += (dataTypeParam + " " + nameParam) + (posParam < parameters.size() - 1 ? ", " : "");
                         }
                         if (parametersText.length() > 0) {
                             methodsClass += "(" + parametersText + ") { \n";
                         } else {
                             methodsClass += "() { \n";
                         }
-                        
+
                         methodsClass += "\t \t// Inside this block you can enter your code implementing the business logic you need. \n";
-                        
-                        if(dataType.equals("void")) {
+
+                        if (dataType.equals("void")) {
                             methodsClass += "\t} \n";
                         } else {
                             methodsClass += "\t \t" + dataType + " response = null; \n";
@@ -392,8 +502,8 @@ public class MakerProjects {
                     System.out.println("Creaando servicieImpl ->" + entitieName + "Servicie \n");
                 }
             }
-
             //</editor-fold>
+
             //<editor-fold desc="Crear las clases para las test">
             for (int posTest = 0; posTest < testJava.size(); posTest++) {
                 // buscar la platilla para las entites
@@ -423,7 +533,7 @@ public class MakerProjects {
                             String name = Methods.JsonToString(paramtersObject, "name", "");
                             String value = Methods.JsonToString(paramtersObject, "value", "");
                             codeMethods += "\t \t" + dataType + " " + name + " = " + value + "; \n";
-                            paramMethodsInvocation += name + (posParamMethod < parameters.size() - 1 ? ", " :"");;
+                            paramMethodsInvocation += name + (posParamMethod < parameters.size() - 1 ? ", " : "");;
 
                         }
                         String dataTypeReturn = Methods.JsonToString(returnObject, "type", "");
@@ -449,15 +559,15 @@ public class MakerProjects {
                 }
             }
             //</editor-fold>
-
-            System.out.println(logs);
-            System.out.println("########################  FIN    ###################################");
-            System.out.println("Maker Maven: " + projectPath);
-
         }
 
+        System.out.println("#####################################################");
+        System.out.println("##         FIN GENERACIÓN MAVEN PROJECT            ##");
+        System.out.println("#####################################################");
+        System.out.println("Maker Maven: " + projectPath);
+
     }
-    
+
     private static String makeFirstLetterLowerCase(String str) {
         if (str == null || str.isEmpty()) {
             return str;
@@ -466,29 +576,11 @@ public class MakerProjects {
         char firstLetter = Character.toLowerCase(str.charAt(0));
         return firstLetter + str.substring(1);
     }
-    
-    public static void MaketarMaven(String contextPath, String relPath) {
 
-        String demo = "MavenApplication";
-        String path = contextPath + relPath + demo;
-        Thread th = new Thread(() -> {
+    public static void encapsularProyectoZip(String contextPath, String relPath) {
             FileAccess fac = new FileAccess();
             fac.makeZipFromFolder(contextPath, relPath + ".zip");
             System.out.println("PathZip: " + relPath);
-        });
-        th.start();
     }
 
-    public static void setMavenProject(String contextPath, String relPath, String ProjectName1, String info) {
-        FileAccess fac = new FileAccess();
-        String ProjectName = fac.cleanFileName(ProjectName1);
-
-        String demo = "MavenApplication";
-        String projectPath = contextPath + relPath + demo;
-
-        projectPath += projectPath + "/" + ProjectName;
-
-        //info
-        // PROCESA Y GENERA LAS CLASES JAVA DENTRO DEL MAVEN PROJECT
-    }
 }

@@ -71,7 +71,7 @@ app.controller("component_controller", function ($scope, $http) {
         modelView.nodeGroupKeyProperty = "_g";
 
         let nodeView = [];
-        console.log(location.origin + '/' + $scope.routeImgComponent + $scope.detailsComponenteSelected.pathimg_component +'/component.png');
+        // console.log(location.origin + '/' + $scope.routeImgComponent + $scope.detailsComponenteSelected.pathimg_component +'/component.png');
         nodeView.push({
             key: 1,
             img: location.origin + '/' +$scope.routeImgComponent + $scope.detailsComponenteSelected.pathimg_component +'/component.png',
@@ -89,7 +89,7 @@ app.controller("component_controller", function ($scope, $http) {
         modelView.addNodeDataCollection(nodeView[0].ports);
         myDiagramView.model = modelView;
 
-        console.log($scope.detailsComponenteSelected);
+        // console.log($scope.detailsComponenteSelected);
     };
 
     $scope.returnDetailsComponent = () => {
@@ -127,7 +127,7 @@ app.controller("component_controller", function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
+                    // console.log(data);
                     $scope.$apply(function () {// Se puede optimizar con una sola petición en un ArrayJSON
                         if (type === 'ACTIVE') {
                             $scope.arrayComponentes = data.data;
@@ -146,7 +146,7 @@ app.controller("component_controller", function ($scope, $http) {
 
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    // console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -179,9 +179,9 @@ app.controller("component_controller", function ($scope, $http) {
         if (!masDeUnaImage) {
             let inputfile = document.getElementById("loadImage");
             let curFile = inputfile.files;
-            console.log(curFile[0]);
+            // console.log(curFile[0]);
             let ext = curFile[0].type.toString().split("/")[1];
-            console.log(ext);
+            // console.log(ext);
             if (ext === "png") {
 
                 let rutaImage = window.URL.createObjectURL(curFile[0]);
@@ -220,11 +220,11 @@ app.controller("component_controller", function ($scope, $http) {
         canvas = document.createElement("canvas");
         let img = new Image();
         img.src = rutaImage;
-        console.log("width: " + img.width + ", heigth: " + img.height);
+        // console.log("width: " + img.width + ", heigth: " + img.height);
         let ctx = canvas.getContext("2d");
         //ctx.clearRect(0, 0, img.width, img.height);
         ctx.clearRect(0, 0, img.width, img.height);
-        console.log(img);
+        // console.log(img);
         img.onload = function () {
             canvas.width = img.width;
             canvas.height = img.height;
@@ -258,7 +258,7 @@ app.controller("component_controller", function ($scope, $http) {
                 "max": form.ip_voltmax.$viewValue,
                 "_g": keyGroup
             });
-            console.log($scope.ports);
+            // console.log($scope.ports);
             for (var j = 0; j < $scope.ports.length; j++) {
                 var portdata = $scope.ports[j];
                 portdata.id = j;
@@ -282,7 +282,7 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.ip_voltmax = obj_port.max;
             $scope.ip_voltmin = obj_port.min;
         });
-        console.log(obj_port);
+        // console.log(obj_port);
     };
 
     $scope.selectedPortView = (obj_port) => {
@@ -297,7 +297,7 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.ip_voltmax_v = obj_port.max;
             $scope.ip_voltmin_v = obj_port.min;
         });
-        console.log(obj_port);
+        // console.log(obj_port);
     };
 
     $scope.cancelPortView = () => {
@@ -306,7 +306,7 @@ app.controller("component_controller", function ($scope, $http) {
 
     $scope.deletePort = (position) => {
         $scope.ports.splice(position, 1);
-        console.log($scope.ports);
+        // console.log($scope.ports);
     };
 
     $scope.updatePort = (form) => {
@@ -347,7 +347,7 @@ app.controller("component_controller", function ($scope, $http) {
             confirmButtonText: 'Yes, cancels all!'
         }).then((result) => {
             if (result.isConfirmed) {
-                console.log(myDiagram.model.toJson());
+                // console.log(myDiagram.model.toJson());
                 //limpiar el lienzo para editar los puertos del componente
                 myDiagram.clear();
                 //limpias el vector de puertos
@@ -415,11 +415,11 @@ app.controller("component_controller", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 $scope.loadComponentsHome();
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -436,7 +436,7 @@ app.controller("component_controller", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 $("#newComponent").show();
                 $("#listComponent").hide();
                 data.data[0].data_json.model.nodeDataArray[0].img =
@@ -478,11 +478,11 @@ app.controller("component_controller", function ($scope, $http) {
                 setup.setValue(b64_to_utf8(data.data[0].data_json.code.Setup));
                 methods.setValue(b64_to_utf8(data.data[0].data_json.code.Methods));
                 //loadEditCode();
-                console.log(data.data[0].name_component);
+                // console.log(data.data[0].name_component);
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -504,7 +504,7 @@ app.controller("component_controller", function ($scope, $http) {
                     "base64component": canvas.toDataURL(),
                     "dataPorts": JSON.stringify(jsonComponent)
                 };
-                console.log(api_param);
+                // console.log(api_param);
                 apiSaveComponent(api_param);
                 $scope.flag_update = false;
             }
@@ -525,7 +525,7 @@ app.controller("component_controller", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 //limpiar el lienzo para editar los puertos del componente
                 myDiagram.clear();
                 //limpias el vector de puertos
@@ -542,7 +542,7 @@ app.controller("component_controller", function ($scope, $http) {
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
@@ -574,7 +574,7 @@ app.controller("component_controller", function ($scope, $http) {
                     "dataPorts": JSON.stringify(jsonComponent),
                     "folderName": $scope.dataProject.pathimg_component
                 };
-                console.log(api_param);
+                // console.log(api_param);
                 apiUpdateSaveComponent(api_param);
                 $scope.flag_update = false;
             }
@@ -595,7 +595,7 @@ app.controller("component_controller", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                console.log(data);
+                // console.log(data);
                 //limpiar el lienzo para editar los puertos del componente
                 myDiagram.clear();
                 //limpias el vector de puertos
@@ -613,7 +613,7 @@ app.controller("component_controller", function ($scope, $http) {
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {
-                console.log("error: ", objXMLHttpRequest);
+                // console.log("error: ", objXMLHttpRequest);
             }
         });
     };
