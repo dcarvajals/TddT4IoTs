@@ -67,41 +67,33 @@
                     </div>
                     <!-- Card Body -->
                     <div class="card-body">
-                        <div class="card mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-dark">Symbols to describe use cases</h6>
-                            </div>
-                            <!-- Card Body -->
-                            <div class="card-body" style="overflow: auto;">
-                                <table class="table table-sm table-bordered table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th scope="col">Simbol</th>
-                                            <th scope="col">Description</th>              
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                        <!-- Card Body -->
+                        <table class="table table-sm table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Symbols</th>
+                                    <th scope="col">Description</th>              
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                                        <tr ng-repeat="keyinterpret in interpret" ng-click="loadExample(keyinterpret)" style="cursor: pointer">
-                                            <th scope="row" style="text-align: center">
-                                                <span class="badge badge-light">
-                                                    {{keyinterpret.simbol}}
-                                                </span>
-                                            </th>
-                                            <td> 
-                                                <span class="badge badge-success"> 
-                                                    {{keyinterpret.ascii.trim()}} 
-                                                </span>
-                                                <span style="font-size: 75%">
-                                                    : {{keyinterpret.description}}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                <tr ng-repeat="keyinterpret in interpret" ng-click="loadExample(keyinterpret)" style="cursor: pointer">
+                                    <th scope="row" style="text-align: center">
+                                        <span class="badge badge-light">
+                                            {{keyinterpret.simbol}}
+                                        </span>
+                                    </th>
+                                    <td> 
+                                        <!-- span class="badge badge-success"> 
+                                        {{keyinterpret.ascii.trim()}} 
+                                    </span -->
+                                        <span style="font-size: 75%">
+                                             {{keyinterpret.description}}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary rounded-pill btn-sm" data-dismiss="modal">Close</button>
@@ -303,7 +295,7 @@
                         <h5 ng-show="!flag_update" class="modal-title" id="exa">New Use Case</h5>
                         <h5 ng-show="flag_update" class="modal-title" id="exa2">Update Use Case</h5>
                     </div>
-                    <div class="modal-body overflow-auto" style="max-height: 500px;">
+                    <div class="modal-body overflow-auto" >
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                                 <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home"
@@ -321,7 +313,7 @@
                                  aria-labelledby="nav-home-tab">
                                 <div class="custom-control custom-checkbox mt-1 mb-1">
                                     <input type="checkbox" class="custom-control-input" id="customCheck1" checked>
-                                    <label class="custom-control-label" for="customCheck1">Show input not language symbol</label>
+                                    <label class="custom-control-label" for="customCheck1">Show input not symbol language</label>
                                 </div>
                                 <form id="form_usecase" name="form_usecase" ng-submit="createUseCaseUC(form_usecase, true)">
                                     <div class="row">
@@ -1191,7 +1183,7 @@
                         <button class="btn btn-primary btn-sm" ng-click="copyUseCase()"> Copy to Clipboard </button>
                         <div class="custom-control custom-checkbox mt-1 mb-1">
                             <input type="checkbox" class="custom-control-input" id="showSymbol" checked ng-model="showLS">
-                            <label class="custom-control-label" for="showSymbol">Show language symbol</label>
+                            <label class="custom-control-label" for="showSymbol">Show symbol language</label>
                         </div>
 
                         <table class="table table-sm table-bordered mt-2" id="viewUseCaseTable">
@@ -2324,7 +2316,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal para empaquetar el proyecto angular -->
         <div class="modal fade" id="modal_package_angular" tabindex="-1" role="dialog"
              aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
@@ -2393,7 +2385,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal para descargar el proyecto anngular -->
         <div class="modal fade" id="modal_download_angular" tabindex="-1" role="dialog"
              aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false"
@@ -2746,7 +2738,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
         <!--begin: mavenproject-->
         <script src="resources/js/js-mavenprojeect/js_mavenproject.js" ></script>
         <!--end: mavenproject-->
-        
+
         <!--begin: mavenproject-->
         <script src="resources/js/js-angularproject/js_angularproject.js" ></script>
         <!--end: mavenproject-->

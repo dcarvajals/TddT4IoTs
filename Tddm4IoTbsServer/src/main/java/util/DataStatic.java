@@ -27,7 +27,7 @@ public class DataStatic {
      //app.applications uteq
     public static String dbName = "tddt4iots";
     public static String dbUser = "postgres";
-    public static String dbPassword = "123456";
+    public static String dbPassword = "ACD5254BA9BB71B85948D702E8D9426569F6541BDC569E31B0F0CB25085A3F4F";
     public static String dbPort = "5432";
     public static String dbHost = "82.180.136.74";//remoto
     

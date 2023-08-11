@@ -205,7 +205,7 @@ public class MakerProjects {
 
             //<editor-fold desc="Crear las entidades">
             //Model
-            tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\entities");
+            tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\entities");
             tmpFolder.mkdir();
 
             for (int posEntitie = 0; posEntitie < entitiesJava.size(); posEntitie++) {
