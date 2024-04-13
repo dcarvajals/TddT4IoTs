@@ -15,12 +15,9 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import util.DataStatic;
 
-/**
- *
- * @author HECTOR CASANOVA
- */
-public class FillAndExport {
 
+public class FillAndExport {
+    private static boolean deploy=true;
     private String idp;
     private Integer type;
     private String path;
@@ -28,8 +25,9 @@ public class FillAndExport {
     private String nameProject;
     private Boolean part;
     private String cad;
+    private String pathdeploy;
 
-    public FillAndExport(String idp, Integer type, String path, String pathImage,String nameProject,Boolean part,String cad) {
+    public FillAndExport(String idp, Integer type, String path, String pathImage,String nameProject,Boolean part,String cad,String pathD) {
         this.cad=cad;
         this.idp = idp;
         this.type = type;
@@ -37,6 +35,7 @@ public class FillAndExport {
         this.pathImage = pathImage;
         this.nameProject=nameProject;
         this.part=part;
+        this.pathdeploy=pathD;
     }
 
     public File fillAndExport() {
@@ -45,15 +44,30 @@ public class FillAndExport {
             Map param = new HashMap();
 
             String patheportsjxml=pathImage;
+            System.out.println("noooooooooooo");
+            System.out.println(patheportsjxml);
             patheportsjxml=patheportsjxml.replace("target","src");
-            patheportsjxml=patheportsjxml.replace("Tddm4IoTbsServer-1.0-SNAPSHOT","main");
+            if (FillAndExport.deploy){
+                patheportsjxml=this.pathdeploy;
+                patheportsjxml+="areports/";
+            }else
+                patheportsjxml=patheportsjxml.replace("Tddm4IoTbsServer-1.0-SNAPSHOT","main\\java\\");
+            
             param.put("parampath", DataStatic.getLocation(pathImage) + "ImgEnc/imagen.png");
             param.put("cad", cad);
 
             
-            JasperReport report = JasperCompileManager.compileReport(patheportsjxml + "/../../../reports/" + (type.equals(1) ? "reportEntregable.jrxml"
-                                                                    : type.equals(2) ? "reportComponent.jrxml"
-                                                                    : type.equals(3) ? "reportTask.jrxml" : "reportAll.jrxml"));
+            JasperReport report=null;
+            if (FillAndExport.deploy)
+                report = JasperCompileManager.compileReport(patheportsjxml + (type.equals(1) ? "reportEntregable.jrxml"
+                                                                        : type.equals(2) ? "reportComponent.jrxml"
+                                                                        : type.equals(3) ? "reportTask.jrxml" : "reportAll.jrxml"));
+            else
+                report = JasperCompileManager.compileReport(patheportsjxml + "reports/" + (type.equals(1) ? "reportEntregable.jrxml"
+                                                                        : type.equals(2) ? "reportComponent.jrxml"
+                                                                        : type.equals(3) ? "reportTask.jrxml" : "reportAll.jrxml"));
+            
+            
             report.setProperty("net.sf.jasperreports.awt.ignore.missing.font", "true");
             JasperPrint print = JasperFillManager.fillReport(report, param, ConfigDSource.getData(this.idp, this.type,DataStatic.getLocation(pathImage)+"\\tddm4iotbs_projects\\",this.nameProject,part));
             File file = File.createTempFile("output", "pdf");

@@ -77,7 +77,7 @@ public class ReporteApi {
             type=encoder.textDecryptor(type);
 
         String path=request.getServletContext().getRealPath("");
-        FillAndExport fe=new FillAndExport(type,selection,path.substring(0, path.indexOf("TD4IOT")+7),path,nameProject,part,tittle);
+        FillAndExport fe=new FillAndExport(type,selection,path.substring(0, path.indexOf("TD4IOT")+7),path,nameProject,part,tittle,path);
         File file=fe.fillAndExport();
             
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");

@@ -1,0 +1,273 @@
+-- DROP FUNCTION public.project_entregable_insert(xml);
+
+CREATE OR REPLACE FUNCTION public.project_entregable_insert(xml_entregable xml)
+ RETURNS TABLE(message integer, datar text)
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+  status integer := 4;
+  idEntregable integer := -1;
+  root_xpath TEXT = '/project_entregable/';
+  BEGIN
+  	BEGIN
+		IF (((xpath(root_xpath|| 'stimateddate_entregable/text()', xml_entregable))[1]::text::date - (xpath(root_xpath|| 'startdate_entregable/text()', xml_entregable))[1]::text::date) >= 0) THEN
+
+			IF (Select (Select coalesce(sum(base_percentage_entregable), 0) from project_entregable where id_masterproject = (xpath(root_xpath|| 'id_masterproject/text()', xml_entregable))[1]::text::bigint
+				) + (xpath(root_xpath|| 'base_percentage_entregable/text()', xml_entregable))[1]::text::decimal(18,2) <= 100) THEN
+
+				IF ((select count(*) from project_entregable where name_entregable = (xpath(root_xpath|| 'name_entregable/text()', xml_entregable))[1]::text
+					and id_masterproject = (xpath(root_xpath|| 'id_masterproject/text()', xml_entregable))[1]::text::bigint)=0) THEN
+					RAISE NOTICE 'Va a insertar';
+
+
+				 IF(select case when count(members) = 0 then
+				   (
+					   Select count(*) from public.permit_master
+					   where person_id_person = (xpath(root_xpath|| 'personid/text()', xml_entregable))[1]::text::bigint
+					   and permit_pm = 'A' and
+					   master_project_id_masterproject = (xpath(root_xpath|| 'id_masterproject/text()', xml_entregable))[1]::text::bigint
+				   ) else count(members) end
+				   from validation_permisos(
+					(xpath(root_xpath|| 'personid/text()', xml_entregable))[1]::text::int,
+					(xpath(root_xpath|| 'id_entregable/text()', xml_entregable))[1]::text::bigint,
+					1
+					) where members IN ('A','C','F'))>0  THEN
+
+					INSERT INTO public.project_entregable(
+					id_masterproject, name_entregable, description_entregable, status_entregable, path_entregable, develop_status_entregable,
+					prioritylevel_entregable, base_percentage_entregable, actual_percentage_entregable, creationdate_entregable, updatedate_entregable, stimateddate_entregable, finishdate_entregable,
+					startdate_entregable)
+						VALUES (
+						(xpath(root_xpath|| 'id_masterproject/text()', xml_entregable))[1]::text::bigint,
+						(xpath(root_xpath|| 'name_entregable/text()', xml_entregable))[1]::text,
+						(xpath(root_xpath|| 'description_entregable/text()', xml_entregable))[1]::text,
+						(xpath(root_xpath|| 'status_entregable/text()', xml_entregable))[1]::text,
+						(xpath(root_xpath|| 'path_entregable/text()', xml_entregable))[1]::text,
+						(xpath(root_xpath|| 'develop_status_entregable/text()', xml_entregable))[1]::text,
+						(xpath(root_xpath|| 'prioritylevel_entregable/text()', xml_entregable))[1]::text::int,
+						(xpath(root_xpath|| 'base_percentage_entregable/text()', xml_entregable))[1]::text::decimal(18,2),
+						--(xpath(root_xpath|| 'actual_percentage_entregable/text()', xml_entregable))[1]::text::decimal(18,2),
+						0,
+						now(),
+						now(),
+						(xpath(root_xpath|| 'stimateddate_entregable/text()', xml_entregable))[1]::text::timestamp without time zone,
+						(xpath(root_xpath|| 'finishdate_entregable/text()', xml_entregable))[1]::text::timestamp without time zone,
+						(xpath(root_xpath|| 'startdate_entregable/text()', xml_entregable))[1]::text::timestamp without time zone
+
+					) returning id_entregable into idEntregable;
+					RAISE NOTICE 'Insertado correctamente , %', idEntregable;
+
+					IF(idEntregable IS NOT NULL) THEN
+						status:= 1;
+					ELSE
+						status:= 2;
+					END IF;
+				ELSE
+					status :=3;
+				END IF;
+				ELSE
+					status := 4;
+				END IF;
+			ELSE
+				status := 5;
+			END IF;
+		ELSE
+			status:=6;
+		END IF;
+		return query select status, (select COALESCE(array_to_json(array_agg(row_to_json(entregable.*))),'[]') as entregable from (
+			select *
+			from project_entregable as entregable
+			where entregable.id_entregable=idEntregable
+		) as entregable)::text;
+	EXCEPTION WHEN OTHERS THEN
+		raise notice 'Error % %', SQLERRM, SQLSTATE;
+		status:=7;
+		rollback;
+	END;
+END
+$function$
+;
+
+
+
+-- DROP FUNCTION public.validation_permisos(int4, int8, int4);
+
+CREATE OR REPLACE FUNCTION public.validation_permisos(idperson integer, identregable bigint, tipo integer)
+ RETURNS TABLE(per bigint, comp bigint, members character varying)
+ LANGUAGE plpgsql
+AS $function$
+  BEGIN
+  	BEGIN
+	if(tipo=1) then
+		return query select id_person,id_entregable,role_member as members from
+		(select row_number() over(partition by x.id_entregable order by caso asc)as num,* from
+		(select
+		row_number() over(partition by pe.id_entregable order by pe.id_entregable asc)
+		,case when role_member='F' then 1 else
+		 case when role_member='A' then 1 else
+		case when role_member='C' then 2 else
+		case when role_member='E' then 3 else 4 end end end END as caso,
+		cm.role_member,cm.id_person,pe.id_entregable from project_entregable pe
+		inner join project_entregable_component ec on pe.id_entregable=ec.id_entregable
+		inner join entregable_component_task ct on ec.id_entregable_component=ct.id_component
+		inner join entregable_component_members cm on cm.id_component_task=ct.id_task
+		where status_member = 'A'
+		)as x
+		 where id_person=idperson and id_entregable=identregable
+		)as xx
+		where num=1 and id_person=idperson and id_entregable=identregable;
+	end if;
+	if(tipo=2) then
+		return query select id_person as per,id_entregable_component as comp,role_member as members from
+		(select Row_number() over(partition by id_entregable_component order by cond asc )as num,* from
+		(select  Row_number() over(partition by id_entregable_component order by id_entregable_component asc ),
+		case when em.role_member='F' then 1 else
+		case when em.role_member='A' then 1 else
+		case when em.role_member='C' then 2 else
+		case when em.role_member='E' then 3 else 4 end end end end as cond
+		,id_person,id_entregable_component,role_member from project_entregable_component ec
+		inner join entregable_component_task ct on ct.id_component=ec.id_entregable_component
+		inner join entregable_component_members em on em.id_component_task=ct.id_task
+		where status_member = 'A'
+		order by id_entregable_component,cond asc)as x
+		where id_person=idperson and id_entregable_component=identregable
+		)as xx
+		where num=1 and id_person=idperson and id_entregable_component=identregable;
+	end if;
+	if(tipo=3) then
+		return query Select id_person,id_component_task ,role_member from entregable_component_task ct
+		inner join entregable_component_members  cm on ct.id_task=cm.id_component_task
+		where id_component_task = identregable and id_person = idperson and status_member = 'A';
+	end if;
+	EXCEPTION WHEN OTHERS THEN
+		raise notice '% %', SQLERRM, SQLSTATE;
+		rollback;
+	END;
+END;
+$function$
+;
+
+
+
+CREATE OR REPLACE FUNCTION public.project_entregable_component_task_insert(xml_component_task xml)
+ RETURNS TABLE(statusr integer, datar text)
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+  status integer := 4;
+  idComponentTask bigint := -1;
+  root_xpath TEXT = '/component_task/';
+  idComponent bigint := -1;
+  BEGIN
+  	BEGIN
+	idComponent :=(xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::bigint;
+
+	IF(((xpath(root_xpath|| 'startdate_task/text()', xml_component_task))[1]::text::date) >= (Select startdate_component from project_entregable_component where id_entregable_component = idComponent)::date
+			  AND
+			   ((xpath(root_xpath|| 'startdate_task/text()', xml_component_task))[1]::text::date) <= (Select stimateddate_component from project_entregable_component where id_entregable_component = idComponent)::date
+			  ) = TRUE THEN
+
+	IF(((xpath(root_xpath|| 'stimateddate_task/text()', xml_component_task))[1]::text::date) >= (Select startdate_component from project_entregable_component where id_entregable_component = idComponent)::date
+			  AND
+			   ((xpath(root_xpath|| 'stimateddate_task/text()', xml_component_task))[1]::text::date) <= (Select stimateddate_component from project_entregable_component where id_entregable_component = idComponent)::date
+			  ) = TRUE THEN
+
+
+	IF (((xpath(root_xpath|| 'stimateddate_task/text()', xml_component_task))[1]::text::date - (xpath(root_xpath|| 'startdate_task/text()', xml_component_task))[1]::text::date) >= 0) THEN
+
+		IF ((select count(*) from entregable_component_task where name_task = (xpath(root_xpath|| 'name_task/text()', xml_component_task))[1]::text
+			and id_component = (xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::bigint)=0) THEN
+
+			IF ((Select coalesce(sum(base_percentage_task), 0) from entregable_component_task where id_component = (xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::bigint)
+				+ (xpath(root_xpath|| 'base_percentage_task/text()', xml_component_task))[1]::text::decimal(18,2) <= 100) THEN
+
+				if(select case when count(members) = 0
+				   then
+						   (
+						   		Select count(*) from public.permit_master
+								 where person_id_person = (xpath(root_xpath|| 'personid/text()', xml_component_task))[1]::text::bigint
+								 and permit_pm = 'A' and
+								 master_project_id_masterproject = (xpath(root_xpath|| 'id_masterproject/text()', xml_component_task))[1]::text::bigint
+						   )
+				   else count(members) end
+				   from validation_permisos(
+						(xpath(root_xpath|| 'personid/text()', xml_component_task))[1]::text::int,
+						(xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::bigint,
+						2
+						) where members IN ('A','C','F'))>0  THEN
+					Insert into entregable_component_task (id_component,
+														  name_task, description_task, status_task, path_task,
+														  base_percentage_task, actual_percentage_task,
+														  creationdate_task, updatedate_task, stimateddate_task,
+														  finishdate_task, develop_status_task,
+														  startdate_task)
+					VALUES (
+						(xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::int,
+						(xpath(root_xpath|| 'name_task/text()', xml_component_task))[1]::text,
+						(xpath(root_xpath|| 'description_task/text()', xml_component_task))[1]::text,
+						(xpath(root_xpath|| 'status_task/text()', xml_component_task))[1]::text,
+						(xpath(root_xpath|| 'path_task/text()', xml_component_task))[1]::text,
+						(xpath(root_xpath|| 'base_percentage_task/text()', xml_component_task))[1]::text::decimal(18,2),
+						--(xpath(root_xpath|| 'actual_percentage_task/text()', xml_component_task))[1]::text::decimal(18,2),
+						0,
+						now(),
+						now(),
+						(xpath(root_xpath|| 'stimateddate_task/text()', xml_component_task))[1]::text::timestamp without time zone,
+						(xpath(root_xpath|| 'finishdate_task/text()', xml_component_task))[1]::text::timestamp without time zone,
+						(xpath(root_xpath|| 'develop_status_task/text()', xml_component_task))[1]::text,
+						(xpath(root_xpath|| 'startdate_task/text()', xml_component_task))[1]::text::timestamp without time zone
+
+					) returning id_task into idComponentTask;
+
+						insert into entregable_component_members (id_project_component ,id_person,id_component_task,role_member,status_member
+							,creationdate_em,updatedate_em)
+							values
+							(
+								(xpath(root_xpath|| 'id_component/text()', xml_component_task))[1]::text::int
+								,(xpath(root_xpath|| 'personid/text()', xml_component_task))[1]::text::int,
+								idComponentTask,
+								'A','A'
+								,now(),now());
+
+					RAISE NOTICE 'Insertado correctamente , %', idComponentTask;
+					IF(idComponentTask IS NOT NULL) THEN
+						status:= 1;
+					ELSE
+						status:= 2;
+					END IF;
+					else
+						status := 3;
+				end if;
+			ELSE
+				status := 4;
+			END IF;
+		ELSE
+			status:=5;
+		END IF;
+	ELSE
+		status := 6;
+	END IF;
+	ELSE
+		status := 7;
+	END IF;
+	ELSE
+		status := 8;
+	END IF;
+		RAISE NOTICE 'Insertado correctamente , %', idComponentTask;
+
+		return query select status, (select COALESCE(array_to_json(array_agg(row_to_json(component_task.*))),'[]') as component_task from (
+			select *
+			from entregable_component_task
+			where id_task = idComponentTask
+		) as component_task)::text;
+	EXCEPTION WHEN OTHERS THEN
+		raise notice 'Error % %', SQLERRM, SQLSTATE;
+		status:=4;
+		rollback;
+	END;
+END
+$function$
+;
+
+
+
