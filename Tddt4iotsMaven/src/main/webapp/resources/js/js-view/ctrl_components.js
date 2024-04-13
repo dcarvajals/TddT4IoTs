@@ -245,17 +245,23 @@ app.controller("component_controller", function ($scope, $http) {
         }
     };
 
+    // se agregaron nuevos campos a la configuracion de los puertos
     $scope.createPorst = (form) => {
         if (form.$valid) {
             $scope.ports.push({
                 "name_port": form.ip_nameport.$viewValue,
                 "digital": form.ip_isdigital.$viewValue,
                 "analog": form.ip_isanalog.$viewValue,
+                "digital_analog": form.ip_isdigital_analog.$viewValue,
+                "input": form.ip_isinput.$viewValue,
+                "output": form.ip_isoutput.$viewValue,
+                "input_output": form.ip_isinput_output.$viewValue,
                 "data": form.ip_isdata.$viewValue,
                 "loc": "0 0",
                 "energy": form.ip_isenergy.$viewValue,
                 "min": form.ip_voltmin.$viewValue,
                 "max": form.ip_voltmax.$viewValue,
+                "gnd": form.is_gnd.$viewValue,
                 "_g": keyGroup
             });
             // console.log($scope.ports);
@@ -281,6 +287,11 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.ip_isenergy = obj_port.energy;
             $scope.ip_voltmax = obj_port.max;
             $scope.ip_voltmin = obj_port.min;
+            $scope.ip_isdigital_analog = obj_port.digital_analog;
+            $scope.ip_isinput = obj_port.input;
+            $scope.ip_isoutput = obj_port.output;
+            $scope.ip_isinput_output = obj_port.input_output;
+            $scope.is_gnd = obj_port.gnd;
         });
         // console.log(obj_port);
     };
@@ -292,6 +303,11 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.ip_nameport_v = obj_port.name_port;
             $scope.ip_isdigital_v = obj_port.digital;
             $scope.ip_isanalog_v = obj_port.analog;
+            $scope.ip_isdigital_analog = obj_port.digital_analog;
+            $scope.ip_isinput = obj_port.input;
+            $scope.ip_isoutput = obj_port.output;
+            $scope.ip_isinput_output = obj_port.input_output;
+            $scope.is_gnd = obj_port.gnd;
             $scope.ip_isdata_v = obj_port.data;
             $scope.ip_isenergy_v = obj_port.energy;
             $scope.ip_voltmax_v = obj_port.max;
@@ -302,7 +318,7 @@ app.controller("component_controller", function ($scope, $http) {
 
     $scope.cancelPortView = () => {
         $("#modalPortView").modal("hide");
-    }
+    };
 
     $scope.deletePort = (position) => {
         $scope.ports.splice(position, 1);
@@ -318,6 +334,11 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.obj_edit_port.energy = form.ip_isenergy.$viewValue;
             $scope.obj_edit_port.max = form.ip_voltmax.$viewValue;
             $scope.obj_edit_port.min = form.ip_voltmin.$viewValue;
+            $scope.obj_edit_port.digital_analog = form.ip_isdigital_analog.$viewValue;
+            $scope.obj_edit_port.input = form.ip_isinput.$viewValue;
+            $scope.obj_edit_port.output = form.ip_isoutput.$viewValue;
+            $scope.obj_edit_port.input_output = form.ip_isinput_output.$viewValue;
+            $scope.obj_edit_port.gnd = form.is_gnd.$viewValue;
 
             $scope.editPort = false;
             $("#modalNewPort").modal("hide");
@@ -332,6 +353,11 @@ app.controller("component_controller", function ($scope, $http) {
         $scope.ip_isanalog = false;
         $scope.ip_isdata = false;
         $scope.ip_isenergy = false;
+        $scope.ip_isdigital_analog = false;
+        $scope.ip_isinput = false;
+        $scope.ip_isoutput = false;
+        $scope.ip_isinput_output = false;
+        $scope.is_gnd = false;
         $scope.ip_voltmax = "";
         $scope.ip_voltmin = "";
     };
@@ -471,6 +497,7 @@ app.controller("component_controller", function ($scope, $http) {
                 $scope.$apply(() => {
                     $scope.ip_namecomponent = data.data[0].name_component;
                     $scope.ip_descriptioncomponent = data.data[0].description_component;
+                    $scope.ip_typecomponent = data.data[0].type_component;
                 });
                 libraries.setValue(b64_to_utf8(data.data[0].data_json.code.Libraries));
                 variables.setValue(b64_to_utf8(data.data[0].data_json.code.Variables));

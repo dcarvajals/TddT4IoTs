@@ -79,8 +79,7 @@ function initDiagramProject() {
                                     if (result.isConfirmed) {
                                         e.diagram.commandHandler.deleteSelection();
                                         return true;
-                                    }
-                                    ;
+                                    };
                                 });
                             })
                     );
@@ -180,14 +179,16 @@ function initDiagramProject() {
             /*goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, fromArrow: "Circle"}),
              goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, toArrow: "Circle"}))*/;
 
+    var tool = myDiagram.toolManager.relinkingTool;
+    
     //VALIDACION DE LA CONEXION A LOS PUERTOS
-    myDiagram.toolManager.relinkingTool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
-        console.log(fromport.jb.portId);
+    tool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
+        /*console.log(fromport.jb.portId);
         console.log(toport.jb.portId);
         alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
-        return fromport.jb.portId === "Gnd";
-    }
-
+        return fromport.jb.portId === "Gnd";*/
+    };
+   
     goJs(go.Overview, "overView", {
         observed: myDiagram
     });
@@ -197,8 +198,6 @@ function initDiagramProject() {
     myDiagram.grid.gridCellSize = new go.Size(20, 20);
     myDiagram.toolManager.toolTipDuration = 5000;
 
-    console.log(myDiagram.model.nodeDataArray);
-
     myDiagram.mouseDrop = function (e) {
         //console.log(myDiagram.model.part)
         console.log(myDiagram.selection);
@@ -206,7 +205,114 @@ function initDiagramProject() {
         console.log(myDiagram.model.nodeDataArray[myDiagram.model.nodeDataArray.length - 1]);
         //angular.element($('[ng-controller="controllerWork"]')).scope().sendModel();
     };
+    
+    myDiagram.addDiagramListener("LinkDrawn", function(e) {
+        var link = e.subject; // El enlace que se acaba de dibujar.
+        var fromNode = link.fromNode;
+        var toNode = link.toNode;
+        var fromPort = link.fromPort;
+        var toPort = link.toPort;
+
+        // Aquí puedes añadir tu lógica de validación.
+        console.log("EVENTO AL SOLTAR LOS CABLES.");
+        console.log("fromNode", fromNode.data.key); // Asumiendo que 'key' es una propiedad de tu nodo.
+        console.log("toNode", toNode.data.key);
+        console.log("fromnode", fromNode.wb);
+        console.log("tonode", toNode.wb);
+        
+        validaciones = validarConexionCables(fromNode.wb, toNode.wb, link);
+        if(validaciones.showAlert) {
+            alertAll(validaciones);
+            if(validaciones.status !== 1){
+                myDiagram.model.removeLinkData(link.data);
+            }
+        }
+    });
 }
+
+validarConexionCables = (fromNode, toNode, link) => { 
+    let ac = angular.element($('[ng-controller="controllerWorkIoT"]')).scope();
+    let validationCable = {showAlert: true, status: 4, information: ""};
+    if((fromNode.digital || fromNode.analog || fromNode.digital_analog) 
+            && (!fromNode.input && !fromNode.output && !fromNode.input_output)) {
+        // validar la conexion entre puertos digitales y analogicos
+        if((fromNode.digital && !fromNode.analog) && (toNode.digital && !toNode.analog) && !fromNode.digital_analog) {
+            validationCable.showAlert = false;
+            return validationCable;
+        } else {
+            validationCable.showAlert = true;
+            validationCable.status = 3;
+            validationCable.information = "El puerto de partida espera un puerto digital";        
+        }
+
+        if((!fromNode.digital && fromNode.analog) && (!toNode.digital && toNode.analog) && !fromNode.digital_analog) {
+            validationCable.showAlert = false;
+            return validationCable;
+        } else {
+            validationCable.showAlert = true;
+            validationCable.status = 3;
+            validationCable.information = "El puerto de partida espera un puerto analogico";
+        }
+        
+        if(!fromNode.digital && !fromNode.analog && fromNode.digital_analog) {
+            $("#modalValidationCable").modal();
+            validationCable.showAlert = true;
+            validationCable.status = 1;
+            validationCable.information = "Configure the port to your preference";
+            ac.$apply(function () {
+                ac.typeFromPorts[0].info = "Digital";
+                ac.typeFromPorts[0].value = "digital";
+                ac.typeFromPorts[1].info = "Analog";
+                ac.typeFromPorts[1].value = "analog";
+                ac.ip_portFrom_name = fromNode.name_port; 
+                ac.fromNode = fromNode;
+                ac.toNode = toNode;
+                ac.cable = link;
+                ac.legendValidation = "Configure the port whether it will be digital or analog.";
+            });
+        }
+        
+    }
+    
+    if((fromNode.input || fromNode.output || fromNode.input_output) 
+            &&  (!fromNode.digital && !fromNode.analog && !fromNode.digital_analog)) {
+        // validar la conexion entre los puertos de entrada y salida
+        if((fromNode.input && !fromNode.output) && (toNode.output && !toNode.input) && !fromNode.input_output) {
+            validationCable.showAlert = false;
+            return validationCable;
+        } else {
+            validationCable.showAlert = true;
+            validationCable.status = 3;
+            validationCable.information = "El puerto de partida espera un puerto de salida, porque es de entrada";        
+        }
+
+        if((!fromNode.input && fromNode.output) && (!toNode.output && toNode.input) && !fromNode.input_output) {
+            validationCable.showAlert = false;
+            return validationCable;
+        } else {
+            validationCable.showAlert = true;
+            validationCable.status = 3;
+            validationCable.information = "El puerto de partida espera un puerto de entrada, porque es de salida";
+        }
+        
+        if(!fromNode.input && !fromNode.output && fromNode.input_output) {
+            $("#modalValidationCable").modal();
+            ac.$apply(function () {
+                ac.typeFromPorts[0].info = "Input";
+                ac.typeFromPorts[0].value = "input";
+                ac.typeFromPorts[1].info = "Output";
+                ac.typeFromPorts[1].value = "output";
+                ac.ip_portFrom_name = fromNode.name_port; 
+                ac.fromNode = fromNode;
+                ac.toNode = toNode;
+                ac.cable = link;
+                ac.legendValidation = "Configure the port whether it will be input or output.";
+            });
+        }
+    }
+    
+    return validationCable;
+};
 
 searchModel = (json_structure_iot_device) => {
     let model_loader = JSON.parse(json_structure_iot_device);
@@ -384,7 +490,7 @@ function initPalette() {
 
 //Cargar los datos de los componentes(funcion que debe servir para el webSocket)
 function loadComponents(obj) {
-    console.log(myDiagram.model);
+    //console.log(myDiagram.model);
     let components = [];
     let ports = [];
 
@@ -425,7 +531,6 @@ function loadComponents(obj) {
 
 getPorts = (param_ports) => {
     let ports = [];
-    console.log(param_ports.data_json.parameters);
     let ports_param = param_ports.data_json.parameters;
     if (ports_param !== undefined) {
         for (let i = 0; i < ports_param.length; i++) {
@@ -437,6 +542,11 @@ getPorts = (param_ports) => {
                 "data": ports_param[i].data,
                 "loc": ports_param[i].loc,
                 "energy": ports_param[i].energy,
+                "digital_analog": ports_param[i].digital_analog,
+                "input": ports_param[i].input,
+                "output": ports_param[i].output,
+                "input_output": ports_param[i].input_output,
+                "gnd": ports_param[i].gnd,
                 "min": ports_param[i].min,
                 "max": ports_param[i].max,
                 "idComponent": param_ports.id_component,

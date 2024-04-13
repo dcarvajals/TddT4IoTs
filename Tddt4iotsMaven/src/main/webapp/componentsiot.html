@@ -21,29 +21,59 @@
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-switch">
-                            <input ng-disabled="form_new_port.ip_isenergy.$viewValue ||
-                                                form_new_port.ip_isdata.$viewValue ||
-                                                form_new_port.ip_isanalog.$viewValue" type="checkbox"
+                            <input ng-disabled="" type="checkbox"
                                    name="ip_isdigital" ng-model="ip_isdigital"
                                    class="custom-control-input" id="isdigital">
-                            <label class="custom-control-label" for="isdigital">The port is of digital type</label>
-                        </div>
+                            <label class="custom-control-label" for="isdigital">Digital type</label>
+                        </div> 
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-switch">
-                            <input ng-disabled="form_new_port.ip_isdigital.$viewValue ||
-                                                form_new_port.ip_isdata.$viewValue ||
-                                                form_new_port.ip_isenergy.$viewValue" type="checkbox" name="ip_isanalog"
+                            <input ng-disabled="" type="checkbox" name="ip_isanalog"
                                    ng-model="ip_isanalog"
                                    class="custom-control-input" id="isanalog">
-                            <label class="custom-control-label" for="isanalog">The port is analog type</label>
+                            <label class="custom-control-label" for="isanalog">Analog type</label>
                         </div>
                     </div>
+                    <!-- DIGITAL Y ANALOGICO -->
                     <div class="form-group">
                         <div class="custom-control custom-switch">
-                            <input ng-disabled="form_new_port.ip_isdigital.$viewValue ||
-                                                form_new_port.ip_isanalog.$viewValue ||
-                                                form_new_port.ip_isenergy.$viewValue" type="checkbox" name="ip_isdata"
+                            <input ng-disabled="" type="checkbox" name="ip_isdigital_analog"
+                                   ng-model="ip_isdigital_analog"
+                                   class="custom-control-input" id="ip_isdigital_analog">
+                            <label class="custom-control-label" for="ip_isdigital_analog">Digital/analog type</label>
+                        </div>
+                    </div>
+                    <!-- ENTRADA -->
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input ng-disabled="" type="checkbox" name="ip_isinput"
+                                   ng-model="ip_isinput"
+                                   class="custom-control-input" id="ip_isinput">
+                            <label class="custom-control-label" for="ip_isinput">Input type</label>
+                        </div>
+                    </div>
+                    <!-- SALIDA -->
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input ng-disabled="" type="checkbox" name="ip_isoutput"
+                                   ng-model="ip_isoutput"
+                                   class="custom-control-input" id="ip_isoutput">
+                            <label class="custom-control-label" for="ip_isoutput">Output type</label>
+                        </div>
+                    </div>
+                    <!-- ENTRADA/SALIDA -->
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input ng-disabled="" type="checkbox" name="ip_isinput_output"
+                                   ng-model="ip_isinput_output"
+                                   class="custom-control-input" id="ip_isinput_output">
+                            <label class="custom-control-label" for="ip_isinput_output">Input/output type</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display: none">
+                        <div class="custom-control custom-switch">
+                            <input ng-disabled="" type="checkbox" name="ip_isdata"
                                    ng-model="ip_isdata"
                                    class="custom-control-input" id="isdata">
                             <label class="custom-control-label" for="isdata">The port will be used to send
@@ -52,9 +82,15 @@
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-switch">
-                            <input ng-disabled="form_new_port.ip_isdigital.$viewValue ||
-                                                form_new_port.ip_isdata.$viewValue ||
-                                                form_new_port.ip_isanalog.$viewValue" type="checkbox" name="ip_isenergy"
+                            <input ng-disabled="" type="checkbox" name="is_gnd"
+                                   ng-model="is_gnd"
+                                   class="custom-control-input" id="is_gnd">
+                            <label class="custom-control-label" for="is_gnd">Gnd</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input ng-disabled="" type="checkbox" name="ip_isenergy"
                                    ng-model="ip_isenergy"
                                    class="custom-control-input" id="ispower">
                             <label class="custom-control-label" for="ispower">The port is for power supply</label>

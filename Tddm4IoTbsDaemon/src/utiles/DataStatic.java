@@ -18,7 +18,7 @@ public class DataStatic {
     private static String domain = "localhost:8080/";
 
     private static String uriServer = "Tddm4IoTbsServer/";
-    private static String uriApplication = "tddm4iots/";
+    private static String uriApplication = "tddt4iots/";
 
     private static String uriWebSocket = "daemon_socket";
     private static String uriWebServices = "webapis/";

@@ -1,10 +1,52 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Start Page</title>
+        <title>Tddt4IoTs Server</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e; /* Fondo más oscuro para contrastar */
+            color: #d4d4d4; /* Gris claro para el texto general */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .consola {
+            width: 80%;
+            max-width: 800px; /* Ajusta al tamaño deseado */
+            padding: 20px;
+            background-color: #252526; /* Color de fondo de la consola, oscuro */
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .comando, .resultado {
+            margin: 0;
+            color: #9CDCFE; /* Azul claro para el texto, fácil de leer */
+        }
+
+        .comando::before {
+            content: "$ ";
+            color: #4EC9B0; /* Verde-azulado para el símbolo del sistema */
+        }
+
+        .resultado {
+            color: #CE9178; /* Naranja suave para los resultados */
+        }
+
+        .exito {
+            color: #B5CEA8; /* Verde claro para mensajes de éxito */
+        }
+    </style>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <div class="consola">
+        <p class="comando">> Iniciando proyecto Tddt4IoTs...</p>
+        <p class="resultado exito">El servidor ha sido levantado exitosamente.</p>
+    </div>
     </body>
 </html>

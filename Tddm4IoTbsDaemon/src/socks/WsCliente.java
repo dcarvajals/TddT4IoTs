@@ -7,12 +7,9 @@ package socks;
 
 import utiles.DataStatic;
 import java.net.URI;
-import java.net.URISyntaxException;
-import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.swing.JFrame;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
@@ -20,7 +17,6 @@ import utiles.JsonMessageUtils;
 import utiles.ScopeApp;
 import utiles.TerminalWindows;
 import utiles.UtilDesktop;
-import view.InitForm;
 //import util.DataStatic;
 
 /**

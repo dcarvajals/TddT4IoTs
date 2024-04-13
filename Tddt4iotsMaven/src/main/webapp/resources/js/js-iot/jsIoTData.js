@@ -34,13 +34,18 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     $scope.codeParameter = {};
     
     $scope.cofigParam = 0;
+    $scope.ip_portFrom_name = "";
+    $scope.legendValidation = "";
+    $scope.typeFromPorts = [{id: 0,value: "", info: ""}, {id: 1, value: "", info:""}];
+    $scope.fromNode = {};
+    $scope.toNode = {};
+    $scope.cable = {};
 
     $(document).ready(() => {
         if (window.location.search !== "") {
             $scope.DatoUsuario = getDataSession();
             let urlParams = new URLSearchParams(window.location.search);
             id_project = urlParams.get('identifiquer');
-            console.log(id_project);
 
             $scope.loadDataProject(id_project);
 
@@ -88,7 +93,6 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
                     $scope.$apply(() => {
                         $scope.dataProject = data.data[0];
                     });
@@ -111,7 +115,6 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 "hexadecimal": $scope.colorsHexa[i]
             });
         }
-        console.log($scope.arrayColors);
     };
 
     $scope.changeColorCable = (color) => {
@@ -143,11 +146,9 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
                     $scope.$apply(function () {
                         $scope.arrayComponentes = data;
                     });
-                    console.log(data);
                     loadComponents(data);
                 },
                 error: function (objXMLHttpRequest) {
@@ -308,7 +309,6 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 },
                 success: function (data) {
                     swal.close();
-                    console.log(data);
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
@@ -344,7 +344,6 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 success: function (data) {
                     swal.close();
                     data.data = JSON.stringify(data.data);
-                    console.log(data);
                     searchModel(data.data);
                     alertAll(data);
                 },
@@ -413,6 +412,44 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
 
     $scope.exportPng = () => {
         makeBlob();
+    };
+    
+    // Metodo para guardar la configuracion inicial de un puerto que fue 
+    // configurado como salida/entrada o digital/analogico
+    $scope.changeConfigurationPort = (form) => {
+        console.log($scope.fromNode);
+        
+        $scope.fromNode.digital = form.sc_portFrom_type.$viewValue === "digital";
+        $scope.fromNode.analog = form.sc_portFrom_type.$viewValue === "analog";
+        $scope.fromNode.input = form.sc_portFrom_type.$viewValue === "input";
+        $scope.fromNode.output = form.sc_portFrom_type.$viewValue === "output";
+        
+        $scope.fromNode.digital_analog = false;
+        $scope.fromNode.input_output = false;
+        
+        if(!$scope.toNode.digital && !$scope.toNode.analog && $scope.toNode.digital_analog) {
+            // cambiar al estado que se ajuste al nodo de partida
+            $scope.toNode.digital = form.sc_portFrom_type.$viewValue === "digital";
+            $scope.toNode.analog = form.sc_portFrom_type.$viewValue === "analog";
+            $scope.toNode.digital_analog = false;
+        } else if (!$scope.toNode.input && !$scope.toNode.output && $scope.toNode.input_output) {
+            $scope.toNode.input = !form.sc_portFrom_type.$viewValue === "input";
+            $scope.toNode.output = !form.sc_portFrom_type.$viewValue === "output";
+            $scope.toNode.input_output = false;
+        }
+        
+        $("#modalValidationCable").modal("hide");
+        alertAll({status:2, information: "Successful port configuration."});
+        
+        validaciones = validarConexionCables($scope.fromNode, $scope.toNode, $scope.cable);
+        if(validaciones.showAlert) {
+            alertAll(validaciones);
+            if(validaciones.status !== 1){
+                myDiagram.model.removeLinkData($scope.cable.data);
+            }
+        }
+        
+        console.log($scope.fromNode);
     };
 
     // ******************** //
