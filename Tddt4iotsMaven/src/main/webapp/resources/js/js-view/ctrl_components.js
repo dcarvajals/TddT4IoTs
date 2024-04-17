@@ -26,6 +26,9 @@ app.controller("component_controller", function ($scope, $http) {
     $scope.viewTypeListSelected = "0";
     $scope.detailsComponenteSelected = {};
     $scope.viewComponentsProposals = false;
+    $scope.searchComponent = ""; 
+    $scope.searchComponentMyCom = "";
+    $scope.searchComponentComPro = "";
 
     $(document).ready(() => {
         flagAlert = true;
@@ -41,12 +44,12 @@ app.controller("component_controller", function ($scope, $http) {
         $scope.viewMyComponents = true;
         $scope.viewComunityComponents = false;
         $scope.viewComponentsProposals = false;
-    }
+    };
 
     $scope.clickViewComunityComponents = () => {
         $scope.viewMyComponents = false;
         $scope.viewComunityComponents = true;
-    }
+    };
 
     $scope.clickViewComponentAdmin = () => {
         $scope.viewComponentsProposals = true;
@@ -103,7 +106,7 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.viewComunityComponents = true;
         }
         $scope.viewTypeListSelected = "0";
-    }
+    };
 
     $scope.loadComponentsHome = () => {
         $scope.loadComponents("ACTIVE");
@@ -278,6 +281,16 @@ app.controller("component_controller", function ($scope, $http) {
     $scope.selectedPort = (obj_port) => {
         $scope.editPort = true;
         $scope.obj_edit_port = obj_port;
+        
+        // parche por las modificaciones en los nuevos puertos de los componentes
+        if(obj_port.digital_analog === undefined && obj_port.input === undefined && obj_port.output === undefined && obj_port.input_output === undefined) {
+            $scope.obj_edit_port["digital_analog"] = false;
+            $scope.obj_edit_port["input"] = false;
+            $scope.obj_edit_port["output"] = false;
+            $scope.obj_edit_port["input_output"] = false;
+        }
+       
+        
         $("#modalNewPort").modal();
         $scope.$apply(() => {
             $scope.ip_nameport = obj_port.name_port;
@@ -287,10 +300,10 @@ app.controller("component_controller", function ($scope, $http) {
             $scope.ip_isenergy = obj_port.energy;
             $scope.ip_voltmax = obj_port.max;
             $scope.ip_voltmin = obj_port.min;
-            $scope.ip_isdigital_analog = obj_port.digital_analog;
-            $scope.ip_isinput = obj_port.input;
-            $scope.ip_isoutput = obj_port.output;
-            $scope.ip_isinput_output = obj_port.input_output;
+            $scope.ip_isdigital_analog = obj_port.digital_analog === undefined ? false : obj_port.digital_analog;
+            $scope.ip_isinput = obj_port.input === undefined ? false : obj_port.input;
+            $scope.ip_isoutput = obj_port.output === undefined ? false : obj_port.output;
+            $scope.ip_isinput_output = obj_port.input_output  === undefined ? false : obj_port.input_output;
             $scope.is_gnd = obj_port.gnd;
         });
         // console.log(obj_port);

@@ -1,0 +1,43 @@
+[
+    {
+        "name": "Rest Server Conection",
+        "code": {
+            "valueLibraries": "#include <SPI.h>\n#include <WiFiNINA.h> // Includes WiFiNINA library",
+            "valueVariables": "char ssid[] = \"network_name\";    // Your Wi-Fi network name\nchar pass[] = \"network_password\"; // Your Wi-Fi network password\nint status = WL_IDLE_STATUS;\nWiFiClient client;",
+            "valueSetup": "Serial.begin(9600); // Starts serial communication\n  while (!Serial);\n  // Connects to Wi-Fi network\n  status = WiFi.begin(ssid, pass);\n  if (status != WL_CONNECTED) {\n    Serial.println(\"Failed to connect to Wi-Fi network\");\n    while (true);\n  }\n  Serial.println(\"Connected to the Wi-Fi network\");",
+            "valueLoop": "if (client.connect(\"www.example.com\", 80)) { // Connects to the web server\n    Serial.println(\"Successfully connected to the server\");\n    // Sends a HTTP GET request\n    client.println(\"GET /endpoint HTTP/1.1\");\n    client.println(\"Host: www.example.com\");\n    client.println(\"Connection: close\");\n    client.println();\n    // Reads and displays server response\n    while (client.available()) {\n      char c = client.read();\n      Serial.print(c);\n    }\n    Serial.println();\n    client.stop(); // Closes the connection\n  } else {\n    Serial.println(\"Failed to connect to the server\");\n  }\n  delay(5000); // Waits 5 seconds before sending another request",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "Soap Server Conection",
+            "code": {
+                "valueLibraries": "#include <ArduinoXml.h>\n#include <WiFiNINA.h> // If you're using a Wi-Fi module",
+                "valueVariables": "char ssid[] = \"network_name\";    // Your Wi-Fi network name\nchar pass[] = \"network_password\"; // Your Wi-Fi network password\nWiFiClient client;",
+                "valueSetup": "Serial.begin(9600);\n  while (!Serial);\n  WiFi.begin(ssid, pass);\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println(\"WiFi connected.\");\n}",
+                "valueLoop": "if (client.connect(\"www.example.com\", 80)) {\n    Serial.println(\"Successfully connected to the server\");\n    // Build the SOAP request\n    String soapRequest = \"<soapenv:Envelope xmlns:soapenv=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\" xmlns:exam=\\\"http://www.example.com\\\">\";\n    soapRequest += \"<soapenv:Header/>\";\n    soapRequest += \"<soapenv:Body>\";\n    soapRequest += \"<exam:YourSOAPMethod>\";\n    soapRequest += \"<Parameter1>value1</Parameter1>\";\n    soapRequest += \"<Parameter2>value2</Parameter2>\";\n    soapRequest += \"</exam:YourSOAPMethod>\";\n    soapRequest += \"</soapenv:Body>\";\n    soapRequest += \"</soapenv:Envelope>\";\n    // Perform the HTTP POST request with the SOAP message\n    client.println(\"POST /yourservice HTTP/1.1\");\n    client.println(\"Host: www.example.com\");\n    client.println(\"Content-Type: text/xml; charset=utf-8\");\n    client.print(\"Content-Length: \");\n    client.println(soapRequest.length());\n    client.println(\"SOAPAction: \\\"\\\"\");\n    client.println();\n    client.print(soapRequest);\n    // Read and display server response\n    while (client.connected()) {\n      if (client.available()) {\n        char c = client.read();\n        Serial.print(c);\n      }\n    }\n    client.stop(); // Close the connection\n  } else {\n    Serial.println(\"Failed to connect to the server\");\n  }\n  delay(5000); // Wait 5 seconds before making another request",
+                "valueMethods": ""
+            }
+
+    },
+    {
+        "name": "WebSocket Conection",
+        "code" : {
+            "valueLibraries": "#include <ESP8266WiFi.h>\n#include <WebSocketsClient.h>",
+            "valueVariables": "const char* ssid = \"YourSSID\"; // Your WiFi network name\nconst char* password = \"YourPassword\"; // Your WiFi network password\nconst char* webSocketServer = \"echo.websocket.org\"; // Example WebSocket server\nWebSocketsClient webSocket;",
+            "valueSetup": "Serial.begin(115200);\n  delay(10);\n  // Connecting to WiFi network\n  Serial.println();\n  Serial.println();\n  Serial.print(\"Connecting to \");\n  Serial.println(ssid);\n  WiFi.begin(ssid, password);\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println(\"\");\n  Serial.println(\"WiFi connected\");\n  Serial.println(\"IP address: \");\n  Serial.println(WiFi.localIP());\n  // Initializing WebSocket client\n  webSocket.begin(webSocketServer);\n  webSocket.onEvent(webSocketEvent);",
+            "valueLoop": "webSocket.loop();",
+            "valueMethods": "// Function to send data to the WebSocket server\nvoid enviarDatosWebSocket(String data) {\n  if (webSocket.isConnected()) {\n    webSocket.sendTXT(data);\n  } else {\n    Serial.println(\"Error: Data could not be sent, WebSocket not connected\");\n  }\n}\n\n// Function that handles WebSocket events\nvoid webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {\n  switch (type) {\n    case WStype_DISCONNECTED:\n      Serial.println(\"Disconnected from server\");\n      break;\n    case WStype_CONNECTED:\n      Serial.println(\"Connected to server\");\n      break;\n    case WStype_TEXT:\n      Serial.println(\"Message received: \");\n      Serial.println((char *)payload);\n      // Here you can add code to process received data, if necessary\n      break;\n    default:\n      break;\n  }\n}"
+        }
+    },
+    {
+        "name": "Bluetooth Conection",
+        "code": {
+            "valueLibraries": "#include <SoftwareSerial.h>",
+            "valueVariables": "SoftwareSerial bluetooth(2, 3); // RX, TX pins for Bluetooth connection",
+            "valueSetup": "Serial.begin(9600); // Starts serial communication with the serial monitor\n  bluetooth.begin(9600); // Starts serial communication with the Bluetooth module\n}",
+            "valueLoop": "if (bluetooth.available()) { // If there are data available from the Bluetooth module\n    char receivedData = bluetooth.read(); // Reads the data received from the Bluetooth module\n    Serial.println(\"Data received via Bluetooth: \" + String(receivedData)); // Prints the received data on the serial monitor\n  }\n  if (Serial.available()) { // If there are data available from the serial monitor\n    char sentData = Serial.read(); // Reads the data entered by the user from the serial monitor\n    bluetooth.write(sentData); // Sends the data to the other device via Bluetooth\n  }",
+            "valueMethods": ""
+        }
+    }
+]

@@ -40,6 +40,8 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     $scope.fromNode = {};
     $scope.toNode = {};
     $scope.cable = {};
+    $scope.comunicationMethods = [];
+    $scope.modeConnection = {};
 
     $(document).ready(() => {
         if (window.location.search !== "") {
@@ -65,6 +67,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             $scope.getComponentes();
             $scope.loadColors();
             $scope.loadProject();
+            $scope.loadComunicationMethod();
         }
     });
 
@@ -241,7 +244,10 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
 
         if ($scope.jsonCode.length === 0) {
             //inicializar el json que contendra todo la estructura del codigo del sistema IOT
-            $scope.jsonCode = [{
+            $scope.jsonCode = [
+                {
+                    library: []
+                },{
                     variables: []
                 }, {
                     pinMode: []
@@ -249,6 +255,23 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     logic: []
                 }, {
                     params: []
+                },
+
+                // VARIABLES PARA EL CODIGO DE COMUNICACION DE DATOS a partir de la posciion 5
+                {
+                    libraryCommnunication: []
+                },
+                {
+                    variablesCommnunication: []
+                },
+                {
+                    setupCommunication: []
+                },
+                {
+                    loopCommunication: []
+                },
+                {
+                    methodsCommnunication: []
                 }];
 
         } else {
@@ -287,7 +310,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     "base64": ""
                 }
             ]),
-            "dataScript": "#test",
+            "dataScript": codeGeneral.getValue(),
             "module": "EasyIoT",
             "idproj": id_project
         };
@@ -517,7 +540,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             if ($("#selectPD" + $scope.arrayParameters[position].key).val() !== "---" &&
                     $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
                     $("#selectPD" + $scope.arrayParameters[position].key).val() === "digitalWrite") {
-                $scope.jsonCode[1].pinMode.push({
+                $scope.jsonCode[2].pinMode.push({
                     valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ", " +
                             $("#selectSD" + $scope.arrayParameters[position].key).val() + ");",
                     pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
@@ -525,7 +548,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     out_inp: true
                 });
             } else {
-                $scope.jsonCode[1].pinMode.push({
+                $scope.jsonCode[2].pinMode.push({
                     valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
                     pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
                     namePort: $scope.arrayParameters[position].name_port,
@@ -538,7 +561,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     $("#selectSD" + $scope.arrayParameters[position].key).val() === "---" &&
                     $("#selectPA" + $scope.arrayParameters[position].key).val() !== "---" &&
                     $("#selectPA" + $scope.arrayParameters[position].key).val() === "analogWrite") {
-                $scope.jsonCode[1].pinMode.push({
+                $scope.jsonCode[2].pinMode.push({
                     valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ",255);",
                     pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
                     namePort: $scope.arrayParameters[position].name_port,
@@ -550,7 +573,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                         $("#selectSD" + $scope.arrayParameters[position].key).val() !== "---" &&
                         $("#selectPA" + $scope.arrayParameters[position].key).val() === "---" &&
                         $("#selectPD" + $scope.arrayParameters[position].key).val() === "digitalWrite") {
-                    $scope.jsonCode[1].pinMode.push({
+                    $scope.jsonCode[2].pinMode.push({
                         valueWriteRaad: $("#selectPD" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ", " +
                                 $("#selectSD" + $scope.arrayParameters[position].key).val() + ");",
                         pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",OUTPUT);",
@@ -558,24 +581,24 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                         out_inp: true
                     });
 
-                    console.log($scope.jsonCode[1].pinMode);
+                    console.log($scope.jsonCode[2].pinMode);
                     //updateShina($scope.jsonCode);
                     updateCodeEditor();
                     return;
                 } else {
-                    $scope.jsonCode[1].pinMode.push({
+                    $scope.jsonCode[2].pinMode.push({
                         valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
                         pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
                         namePort: $scope.arrayParameters[position].name_port,
                         out_inp: false
                     });
-                    console.log($scope.jsonCode[1].pinMode);
+                    console.log($scope.jsonCode[2].pinMode);
                     //updateShina($scope.jsonCode);
                     updateCodeEditor();
                     return;
                 }
 
-                $scope.jsonCode[1].pinMode.push({
+                $scope.jsonCode[2].pinMode.push({
                     valueWriteRaad: $("#selectPA" + $scope.arrayParameters[position].key).val() + "(" + $scope.arrayParameters[position].name_port + ")",
                     pinModePort: "pinMode(" + $scope.arrayParameters[position].name_port + ",INPUT);",
                     namePort: $scope.arrayParameters[position].name_port,
@@ -585,7 +608,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         }
 
         console.log($scope.jsonValueDigitalRead);
-        console.log($scope.jsonCode[1].pinMode);
+        console.log($scope.jsonCode[0].pinMode);
         //updateShina($scope.jsonCode);
         updateCodeEditor();
     };
@@ -593,7 +616,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     //agregar los value de los parametros de los componentes que no son puertos digitales ni analogicos si no que solo transfieren datos
     $scope.addValueData = function (position) {
         //alert("datito");
-        $scope.jsonCode[3].params.push({
+        $scope.jsonCode[4].params.push({
             namePort: $scope.arrayParameters[position].name_port,
             valueParam: $("#input" + $scope.arrayParameters[position].key).val(),
             idComponent: $scope.arrayParameters[position].idComponent
@@ -601,6 +624,22 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         //updateShina($scope.jsonCode);
         updateCodeEditor();
     };
+
+    // agregar todo lo relacion a los modos de conexion del componente iot de comunicacion
+    $scope.addModeConection = function () {
+        console.log('Selected method:', $scope.modeConnection);
+        $scope.jsonCode[5].libraryCommnunication = [];
+        $scope.jsonCode[6].variablesCommnunication = [];
+        $scope.jsonCode[7].setupCommunication = [];
+        $scope.jsonCode[8].loopCommunication = [];
+        $scope.jsonCode[9].methodsCommnunication = [];
+        $scope.jsonCode[5].libraryCommnunication.push($scope.modeConnection.code.valueLibraries);
+        $scope.jsonCode[6].variablesCommnunication.push($scope.modeConnection.code.valueVariables);
+        $scope.jsonCode[7].setupCommunication.push($scope.modeConnection.code.valueSetup);
+        $scope.jsonCode[8].loopCommunication.push($scope.modeConnection.code.valueLoop);
+        $scope.jsonCode[9].methodsCommnunication.push($scope.modeConnection.code.valueMethods);
+        updateCodeEditor();
+    }
 
 
     //funcion que actualiazara el codigo por cualqueir modificacion que se valla realizando
@@ -610,37 +649,55 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         codeGeneral.setValue(code);
         code += "/* Code generated by TDDT4IoTS \n" +
                 " Date:  " + fecha.toDateString() + " */ \n ";
-        //actualizamos los cambios realizados en el json de las variables
-        //$scope.jsonCode[1].pinMode = $scope.jsonValueDigitalAnalog;
 
-        for (var indexVariables = 0; indexVariables < $scope.jsonCode[0].variables.length; indexVariables++) {
-            code += $scope.jsonCode[0].variables[indexVariables].type + " " + $scope.jsonCode[0].variables[indexVariables].var + ";\n";
+        for(let indexLibrary = 0; indexLibrary < $scope.jsonCode[5].libraryCommnunication.length; indexLibrary++) {
+            code += $scope.jsonCode[5].libraryCommnunication[indexLibrary] + "\n";
+        }
+
+        //actualizamos los cambios realizados en el json de las variables
+
+        for(let indexVariableCom = 0; indexVariableCom < $scope.jsonCode[6].variablesCommnunication.length; indexVariableCom++) {
+            code += $scope.jsonCode[6].variablesCommnunication[indexVariableCom] + "\n";
+        }
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].variables.length; indexVariables++) {
+            code += $scope.jsonCode[1].variables[indexVariables].type + " " + $scope.jsonCode[1].variables[indexVariables].var + ";\n";
         }
         code += "\n";
-        code += "void setup () \n";
-        code += "{ \n";
-        code += "    Serial.begin(9600); \n";
+        code += "void setup () { \n";
 
-        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].pinMode.length; indexVariables++) {
-            code += "    " + $scope.jsonCode[1].pinMode[indexVariables].pinModePort + "\n";
+        for(let indexSetupCom = 0; indexSetupCom < $scope.jsonCode[7].setupCommunication.length; indexSetupCom++) {
+            code += $scope.jsonCode[7].setupCommunication[indexSetupCom] + "\n";
         }
 
-        for (var indexVariables = 0; indexVariables < $scope.jsonCode[0].variables.length; indexVariables++) {
-            code += "    " + $scope.jsonCode[0].variables[indexVariables].var + " = " + $scope.jsonCode[0].variables[indexVariables].value + ";\n";
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[2].pinMode.length; indexVariables++) {
+            code += "    " + $scope.jsonCode[2].pinMode[indexVariables].pinModePort + "\n";
+        }
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].variables.length; indexVariables++) {
+            code += "    " + $scope.jsonCode[1].variables[indexVariables].var + " = " + $scope.jsonCode[1].variables[indexVariables].value + ";\n";
         }
         code += "}\n";
-        code += "void loop() \n\
-{\n";
+        code += "void loop() {\n";
 
-        for (var indexVariables = 0; indexVariables < $scope.jsonCode[1].pinMode.length; indexVariables++) {
-            if ($scope.jsonCode[1].pinMode[indexVariables].out_inp === true) {
-                code += "    " + $scope.jsonCode[1].pinMode[indexVariables].valueWriteRaad + "\n";
+        for(let indexLoopCom = 0; indexLoopCom < $scope.jsonCode[8].loopCommunication.length; indexLoopCom++) {
+            code += $scope.jsonCode[8].loopCommunication[indexLoopCom] + "\n";
+        }
+
+        for (var indexVariables = 0; indexVariables < $scope.jsonCode[2].pinMode.length; indexVariables++) {
+            if ($scope.jsonCode[2].pinMode[indexVariables].out_inp === true) {
+                code += "    " + $scope.jsonCode[2].pinMode[indexVariables].valueWriteRaad + "\n";
             }
         }
 
         //code += analize($scope.jsonCode[2].logic, 1);
 
         code += "}";
+
+        for(let indexMethodsCom = 0; indexMethodsCom < $scope.jsonCode[9].methodsCommnunication.length; indexMethodsCom++) {
+            code += $scope.jsonCode[9].methodsCommnunication[indexMethodsCom] + "\n";
+        }
+
         codeGeneral.setValue(code);
 
         console.log(code);
@@ -649,6 +706,35 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             $('[data-toggle="tooltip"]').tooltip();
         });
     }
+
+    // cargar los metodos de comunicacion
+    $scope.loadComunicationMethod = () => {
+        $http.get('resources/json/comunication.json').then(function(response) {
+            // Asumiendo que el archivo JSON tiene una estructura como { "methods": [...] }
+            $scope.communicationMethods = response.data;
+            console.log('Métodos de comunicación cargados:', $scope.communicationMethods);
+        }).catch(function(error) {
+            console.error('Error al cargar los métodos de comunicación:', error);
+        });
+    };
+
+    // descargar el codigo
+    $scope.downloadCode = function() {
+        // Create a Blob from the Arduino code
+        var blob = new Blob([codeGeneral.getValue()], { type: 'text/plain;charset=utf-8' });
+        var url = window.URL.createObjectURL(blob);
+
+        // Create a temporary anchor element and trigger the download
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'arduino_code.ino'; // Set the file name
+        document.body.appendChild(a); // Append the anchor to body
+        a.click(); // Simulate click on the anchor
+        document.body.removeChild(a); // Remove the anchor from body
+
+        // Clean up the URL object
+        window.URL.revokeObjectURL(url);
+    };
 
 
 });

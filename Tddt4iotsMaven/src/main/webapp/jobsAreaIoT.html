@@ -46,6 +46,7 @@
                 flex-direction: column;
                 height:100vh;
                 margin: 0;
+                font-family: 'Roboto Mono', monospace;
             }
         </style>
     </head>
@@ -114,7 +115,7 @@
                                     <i class="fas fa-save"></i> Save Dispositive</button>
                                 <button ng-click="exportPng()" class="btn badge badge-light"> <i class="fas fa-file-image"></i> Export file.png</button>
                                 <button class="btn badge badge-light"> <i class="fas fa-code"></i> View Code</button>
-                                <button class="btn badge badge-light"> <i class="fas fa-download"></i> Download Code</button>
+                                <button class="btn badge badge-light" ng-click="downloadCode()"> <i class="fas fa-download"></i> Download Code</button>
                                 <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i class="fas fa-sign-out-alt"></i> Exit</a>
                             </div>
                         </div>
@@ -194,6 +195,7 @@
                     <main style="padding: 0px !important; width: 80%; height: 100%" class="col-md-9 col-xl-10 py-md-3 pl-md-5 bd-content">
                         <div style="width: 100%; padding: 5px; background: #F8F9FC; display: flex; z-index: 100;
                              position: relative; height: 5%">
+                            <input class="form form-control form-control-sm" id="searchBox" type="text" placeholder="Search component palette..." oninput="searchComponentPalette()">
                             <button class="btn btn-sm"> <i class="fas fa-undo-alt"></i> </button>
                             <button class="btn btn-sm"> <i class="fas fa-redo-alt"></i> </button>
                             <div class="dropdown">
@@ -252,7 +254,20 @@
                                     </div>
                                 </div>
 
-                                <!--SECCION PARA PARAMETRIZAR CADA COMPONENTE SELECCIONADO-->
+                                <!--SECCION PARA CONFIGURAR LA COMUNICACION DEL COMPONENTE SELECCIONADO-->
+                                <div class="form-group" ng-show="cofigParam === 0">
+                                    <label class="col-form-label col-form-label-sm" for=""> Select the communication method </label>
+                                    <select class="form-control form-control-sm"
+                                            name="modeConnection"
+                                            id="modeConnection"
+                                            ng-model="modeConnection"
+                                            ng-options="domCommunication as domCommunication.name for domCommunication in communicationMethods"
+                                            ng-change="addModeConection()">
+                                        <option value="">Select a method</option>
+                                    </select>
+                                </div>
+
+                                <!--SECCION PARA PARAMETRIZAR LOS PUERTOS DE CADA COMPONENTE SELECCIONADO-->
                                 <div class="form-group" ng-repeat="domArrayParameters in arrayParameters" ng-show="cofigParam === 0">
                                     <!-- formulario para ingresar los puertos que estan conectados y poder generar el codigo arduino -->
                                     <div class="row">

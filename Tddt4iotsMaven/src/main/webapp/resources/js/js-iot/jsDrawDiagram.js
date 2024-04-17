@@ -10,6 +10,9 @@ var clearDiagram = true;
 
 var UnselectedBrush = "lightgray";  // item appearance, if not "selected"
 var SelectedBrush = "dodgerblue";   // item appearance, if "selected"
+var originalNodeDataArray = [];  // Array para almacenar los datos originales
+var puertos = [];
+
 
 //function para inicializar los tooltip de los componentes de boostrap
 $(function () {
@@ -20,6 +23,7 @@ $(function () {
 function initDiagramProject() {
     // diagram.isReadOnly = true; // solo lectura
     goJs = go.GraphObject.make;
+    
     myDiagram = goJs(go.Diagram, "lienzo", {
         padding: 20,
         allowCopy: false,
@@ -146,7 +150,7 @@ function initDiagramProject() {
                                     goJs(go.Picture,
                                             new go.Binding("source", "img"), {})
                                     )
-                            )
+                )
                     );
 
 
@@ -389,6 +393,86 @@ function initContextMenu() {
             );
 }
 
+function searchComponentPalette () {
+    var input = document.getElementById('searchBox').value.toLowerCase(); // obtener el texto del input
+    var palette = myPalette; // asegura que 'myPalette' esté disponible en este contexto
+    
+    if(input === "" || input.length === 0) {
+        palette.model.nodeDataArray = originalNodeDataArray;
+        return;
+    }
+
+    if (palette.model.nodeDataArray) {
+        var filteredArray = palette.model.nodeDataArray.filter(function(item) {
+            // Asumiendo que 'name' es la propiedad que contiene el nombre del componente
+            if (!item || typeof item.name !== 'string') {
+                return false; // Si no existe o no es string, excluye este item del resultado
+            }
+            return item.name.toLowerCase().includes(input);
+        });
+
+       /*let puertos = [];
+        let components = filteredArray.map(
+            dataItem => {
+                // Asegúrate de que la descripción no exceda los 100 caracteres
+                let description = dataItem.description;
+                if (description.length > 100) {
+                    description = description.substring(0, 99);
+                }
+
+                let puertoX = getPortsSearch(dataItem);
+                if(puertoX.length > 0) {
+                    puertos.push(...puertoX);
+                } 
+            }
+         );*/
+ 
+        var modelPalet = new go.GraphLinksModel();
+
+        myDiagram.model.nodeIsGroupProperty = "_isg";
+        myDiagram.model.nodeGroupKeyProperty = "_g";
+        modelPalet.nodeIsGroupProperty = "_isg";
+        modelPalet.nodeGroupKeyProperty = "_g";
+        
+        modelPalet.addNodeDataCollection(filteredArray);
+        modelPalet.addNodeDataCollection(puertos);
+        
+        palette.model = modelPalet;
+
+        //palette.model.nodeDataArray = filteredArray;
+    }
+}
+
+getPortsSearch = (param_ports) => {
+    let ports = [];
+    let ports_param = param_ports.ports;
+    if (ports_param !== undefined) {
+        for (let i = 0; i < ports_param.length; i++) {
+            ports.push({
+                "key": ports_param[i].name_port + "-" + param_ports.key,
+                "name_port": ports_param[i].name_port,
+                "digital": ports_param[i].digital,
+                "analog": ports_param[i].analog,
+                "data": ports_param[i].data,
+                "loc": ports_param[i].loc,
+                "energy": ports_param[i].energy,
+                "digital_analog": ports_param[i].digital_analog,
+                "input": ports_param[i].input,
+                "output": ports_param[i].output,
+                "input_output": ports_param[i].input_output,
+                "gnd": ports_param[i].gnd,
+                "min": ports_param[i].min,
+                "max": ports_param[i].max,
+                "idComponent": param_ports.key,
+                "_g": param_ports.key
+            });
+        }
+    }
+
+    return ports;
+
+};
+
 //Inicializar la paleta de los componentes
 function initPalette() {
     myPalette = goJs(go.Palette, "myPalette",
@@ -469,13 +553,12 @@ function initPalette() {
                         padding: 0, background: "#F1F1F3"},
                             goJs(go.TextBlock, {name: "TBE"},
                                     new go.Binding("text", "name"), {
-                                font: "bold  12px Roboto Mono",
-                                textAlign: "left", margin: new go.Margin(20, 0, 5, 0), width: 120,
-
+                                font: "bold  12px consolas",
+                                textAlign: "left", margin: new go.Margin(20, 0, 5, 0), width: 120
                             }),
                             goJs(go.TextBlock, {name: "TBD"},
                                     new go.Binding("text", "description"), {
-                                font: "9px Roboto Mono",
+                                font: "9px consolas",
                                 textAlign: "left", margin: new go.Margin(0, 10, 0, 10), width: 120,
                                 mouseEnter: function (e, TBD) {
                                     TBD.stroke = "#87D5FF";
@@ -491,7 +574,7 @@ function initPalette() {
 //Cargar los datos de los componentes(funcion que debe servir para el webSocket)
 function loadComponents(obj) {
     //console.log(myDiagram.model);
-    let components = [];
+    //let components = [];
     let ports = [];
 
     var model = new go.GraphLinksModel();
@@ -503,7 +586,7 @@ function loadComponents(obj) {
     modelPalet.nodeIsGroupProperty = "_isg";
     modelPalet.nodeGroupKeyProperty = "_g";
 
-    for (let i = 0; i < obj.data.length; i++) {
+   /* for (let i = 0; i < obj.data.length; i++) {
         components.push({
             //key: obj.data[i].id_component,
             img: rutasStorage.components + obj.data[i].pathimg_component + "/component.png",
@@ -524,9 +607,45 @@ function loadComponents(obj) {
         modelPalet.addNodeDataCollection(components[i].ports);
 
         //components[i].ports = undefined;
-    }
+    }*/
+    
+    //let puertos = [];
+    let components = obj.data.map(   
+        dataItem => {
+        // Asegúrate de que la descripción no exceda los 100 caracteres
+        let description = dataItem.description_component;
+        if (description.length > 100) {
+            description = description.substring(0, 99);
+        }
+        
+        let puertoX = getPorts(dataItem);
+        if(puertoX.length > 0) {
+            puertos.push(...puertoX);
+        }
+        
+
+        // Estructura de datos para un componente, incluyendo sus puertos
+        return {
+            key: dataItem.id_component,
+            img: rutasStorage.components + dataItem.pathimg_component + "/component.png",
+            name: dataItem.name_component,
+            type: dataItem.type_component,
+            description: description,
+            loc: "0 0",
+            _isg: true,
+            ports: getPorts(dataItem),
+            code: dataItem.data_json.code
+        };
+    });
+    
+        modelPalet.addNodeDataCollection(components);
+        modelPalet.addNodeDataCollection(puertos);
+    
+    
     //myDiagram.clear();
     myPalette.model = modelPalet;
+    // Guardar una copia de los datos originales
+    originalNodeDataArray = JSON.parse(JSON.stringify(myPalette.model.nodeDataArray));
 }
 
 getPorts = (param_ports) => {
