@@ -446,10 +446,10 @@ app.controller("myprojects_controller", function ($scope, $http) {
         if (form.$valid) {
             var dataUser = store.session.get("user_tddm4iotbs");
             
-            if (form.shared_np.$viewValue === dataUser["email_person"]) {
+          /*  if (form.shared_np.$viewValue === dataUser["email_person"]) {
                 alertAll({status: 3, information: "You cannot share your project to yourself."});
                 return;
-            }
+            }*/
             if (dataUser !== undefined && dataUser !== null) {
                 var shareJson = "";
                 alert($scope.flag_share_user_exists);

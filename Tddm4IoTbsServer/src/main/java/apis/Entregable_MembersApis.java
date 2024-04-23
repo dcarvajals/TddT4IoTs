@@ -148,7 +148,7 @@ public class Entregable_MembersApis {
     public Response getMembersComponent(String data) {
         String message = "";
         JsonObject Jso = Methods.stringToJSON(data);
-
+        System.out.println(data);
         if (Jso.size() > 0) {
             String id_component = Methods.JsonToString(Jso, "id_project_task", "");
             String type = Methods.JsonToString(Jso, "type", "");
