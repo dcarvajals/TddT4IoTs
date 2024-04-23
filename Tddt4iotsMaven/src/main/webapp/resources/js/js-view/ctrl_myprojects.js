@@ -85,7 +85,6 @@ app.controller("myprojects_controller", function ($scope, $http) {
     //Function that loads the members in a specific project
     $scope.loadMembersInProjects = (id_masterproject) => {
         var dataUser = store.session.get("user_tddm4iotbs");
-        alert(id_masterproject)
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
                 method: "POST",
@@ -105,7 +104,6 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     // console.log(data);
                     $scope.$apply(function () {
                         $scope.members_in_project = data.data;
-                        alert($scope.members_in_project);
                     });
 
                     alertAll(data);
@@ -452,7 +450,6 @@ app.controller("myprojects_controller", function ($scope, $http) {
             }
             if (dataUser !== undefined && dataUser !== null) {
                 var shareJson = "";
-                alert($scope.flag_share_user_exists);
                 if ($scope.flag_share_user_exists === false) {
                     shareJson = JSON.stringify({
                         "user_token": dataUser.user_token,
@@ -498,7 +495,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                                 $scope.flag_share_user_exists = data.data["valid_user"];
                                 
                                 if ($scope.flag_share_user_exists ===  true) {
-                                    $("#modalShareProject").modal('hide');
+                                    $("#modalShareProjectComplete").modal('hide');
                                 }
                             }
                             else {
@@ -609,8 +606,13 @@ app.controller("myprojects_controller", function ($scope, $http) {
     };
 
     $scope.cancelShareProject = () => {
-        $scope.shared_np = "";
-        $("#modalShareProject").modal('hide');
+        $("#modalShareProjectComplete").modal('hide');
+        $scope.flag_share_user_exists = true;
+    };
+    
+    $scope.closeShareProject = () => {
+        $("#modalShareProjectComplete").modal('hide');
+        $scope.flag_share_user_exists = true;
     };
 
     $scope.parseRole = function (role){

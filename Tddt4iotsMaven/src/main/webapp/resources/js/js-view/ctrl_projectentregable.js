@@ -746,24 +746,23 @@ $scope.loadComponentsEntregable =null;
     $scope.loadMembersTask = () =>
     {
         $.ajax({
-                method: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                url: urlWebServicies + "members/selectMembersentregable",
-                data: JSON.stringify({
-                    'id_entregable': $scope.selected_project,
-                }),
-                error: function (objXMLHttpRequest)
-                {
-                    console.log("error", objXMLHttpRequest);
-                },
-                success: function (data) {
-                    console.log("se cargaron los datos de los miembros");
-                    console.log(data.data);
-                    $scope.memberstask=data.data;
-                }
-            });
-            //alert("asssssssssss");
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + "members/selectMembersentregable",
+            data: JSON.stringify({
+                'id_entregable': $scope.selected_project
+            }),
+            error: function (objXMLHttpRequest)
+            {
+                console.log("error", objXMLHttpRequest);
+            },
+            success: function (data) {
+                console.log("se cargaron los datos de los miembros");
+                console.log(data.data);
+                $scope.memberstask=data.data;
+            }
+        });            
     };
 
     $scope.newTask = (form) => {
@@ -982,7 +981,6 @@ $scope.loadComponentsEntregable =null;
             var dataUser = store.session.get("user_tddm4iotbs");
             myArray = document.getElementsByName("base_percentage_entregable_edit_all");            
             for (let i = 0; i < $scope.project_entregable.length; i++) {
-                //alert($scope.project_entregable[i].id_masterproject);
                 $.ajax({
                     method: "POST",
                     dataType: "json",

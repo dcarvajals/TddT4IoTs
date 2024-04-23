@@ -186,7 +186,8 @@ public class Entregable_MembersApis {
         System.out.println(codec.textDecryptor(id_entregable));
         if (Jso.size() > 0) 
         {
-            if(id_entregable!="")     
+            System.out.println("TO THE FUNCTION: ");
+            if(id_entregable != "")     
                 data_response=eMembersCtrl.selectMembersEntregablectrl(codec.textDecryptor(id_entregable));
         } else 
             message = Methods.getJsonMessage("4", "Missing data.", "[]");
