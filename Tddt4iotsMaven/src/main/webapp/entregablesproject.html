@@ -285,13 +285,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> User email:</label>
-                        <input name="email_member_edit"
-                               type="email"
-                               ng-model="email_member_edit"
-                               ng-class="(form_update_members.email_member_edit.$invalid &&
-                                                       form_update_members.email_member_edit.$dirty) ?
-                                                       'form-control form-control-sm is-invalid'
-                                                       : 'form-control form-control-sm'" maxlength="70" required/>
+                        <div class="d-flex flex-row">
+                            <select class="form-control form-control-sm col-sm mr-2" style="font-size: 15px" required aria-label="Default select example" 
+                                     ng-options="item as item.email_person for item in memberstask track by item.id_permitmaster"
+                                    ng-model="selecteditem"  name="selecteditem"
+                                    >
+                            </select>
+                        </div>
+                        
                         <div class="invalid-feedback">
                             Enter your partner's email
                         </div>
@@ -1888,7 +1889,7 @@
 
 
 <!--MODAL PARA AÑADIR MIEMBROS-->
-<div class="modal fade" id="addMembers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+<!--<div class="modal fade" id="addMembers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered sha" role="document">
         <div class="modal-content">
@@ -1957,7 +1958,7 @@
             </form>
         </div>
     </div>
-</div>
+</div>-->
 
 
 
