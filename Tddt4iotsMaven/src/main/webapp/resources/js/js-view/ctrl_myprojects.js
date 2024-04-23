@@ -85,7 +85,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
     //Function that loads the members in a specific project
     $scope.loadMembersInProjects = (id_masterproject) => {
         var dataUser = store.session.get("user_tddm4iotbs");
-        
+        alert(id_masterproject)
         if (dataUser !== undefined && dataUser !== null) {
             $.ajax({
                 method: "POST",
@@ -104,7 +104,8 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     swal.close();
                     // console.log(data);
                     $scope.$apply(function () {
-                        $scope.members_in_project = data.data;                        
+                        $scope.members_in_project = data.data;
+                        alert($scope.members_in_project);
                     });
 
                     alertAll(data);
@@ -445,10 +446,10 @@ app.controller("myprojects_controller", function ($scope, $http) {
         if (form.$valid) {
             var dataUser = store.session.get("user_tddm4iotbs");
             
-          /*  if (form.shared_np.$viewValue === dataUser["email_person"]) {
+            if (form.shared_np.$viewValue === dataUser["email_person"]) {
                 alertAll({status: 3, information: "You cannot share your project to yourself."});
                 return;
-            }*/
+            }
             if (dataUser !== undefined && dataUser !== null) {
                 var shareJson = "";
                 alert($scope.flag_share_user_exists);
@@ -497,7 +498,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
                                 $scope.flag_share_user_exists = data.data["valid_user"];
                                 
                                 if ($scope.flag_share_user_exists ===  true) {
-                                    $("#modalShareProjectComplete").modal('hide');
+                                    $("#modalShareProject").modal('hide');
                                 }
                             }
                             else {
@@ -589,12 +590,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
     
     $scope.openShareProject = function (objetct_selected_project) {
         $("#modalShareProjectComplete").modal();
-        $scope.flag_share_user_exists = true;
         id_masterprojectShare = objetct_selected_project.id_masterproject;
-    };
-    
-    $scope.closeShareProject = function (objetct_selected_project) {
-         $("#modalShareProjectComplete").modal('hide');
     };
     
     $scope.openSeeMembersInProject = function (object_selected_project) {
@@ -614,7 +610,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
 
     $scope.cancelShareProject = () => {
         $scope.shared_np = "";
-        $("#modalShareProjectComplete").modal('hide');
+        $("#modalShareProject").modal('hide');
     };
 
     $scope.parseRole = function (role){
