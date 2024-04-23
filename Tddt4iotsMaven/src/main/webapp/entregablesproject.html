@@ -179,11 +179,10 @@
 </div>
 <!------------------------------EENN------------------------------------>
 
-
 <!--modal to see the general members in the entregables -->
 <div class="modal fade" id="modalViewMembers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered sha" role="document">
+    <div class="modal-dialog modal-dialog-centered sha" role="document" style="max-width: 1000px!important">
         <div class="modal-content">
             <form name="form_new_project">
                 <div class="modal-header">
@@ -191,7 +190,45 @@
                 </div>
                 <div class="modal-body">
                     <!-- Members in proyect:  -->
-                    <div class="form-group" ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Full name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
+                                <td>
+                                    <p><small>{{members.name_person + ' ' + members.lastname_person}}<small></p>
+                                </td>
+                                <td>
+                                    <p><small>{{members.email_person}}</small></p>
+                                </td> 
+                                <td>
+                                     <select class="form-control" id="modal_members_role_show_select" style="font-size: 13px"  name="role_view_member"
+                                    ng-value="'{{members.role_member}}'" ng-hide="typeMemberViewSelected !== 2"
+                                    disabled >
+                                    <option value="U">Final user</option>
+                                    <option value="F">Project facilitator</option>
+                                    <option value="A">Project facilitator</option>
+                                    <option value="C">Advisor</option>
+                                    <option value="E">Develop team</option>
+                                    </select>   
+                                </td>
+                                <td>
+                                    <select class="form-control" style="font-size: 13px" name="status_task_create" ng-value="'{{members.status_member}}'"
+                                        ng-hide="typeMemberViewSelected !== 2" disabled
+                                        >
+                                    <option value="A" >Active </option>
+                                    <option value="I">Inactive </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                       <!-- <div class="form-group" ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
                         
                         <label class="col-form-label col-form-label-sm">Full name: </label>
                         <input name="name_np" class="form-control form-control-sm" maxlength="30" value="{{members.name_person + ' ' + members.lastname_person}}" disabled/>
@@ -224,8 +261,8 @@
                         </select>
                         
                         <br>
-                    </div>
-
+                    </div>-->
+                    </table>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-danger" ng-click="closeModalViewMembers()">Close</button>                    
@@ -1776,94 +1813,73 @@
 </div>
 
 <!--MODAL PARA AÑADIR MIEMBROS-->
-<div class="modal fade" id="modalAddMember" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+<div class="modal fade" id="addMembers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
-
-    <div class="modal-dialog modal-dialog-centered sha">
+    <div class="modal-dialog modal-dialog-centered sha" role="document">
         <div class="modal-content">
-            <form name="form_add_member" ng-submit="addMember(form_add_member)">
+            <form name="form_member_add" ng-submit="saveMembers(form_member_add)">
                 <div class="modal-header">
-                    <h5 class="modal-title">New task</h5>
+                    <h5 class="modal-title">Add member to task: {{entregable_component_task_selected.name_task}}</h5>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-
-
-                        <input name="id_entregable" value="{{selected_entregable.id_entregable_task}}"
-                               ng-model="id_entregable"
-                               ng-class="(form_new_task.id_entregable.$invalid &&
-                                                       form_new_task.id_entregable.$dirty) ?
-                                                       'form-control form-control-sm is-invalid'
-                                                       : 'form-control form-control-sm'" 
-                               maxlength="30" hidden />
+                        <label class="col-form-label col-form-label-sm"> User email:</label>
+                    
+                        <div class="d-flex flex-row">
+                            <select class="form-control form-control-sm col-sm mr-2" style="font-size: 15px" required aria-label="Default select example" 
+                                     ng-options="item as item.email_person for item in memberstask track by item.id_permitmaster"
+                                    ng-model="selecteditem"  name="selecteditem"
+                                    >
+                            </select>
+                        </div>
+                        
+                      
+                        <div class="invalid-feedback">
+                            Enter your partner's email
+                        </div>
                     </div>
-
+                    <div class="form-group">
+                        <label class="col-form-label col-form-label-sm"> Role: </label>
+                        
+                            <div class="d-flex flex-row">
+                                <select name="role" ng-model="role" class="col-sm mr-2" style="font-size: 15px"
+                                        ng-class="(form_member_add.role.$invalid &&
+                                                                form_member_add.role.$dirty) ?
+                                                                'form-control form-control-sm is-invalid'
+                                                                : 'form-control form-control-sm'" required ng-init="role = 'C'">
+                                    <option value="C">Advisor</option>
+                                    <option value="E">Develop team</option>
+                                </select>
+                                <button type="button" class="col-sm-1 btn btn-sm btn-primary"
+                                        ng-click="openModalInformationMembers('create')">i</button>
+                            </div>
+                        
+                        <div class="invalid-feedback">
+                            Select a permission for the user to share
+                        </div>
+                    </div>
 
                     <div class="form-group">
-                        <label class="col-form-label col-form-label-sm"> Task name</label>
-                        <input name="name_task"
-                               ng-model="name_task"
-                               ng-class="(form_new_task.name_task.$invalid &&
-                                                       form_new_task.name_task.$dirty) ?
-                                                       'form-control form-control-sm is-invalid'
-                                                       : 'form-control form-control-sm'" maxlength="200" required/>
-
+                        <label class="col-form-label col-form-label-sm"> Status of the member: </label>
+                        <select name="status_new_member" ng-model="status_new_member" style="font-size: 15px"
+                                ng-class="(form_member_add.status_new_member.$invalid &&
+                                                        form_member_add.status_new_member.$dirty) ?
+                                                        'form-control form-control-sm is-invalid'
+                                                        : 'form-control form-control-sm'" required ng-init="status_new_member = 'A'">                          
+                            <option value="A">Active</option>
+                            <option value="I">Inactive</option>                           
+                        </select>
+                        <div class="invalid-feedback">
+                            Select a permission for the user to share
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label class="col-form-label col-form-label-sm"> Task description</label>
-                        <textarea name="description_task"
-                                  ng-model="description_task"
-                                  ng-class="(form_new_task.description_task.$invalid &&
-                                                          form_new_task.description_task.$dirty) ?
-                                                          'form-control form-control-sm is-invalid'
-                                                          : 'form-control form-control-sm'" maxlength="200" required>
-
-                        </textarea>
-
-                    </div>
-
-
-                    <label class="col-form-label col-form-label-sm"> Status</label>
-                    <select class="form-control" name="status_task" value="P" style="font-size: 15px"
-                            ng-model="status_task"
-                            ng-class="(form_new_task.status_task.$invalid &&
-                                                    form_new_task.status_task.$dirty) ?
-                                                    'form-select form-select-sm is-invalid'
-                                                    : 'form-select form-select-sm'"
-
-
-                            >
-                        <option value="P" selected>On proccess </option>
-                    </select>
-
-                    <input name="path_task" 
-                           ng-model="path_task"
-                           ng-class="(form_new_task.path_task.$invalid &&
-                                                   form_new_task.path_task.$dirty) ?
-                                                   'form-control form-control-sm is-invalid'
-                                                   : 'form-control form-control-sm'" maxlength="200" 
-                           hidden />
-
-                    <label class="col-form-label col-form-label-sm"> Estimated date finish</label>
-                    <input name="stimateddate_task" type="date"
-                           ng-model="stimateddate_task" 
-                           ng-class="(form_new_task.stimateddate_task.$invalid &&
-                                                   form_new_task.stimateddate_task.$dirty) ?
-                                                   'form-control form-control-sm is-invalid'
-                                                   : 'form-control form-control-sm'" maxlength="200" 
-                           required />
-
                 </div>
-
-
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeCreateTask()">Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-primary">
-                        Save changes
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeCreateMembers()">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary" ng-disabled="form_member_add.$invalid" ng-click="closeCreateMembers()"> 
+                        Share
                     </button>
                 </div>
-
             </form>
         </div>
     </div>

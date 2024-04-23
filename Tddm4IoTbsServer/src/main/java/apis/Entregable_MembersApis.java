@@ -33,28 +33,41 @@ public class Entregable_MembersApis {
         personCtrl = new PersonaCtrl();
     }
 
+    
+    
+    
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     @Path("/saveMemberss")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response insertMembersComponent(String data) {
+        System.out.println(data);
         String message = "";
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
-            String email = Methods.JsonToString(Jso, "email", "");
+            String permit_master = Methods.JsonToString(Jso, "permit_master", "");
             String role = Methods.JsonToString(Jso, "role", "");
             String idtask = Methods.JsonToString(Jso, "idTask", "");
             String status = Methods.JsonToString(Jso, "status", "");
             String emailpp = Methods.JsonToString(Jso, "emailperson", "");
             String id_masterproject = Methods.JsonToString(Jso, "idmasterproject", "");
             
-            email = searchiDPerson(email);
+            //email = searchiDPerson(email);
             WeEncoder encoder = new WeEncoder();
             id_masterproject = encoder.textDecryptor(id_masterproject);
             
-            if(!email.equals("")){            
+            if(!permit_master.equals("")){            
                 String[] response = eMembersCtrl.insertMembers("<project_entregable_task>\n"
-                    + "    <id_person>" + email + "</id_person>\n"
+                    + "    <permit_master>" + permit_master + "</permit_master>\n"
+                    + "    <id_project_task>" + idtask + "</id_project_task>\n"
+                    + "    <role_member>" + role + "</role_member>\n"
+                    + "    <status_member>" + status + "</status_member>\n"
+                    + "    <personid>"+personCtrl.emailgetid(emailpp)+"</personid>\n" 
+                    + "    <id_masterproject>"+ id_masterproject +"</id_masterproject>\n" 
+                    + "</project_entregable_task>");
+                
+                System.out.println("<project_entregable_task>\n"
+                    + "    <permit_master>" + permit_master + "</permit_master>\n"
                     + "    <id_project_task>" + idtask + "</id_project_task>\n"
                     + "    <role_member>" + role + "</role_member>\n"
                     + "    <status_member>" + status + "</status_member>\n"
@@ -80,6 +93,7 @@ public class Entregable_MembersApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+
     
     @Produces(MediaType.APPLICATION_JSON)
     @POST
@@ -154,4 +168,36 @@ public class Entregable_MembersApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+    
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/selectMembersentregable")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response selectMembersentregable(String data) {
+        System.out.println(data);
+     
+        String message = "";
+        JsonObject Jso = Methods.stringToJSON(data);
+        String [] data_response=null;
+        String id_entregable=Methods.JsonToString(Jso, "id_entregable", "");
+        WeEncoder codec = new WeEncoder();
+        System.out.println("aaaaaaaaaaaaaaaaaa");
+        System.out.println(codec.textDecryptor(id_entregable));
+        if (Jso.size() > 0) 
+        {
+            if(id_entregable!="")     
+                data_response=eMembersCtrl.selectMembersEntregablectrl(codec.textDecryptor(id_entregable));
+        } else 
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        
+        message = Methods.getJsonMessage("4", data_response[0], data_response[1]);
+
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
 }

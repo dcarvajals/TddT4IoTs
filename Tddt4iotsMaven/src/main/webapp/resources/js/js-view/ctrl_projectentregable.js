@@ -27,6 +27,7 @@ app.controller("projectentregable_controller", function ($scope, $http) {
     $scope.actionToModal = null;
     $scope.todayDate = null;
     $scope.dataError = "Error the total percentage is bigger than 100%";
+    $scope.selecteditem=null;
 
     $scope.flagShowingAlert = false;
     
@@ -45,6 +46,7 @@ $scope.loadComponentsEntregable =null;
         angular.element($('[ng-controller="application"]')).scope().changeTittlePage("My Projects - Deliverables", true);
         $scope.updateInformationElements();
         $scope.flagShowingAlert = true;
+        $scope.selecteditem=null;
 
         $scope.todayDate = new Date();
 
@@ -707,6 +709,7 @@ $scope.loadComponentsEntregable =null;
         $scope.idcomponenteSelectedViewTask=component_selected.id_entregable_component;
         $scope.flag_selected_task = true;
         $scope.loadComponentTasks();
+        $scope.loadMembersTask();
     };
 
     $scope.closeViewTasks = () => {
@@ -737,6 +740,30 @@ $scope.loadComponentsEntregable =null;
 
     $scope.closeCreateComponentTask = () => {
         $("#modalCreateTask").modal('hide');
+    };
+
+
+    $scope.loadMembersTask = () =>
+    {
+        $.ajax({
+                method: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                url: urlWebServicies + "members/selectMembersentregable",
+                data: JSON.stringify({
+                    'id_entregable': $scope.selected_project,
+                }),
+                error: function (objXMLHttpRequest)
+                {
+                    console.log("error", objXMLHttpRequest);
+                },
+                success: function (data) {
+                    console.log("se cargaron los datos de los miembros");
+                    console.log(data.data);
+                    $scope.memberstask=data.data;
+                }
+            });
+            //alert("asssssssssss");
     };
 
     $scope.newTask = (form) => {
@@ -1241,9 +1268,11 @@ $scope.loadComponentsEntregable =null;
         });
     };
     
-    $scope.saveMembers = (form) =>
+   $scope.saveMembers = (form) =>
     {
         var dataUser = store.session.get("user_tddm4iotbs");
+        console.log(form);
+        console.log(form.selecteditem.$viewValue.id_permitmaster);
         if (form.$valid)
         {
             $.ajax({
@@ -1252,7 +1281,7 @@ $scope.loadComponentsEntregable =null;
                 contentType: "application/json; charset=utf-8",
                 url: urlWebServicies + "members/saveMemberss",
                 data: JSON.stringify({
-                    'email': form.email.$viewValue,
+                    'permit_master': form.selecteditem.$viewValue.id_permitmaster,
                     'role': form.role.$viewValue,
                     'idTask': $scope.selected_Task,
                     'status': form.status_new_member.$viewValue,
@@ -1326,6 +1355,17 @@ $scope.loadComponentsEntregable =null;
         return false;
     };
 });
+
+
+function delete_forms_values()
+{
+    console.log("comenzara a eliminar informacion");
+    let controllersforms=document.querySelectorAll(".deletevalue");
+    
+    for(let x of controllersforms)
+        x.value="";
+    console.log("Informacion reseteada de formulario");
+}
 
 function onChangeBasePercentage(type, showMessage) {
     totalSum = 0;

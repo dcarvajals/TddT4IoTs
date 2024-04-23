@@ -23,6 +23,21 @@ public class Entregable_MembersDAO {
         conexion = new Conection();
     }
     
+    public String [] selectMemberEntregable(String idMasterProject){       
+        System.out.println("--- "+idMasterProject);
+        String query = String.format("Select * from select_members_project('%s')", idMasterProject);
+        DefaultTableModel table = conexion.returnRecord(query);
+        
+        if(table.getRowCount() > 0){
+            return new String[]{
+                table.getValueAt(0, 0).toString(),
+                "0"
+            };
+        }
+        return null;
+    }
+    
+    
     public String [] selectMembersEntregable(String type, String componentOrTask){
         String query = String.format("Select * from entregable_members_select('%s', '%s')", type, componentOrTask);        
         DefaultTableModel table = conexion.returnRecord(query);

@@ -53,6 +53,23 @@ public class Entregable_MembersCtrl {
         return new String [] {status, message, data};
     }
     
+    public String [] selectMembersEntregablectrl(String id)
+    {
+        String [] response=eMembersDAO.selectMemberEntregable(id);
+        
+        String message = "";
+        String data = response[0];
+
+        if(response[0].equals("[]"))
+            message = "No data available";
+        else{
+            message = "Data available";
+        }
+      
+        return new String [] {message, data};  
+    }
+    
+    
     public String [] updateMember(String dataXML)
     {
         String [] response = eMembersDAO.updateEntregableMember(dataXML);
