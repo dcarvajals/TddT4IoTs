@@ -49,8 +49,13 @@ public class ArdGroups {
     public void setUsers(ArdSession user) {
         this.users.add(user);
         shareMessage(user.getSesion(), easyMessage("System", user.getSesion().getId(), "mejoin"), "me", "");
-        shareMessage(user.getSesion(), easyMessage("System", user.getName(), "join"), "nome", "");
-        shareMessage(user.getSesion(), easyMessage("System", getAllUsers(), "list"), "all", "");
+        JsonObject newUser = Json.createObjectBuilder()
+                    .add("name", user.getName())
+                    .add("type", user.getType())
+                    .add("identifier", user.getSesion().getId())
+                    .build();
+        shareMessage(user.getSesion(), easyMessage("System", newUser, "join"), "nome", "");
+        //shareMessage(user.getSesion(), easyMessage("System", getAllUsers(), "list"), "all", "");
     }
 
     /**
@@ -158,9 +163,9 @@ public class ArdGroups {
                         }
                         break;
                     case "to":
-                        if (xsession.getSesion().getId().equals(identifier)) {
+                        //if (xsession.getSesion().getId().equals(identifier)) {
                             sendMessage(xsession.getSesion(), message);
-                        }
+                        //}
                         break;
                     case "type":
                         if (xsession.getType().equals("WebApp")) {

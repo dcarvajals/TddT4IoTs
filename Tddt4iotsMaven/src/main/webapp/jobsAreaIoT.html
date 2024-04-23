@@ -39,6 +39,8 @@
 
         <script src="resources/js/js-library/store2.min.js" type="text/javascript"></script>
         <script src="resources/js/js-library/toastr.min.js" type="text/javascript"></script>
+        <!-- Incluir Ace Editor vía CDN -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 
         <style>
             html, body{
@@ -95,6 +97,38 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modalLoadCode" tabindex="-1" role="dialog" aria-labelledby="modalLoadCode"
+             aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Load Code Board <span class="badge {{dataDevice.css}}"> {{dataDevice.status}} </span>  </h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-gray-200" ng-show="dataDevice.status === 'Connected'" style="font-size: 12px">
+                            <strong> Operating system: </strong> {{dataDevice.so}}
+                            <strong> User Device: </strong> {{dataDevice.userDevice}}
+                        </div>
+                        <div>
+                            <span ng-show="dataDevice.status !== 'Connected'" class="badge badge-warning text-dark mb-1"> Please login to the desktop application to access the board you wish to connect. Click
+                                <a href="{{downloadDaemon()}}"> here </a>
+                                to download the application. </span>
+                            <input ng-disabled="dataDevice.status !== 'Connected'" ng-keypress="checkEnter($event)" ng-model="command" name="command" class="form-control form-control-sm mb-1" type="text" placeholder="You can enter arduino-cli commands...">
+                            <button ng-disabled="dataDevice.status !== 'Connected'" class="btn badge badge-primary text-white" ng-click="compile()"> <i class="fas fa-check-circle"></i> Compile </button>
+                            <button ng-disabled="dataDevice.status !== 'Connected'" class="btn badge badge-primary text-white" ng-click="loadCodeBoard()"> <i class="fas fa-play"></i> Upload </button>
+                        </div>
+                        <div id="editrCodeComplete" class="mt-2 border border-dark" style="height: 250px"> </div>
+                        <button ng-click="clearConsole()" class="btn btn-outline-danger btn-sm" style="position: absolute;right: 0;margin-right: 2rem;margin-top: 1rem;">  <i class="fas fa-trash"></i> Clear console</button>
+                        <div id="mi_terminal" class="border border-dark bg-gray-200 scroll" style="height: 250px">  </div>
+                    </div>
+                    <div class="modal-footer"> </div>
+                </div>
+            </div>
+        </div>
         
         <div id="wrapper">
             <div id="content-wrapper" class="d-flex flex-column" style="height: 100vh">
@@ -112,10 +146,11 @@
                             </h5>
                             <div class="" style="margin-top: 25px">
                                 <button ng-click="saveDispositive()" class="btn badge badge-light">
-                                    <i class="fas fa-save"></i> Save Dispositive</button>
+                                    <i class="fas fa-save"></i> Save Device</button>
                                 <button ng-click="exportPng()" class="btn badge badge-light"> <i class="fas fa-file-image"></i> Export file.png</button>
                                 <button class="btn badge badge-light"> <i class="fas fa-code"></i> View Code</button>
                                 <button class="btn badge badge-light" ng-click="downloadCode()"> <i class="fas fa-download"></i> Download Code</button>
+                                <button class="btn badge badge-success text-white" ng-click="openModalLoadCode()"> <i class="fas fa-arrow-circle-up"></i> Load Code Board</button>
                                 <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i class="fas fa-sign-out-alt"></i> Exit</a>
                             </div>
                         </div>
@@ -253,16 +288,29 @@
                                         <pre>{{codeParameter.Methods}}</pre>
                                     </div>
                                 </div>
-
-                                <!--SECCION PARA CONFIGURAR LA COMUNICACION DEL COMPONENTE SELECCIONADO-->
+                                
+                                <!--SECCION PARA CONFIGURAR EL INTERCAMBIO DE DATOS-->
                                 <div class="form-group" ng-show="cofigParam === 0">
-                                    <label class="col-form-label col-form-label-sm" for=""> Select the communication method </label>
+                                    <label class="col-form-label col-form-label-sm" for=""> Select Communication Protocol </label>
                                     <select class="form-control form-control-sm"
-                                            name="modeConnection"
-                                            id="modeConnection"
-                                            ng-model="modeConnection"
-                                            ng-options="domCommunication as domCommunication.name for domCommunication in communicationMethods"
-                                            ng-change="addModeConection()">
+                                            name="modeProtocolConnection"
+                                            id="modeProtocolConnection"
+                                            ng-model="modeProtocolConnection"
+                                            ng-options="domComCommunication as domComCommunication.name for domComCommunication in communicationMethods"
+                                            ng-change="addCommunicationProtocol($index)">
+                                        <option value="">Select a method</option>
+                                    </select>
+                                </div>
+                                
+                                <!--SECCION PARA CONFIGURAR EL PROTOCOLO DE COMUNICACION-->
+                                <div class="form-group" ng-show="cofigParam === 0">
+                                    <label class="col-form-label col-form-label-sm" for=""> Select Interchange Data Protocol: </label>
+                                    <select class="form-control form-control-sm"
+                                            name="modeInterchangeConnection"
+                                            id="modeInterchangeConnection"
+                                            ng-model="modeInterchangeConnection"
+                                            ng-options="domInterchangeCommunication as domInterchangeCommunication.name for domInterchangeCommunication in interchangeMethods"
+                                            ng-change="addInterchangeData()">
                                         <option value="">Select a method</option>
                                     </select>
                                 </div>
@@ -273,7 +321,7 @@
                                     <div class="row">
                                         <div class="col">
                                             <label class="col-form-label col-form-label-sm"> Port </label>
-                                            <input readonly="" id="{{domArrayParameters.key}}" value="{{domArrayParameters.idComponent}} {{domArrayParameters.name_port}}" type="text" class="form-control form-control-sm">
+                                            <input readonly="" id="{{domArrayParameters.key}}" value="{{domArrayParameters.name_port}}" type="text" class="form-control form-control-sm">
                                         </div>
                                         <div style="display: none" id="data{{domArrayParameters.key}}" class="col">
                                             <label class="col-form-label col-form-label-sm"> Value to consider: </label>
@@ -331,6 +379,7 @@
         <script src="resources/js/js-global/js_global.js" type="text/javascript"></script>
         <script src="resources/js/js-iot/jsDrawDiagram.js" type="text/javascript"></script>
         <script src="resources/js/js-iot/jsIoTData.js" type="text/javascript"></script>
+        <script src="resources/js/js-iot/jsLoadCodeBoard.js" type="text/javascript"></script>
         <script src="resources/js/js-iot/jsPorts.js" type="text/javascript"></script>
         <script src="resources/js/js-global/jsAlertPersonalize.js" type="text/javascript"></script>
         <script src="resources/js/js-codeedit.js" type="text/javascript"></script>

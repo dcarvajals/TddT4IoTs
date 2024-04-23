@@ -1,0 +1,73 @@
+[
+    {
+        "name": "Bluetooth (Bluetooth)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "LoRa (Long Range)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "LTE (Long Term Evolution)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "NFC (Near Field Communication)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "Sigfox (Sigfox)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "WiFi (Wireless Fidelity)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    },
+    {
+        "name": "GSM Mobile Network (Global System for Mobile Communications Mobile Network)",
+        "code": {
+            "valueLibraries": "",
+            "valueVariables": "",
+            "valueSetup": "",
+            "valueLoop": "",
+            "valueMethods": ""
+        }
+    }
+
+]

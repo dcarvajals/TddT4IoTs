@@ -42,8 +42,8 @@ function initDiagramProject() {
                             function (e, obj) {
                                 e.diagram.commandHandler.copySelection();
                                 //alert("Construction zone");
-                                console.log(obj.part.data);
-                                console.log(myDiagram.model.linkDataArray);
+                                //console.log(obj.part.data);
+                                //console.log(myDiagram.model.linkDataArray);
                                 angular.element($('[ng-controller="controllerWorkIoT"]')).scope()
                                         .getParametersBD(obj.part.data, myDiagram.model.linkDataArray);
                             }),
@@ -88,6 +88,14 @@ function initDiagramProject() {
                             })
                     );
 
+    var toolTipTemplate =
+        goJs(go.Adornment, "Auto",
+            goJs(go.Shape, { fill: "#FFFFCC" }),
+            goJs(go.TextBlock, { margin: 4 },
+                new go.Binding("text", "", function(data) { return "Port: " + getPortsInfo(data); })
+            )
+        );
+
     myDiagram.nodeTemplate =
             goJs(go.Node, "Auto",
                     {
@@ -121,7 +129,8 @@ function initDiagramProject() {
                                 mouseLeave: function (e, port) {
                                     port.fill = "transparent";
                                     port.stroke = "transparent";
-                                }
+                                },
+                                toolTip: toolTipTemplate
                             }
                     ));
 
@@ -187,8 +196,8 @@ function initDiagramProject() {
     
     //VALIDACION DE LA CONEXION A LOS PUERTOS
     tool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
-        /*console.log(fromport.jb.portId);
-        console.log(toport.jb.portId);
+        /*//console.log(fromport.jb.portId);
+        //console.log(toport.jb.portId);
         alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
         return fromport.jb.portId === "Gnd";*/
     };
@@ -203,10 +212,10 @@ function initDiagramProject() {
     myDiagram.toolManager.toolTipDuration = 5000;
 
     myDiagram.mouseDrop = function (e) {
-        //console.log(myDiagram.model.part)
-        console.log(myDiagram.selection);
-        console.log(myDiagram.model.nodeDataArray);
-        console.log(myDiagram.model.nodeDataArray[myDiagram.model.nodeDataArray.length - 1]);
+        ////console.log(myDiagram.model.part)
+        //console.log(myDiagram.selection);
+        //console.log(myDiagram.model.nodeDataArray);
+        //console.log(myDiagram.model.nodeDataArray[myDiagram.model.nodeDataArray.length - 1]);
         //angular.element($('[ng-controller="controllerWork"]')).scope().sendModel();
     };
     
@@ -218,11 +227,11 @@ function initDiagramProject() {
         var toPort = link.toPort;
 
         // Aquí puedes añadir tu lógica de validación.
-        console.log("EVENTO AL SOLTAR LOS CABLES.");
-        console.log("fromNode", fromNode.data.key); // Asumiendo que 'key' es una propiedad de tu nodo.
-        console.log("toNode", toNode.data.key);
-        console.log("fromnode", fromNode.wb);
-        console.log("tonode", toNode.wb);
+        //console.log("EVENTO AL SOLTAR LOS CABLES.");
+        //console.log("fromNode", fromNode.data.key); // Asumiendo que 'key' es una propiedad de tu nodo.
+        //console.log("toNode", toNode.data.key);
+        //console.log("fromnode", fromNode.wb);
+        //console.log("tonode", toNode.wb);
         
         validaciones = validarConexionCables(fromNode.wb, toNode.wb, link);
         if(validaciones.showAlert) {
@@ -232,6 +241,23 @@ function initDiagramProject() {
             }
         }
     });
+}
+
+ getPortsInfo = (port) => {
+     let description = port.name_port; // Comienza con el nombre del puerto
+
+     // Lista de propiedades a verificar
+     const properties = ["digital", "analog", "energy", "digital_analog", "input", "output", "input_output"];
+
+     // Recorre las propiedades y verifica cuál está en true
+     for (let prop of properties) {
+         if (port[prop] === true) {
+             description += ", " + prop; // Concatena el nombre de la propiedad si es true
+             break; // Sale del bucle después de encontrar el primer true
+         }
+     }
+
+     return description; // Devuelve la descripción del puerto
 }
 
 validarConexionCables = (fromNode, toNode, link) => { 
@@ -246,7 +272,7 @@ validarConexionCables = (fromNode, toNode, link) => {
         } else {
             validationCable.showAlert = true;
             validationCable.status = 3;
-            validationCable.information = "El puerto de partida espera un puerto digital";        
+            validationCable.information = "The starting port expects a digital port";
         }
 
         if((!fromNode.digital && fromNode.analog) && (!toNode.digital && toNode.analog) && !fromNode.digital_analog) {
@@ -255,7 +281,7 @@ validarConexionCables = (fromNode, toNode, link) => {
         } else {
             validationCable.showAlert = true;
             validationCable.status = 3;
-            validationCable.information = "El puerto de partida espera un puerto analogico";
+            validationCable.information = "The starting port expects an analog port";
         }
         
         if(!fromNode.digital && !fromNode.analog && fromNode.digital_analog) {
@@ -272,7 +298,7 @@ validarConexionCables = (fromNode, toNode, link) => {
                 ac.fromNode = fromNode;
                 ac.toNode = toNode;
                 ac.cable = link;
-                ac.legendValidation = "Configure the port whether it will be digital or analog.";
+                ac.legendValidation = "Port connection usage verification be digital or analog.";
             });
         }
         
@@ -287,7 +313,7 @@ validarConexionCables = (fromNode, toNode, link) => {
         } else {
             validationCable.showAlert = true;
             validationCable.status = 3;
-            validationCable.information = "El puerto de partida espera un puerto de salida, porque es de entrada";        
+            validationCable.information = "The port of departure expects a port of departure, because it is a port of entry.";
         }
 
         if((!fromNode.input && fromNode.output) && (!toNode.output && toNode.input) && !fromNode.input_output) {
@@ -296,7 +322,7 @@ validarConexionCables = (fromNode, toNode, link) => {
         } else {
             validationCable.showAlert = true;
             validationCable.status = 3;
-            validationCable.information = "El puerto de partida espera un puerto de entrada, porque es de salida";
+            validationCable.information = "The port of departure expects a port of entry, because it is an exit port.";
         }
         
         if(!fromNode.input && !fromNode.output && fromNode.input_output) {
@@ -310,9 +336,14 @@ validarConexionCables = (fromNode, toNode, link) => {
                 ac.fromNode = fromNode;
                 ac.toNode = toNode;
                 ac.cable = link;
-                ac.legendValidation = "Configure the port whether it will be input or output.";
+                ac.legendValidation = "Port connection usage verification be input or output.";
             });
         }
+    }
+
+    if((fromNode.gnd && toNode.gnd) || (fromNode.energy && toNode.energy)) {
+        validationCable.showAlert = false;
+        return validationCable;
     }
     
     return validationCable;
@@ -342,13 +373,13 @@ loadModel = (datajson_iot) => {
         //nodedata.loc = "0 0";
         /*let newKey = nodedata.key.toString();
          newKey += "loader";
-         console.log(newKey);
+         //console.log(newKey);
          nodedata.key = newKey;*/
         for (let iports = 0; iports < nodedata.ports.length; iports++) {
             nodedata.ports[iports]._g = nodedata.key;
         }
 
-        console.log(nodedata.ports);
+        //console.log(nodedata.ports);
         modelNew.addNodeDataCollection(components);
         modelNew.addNodeDataCollection(nodedata.ports);
     }
@@ -411,22 +442,6 @@ function searchComponentPalette () {
             return item.name.toLowerCase().includes(input);
         });
 
-       /*let puertos = [];
-        let components = filteredArray.map(
-            dataItem => {
-                // Asegúrate de que la descripción no exceda los 100 caracteres
-                let description = dataItem.description;
-                if (description.length > 100) {
-                    description = description.substring(0, 99);
-                }
-
-                let puertoX = getPortsSearch(dataItem);
-                if(puertoX.length > 0) {
-                    puertos.push(...puertoX);
-                } 
-            }
-         );*/
- 
         var modelPalet = new go.GraphLinksModel();
 
         myDiagram.model.nodeIsGroupProperty = "_isg";
@@ -573,7 +588,7 @@ function initPalette() {
 
 //Cargar los datos de los componentes(funcion que debe servir para el webSocket)
 function loadComponents(obj) {
-    //console.log(myDiagram.model);
+    ////console.log(myDiagram.model);
     //let components = [];
     let ports = [];
 
@@ -586,30 +601,6 @@ function loadComponents(obj) {
     modelPalet.nodeIsGroupProperty = "_isg";
     modelPalet.nodeGroupKeyProperty = "_g";
 
-   /* for (let i = 0; i < obj.data.length; i++) {
-        components.push({
-            //key: obj.data[i].id_component,
-            img: rutasStorage.components + obj.data[i].pathimg_component + "/component.png",
-            name: obj.data[i].name_component,
-            type: obj.data[i].type_component,
-            description: obj.data[i].description_component.length > 100 ? obj.data[i].description_component.toString().substring(0, 99) : obj.data[i].description_component,
-            key: obj.data[i].id_component,
-            loc: "0 0",
-            _isg: true,
-            "ports": getPorts(obj.data[i]),
-            "code": obj.data[i].data_json.code
-        });
-
-        //myDiagram.model.addNodeDataCollection(components);
-        //myDiagram.model.addNodeDataCollection(components[i].ports);
-
-        modelPalet.addNodeDataCollection(components);
-        modelPalet.addNodeDataCollection(components[i].ports);
-
-        //components[i].ports = undefined;
-    }*/
-    
-    //let puertos = [];
     let components = obj.data.map(   
         dataItem => {
         // Asegúrate de que la descripción no exceda los 100 caracteres
@@ -702,7 +693,7 @@ myCallback = (blob) => {
 
 
 
-    console.log(blob);
+    //console.log(blob);
 
     let img = new Image();
     img.src = blob;

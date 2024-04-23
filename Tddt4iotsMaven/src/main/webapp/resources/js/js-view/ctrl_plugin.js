@@ -12,8 +12,6 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     $scope.DataSession = {};
 
     angular.element(document).ready(function () {
-        // console.log("angular on ready");
-        $scope.chargeCommands();
 
         $scope.DataSession = getDataSession();
         $scope.utilParams.room = $scope.DataSession.email_person;
@@ -76,7 +74,6 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
         } else {
             $scope.utilParams.you = value;
         }
-        // console.log("xyz", value);
     };
     $scope.setDevicesList = function (value, apply) {
         if (apply === true)
@@ -88,28 +85,25 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
         } else {
             $scope.devices = value;
         }
-
-        // console.log("devices", $scope.devices);
     };
     $scope.sendCommand = function () {
         let obj = {
             "header": $scope.utilParams.room,
-            "content": {"command": $scope.commands.text},
+            "content": JSON.stringify({"command": $scope.commands.text}),
             "config": $scope.deviceActive.identifier
         };
-        // console.log("enviando", obj);
         MessageSend(obj);
     };
     $scope.setCommandResult = function (value, apply) {
-        if (value.command)
+        if (value)
         {
             if (apply === true)
             {
                 $scope.$apply(() => {
-                    document.querySelector("#mi_terminal").innerHTML += "<pre>" + value.command + "</pre>";
+                    document.querySelector("#mi_terminal").innerHTML += "<pre>" + value + "</pre>";
                 });
             } else {
-                document.querySelector("#mi_terminal").innerHTML += "<pre>" + value.command + "</pre>";
+                document.querySelector("#mi_terminal").innerHTML += "<pre>" + value + "</pre>";
             }
         }
     };
@@ -126,8 +120,6 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     var ardWs;
     var SessionParams = {};
 
-//// console.log(window.location);
-    // console.log(url);
     function websocketInit(UserParams) {
         ardWs = new WebSocket(url);
         ardWs.onopen = onOpen;
@@ -141,12 +133,11 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
     }
     function websocketOpen() {
         try {
-            // console.log("estado:", ardWs.readyState);
             if (ardWs.readyState === 1)
             {
             }
         } catch (e) {
-            // console.log("sin ciadas", e);
+            console.error("Error (websocketOpen): ", e);
         }
     }
     function websocketClose() {
@@ -165,21 +156,16 @@ app.controller("ctrl_ardcoomands", ($scope, $http) => {
         MessageSend(objmsg);
     }
     function onClose(evt) {
-        // console.log("Desconectado...");
-        // console.log(evt);
+        console.info("Desconectado...");
     }
     function onError(event) {
-        // console.error("Error en el WebSocket detectado:");
-        // console.log(event);
+        console.error("Error en el WebSocket detectado:", event);
     }
     function MessageSend(obj) {
-        // console.log("enviando...");
         let objmsg = JSON.stringify(obj);
         if (objmsg.length <= 10000450)
         {
             ardWs.send(objmsg);
-            // console.log("enviand mensaje:sock");
-            // console.log(objmsg);
         } else {
             alertAll({status: 4, information: "The message exceeds the limit."});
         }

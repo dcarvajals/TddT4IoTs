@@ -42,6 +42,10 @@ app.config(function ($routeProvider) {
                 templateUrl: "entregablesproject.html",
                 controller: "projectentregable_controller"
             })
+            .when("/settingsprotocol", {
+                templateUrl: "settingsprotocol.html",
+                controller: "settings_controller"
+            })
             .otherwise({
                 redirectTo: 'notfound',
                 templateUrl: 'notfound.html',

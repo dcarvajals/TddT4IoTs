@@ -1,0 +1,82 @@
+[
+  {
+    "name": "AMQP (Advanced Message Queuing Protocol)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "gRPC (Google Remote Procedure Call)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "JSON-RPC (JavaScript Object Notation - Remote Procedure Call)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "MQTT (Message Queuing Telemetry Transport)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "REST API (Representational State Transfer API)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "SOAP API (Simple Object Access Protocol API)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "WebRTC (Web Real-Time Communication)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  },
+  {
+    "name": "WebSockets (WebSockets)",
+    "code": {
+      "valueLibraries": "",
+      "valueVariables": "",
+      "valueSetup": "",
+      "valueLoop": "",
+      "valueMethods": ""
+    }
+  }
+]

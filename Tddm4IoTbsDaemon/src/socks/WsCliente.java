@@ -14,6 +14,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
 import utiles.JsonMessageUtils;
+import utiles.Methods;
 import utiles.ScopeApp;
 import utiles.TerminalWindows;
 import utiles.UtilDesktop;
@@ -52,10 +53,10 @@ public class WsCliente {
                     System.out.println("recib");
                     System.out.println(message);
 
-                    JsonObject obj = JsonMessageUtils.String2JsonObject(message);
-                    String head = JsonMessageUtils.getString(obj, "header", "");
-                    String content = JsonMessageUtils.getString(obj, "content", "");
-                    String config = JsonMessageUtils.getString(obj, "config", "");
+                    com.google.gson.JsonObject obj = Methods.stringToJSON(message);
+                    String head = Methods.JsonToString(obj, "header", "");
+                    String content = Methods.JsonToString(obj, "content", "");
+                    String config = Methods.JsonToString(obj, "config", "");
 
                     switch (config) {
                         case "list":
@@ -77,35 +78,25 @@ public class WsCliente {
                             UtilDesktop.notification("Connection", "connection established successfully.", 1);
                             ScopeApp.getMainForm().conectedWs(true);
                             break;
-                        default:
-
-                            System.out.println("consola");
-                            System.out.println(content);
-                            JsonObject minobj = JsonMessageUtils.String2JsonObject(content);
-                            String conected = JsonMessageUtils.getString(minobj, "conected", "");
-                            if (conected.length() > 0) {
-                                partnetID = conected;
-                                UtilDesktop.notification("Sync", "Sync established successfully.", 2);
-                            }
-                            String command = JsonMessageUtils.getString(minobj, "command", "");
+                        case "sendComand":
+                            com.google.gson.JsonObject commandJson = Methods.stringToJSON(content);
+                            String command = Methods.JsonToString(commandJson, "command", "");
+                            ScopeApp.getMainForm().conectedWs(true);
                             if (Terminal.status && command.length() > 0) {
+                                ScopeApp.getMainForm().txtconsola.setVisible(true);
                                 String console = Terminal.ejecutar(command);
                                 ScopeApp.getMainForm().txtconsola.setText(
                                         ScopeApp.getMainForm().txtconsola.getText() + console
                                 );
-
-                                JsonObject objCommand = Json.createObjectBuilder()
-                                        .add("command", console)
-                                        .build();
-                                sendMessage(groupID, objCommand, partnetID);
+                                UtilDesktop.notification("Sync", "Sync established successfully.", 2);
+                                sendMessage(groupID, console, "displayTerminal");
                             } else {
                                 System.out.println("terminal:" + Terminal.status);
                             }
                             break;
-                        //config - id
-
-                    };
-
+                        default:
+                            break;
+                    }
                 }
 
                 @Override

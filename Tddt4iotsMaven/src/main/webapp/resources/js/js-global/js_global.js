@@ -6,13 +6,14 @@
 /* global angular, swal, store */
 
 //variable que obtiene la url del proyecto donde se obtiene los webservicies
-var urlWebServicies = location.origin + "/Tddm4IoTbsServer/webapis/";
+var urlWebServicies = location.origin + "/Tddm4IoTbsServer/webapis/";;
 //var urlWebServicies = "http://190.15.134.19:8080/bioforestserver/webresources/";
 //
 var rutasStorage = {
     components: '/storageTddm4IoTbs/tddm4iotbs_components/',
     projects: '/storageTddm4IoTbs/tddm4iotbs_projects/',
-    imguser: '/storageTddm4IoTbs/UserImage/'
+    imguser: '/storageTddm4IoTbs/UserImage/',
+    fileZip: '/storageTddm4IoTbs/tddt4iotsZip'
 };
 var alertAll;
 //declara la varibale principal para el manejo de angular
