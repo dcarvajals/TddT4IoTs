@@ -12,6 +12,7 @@ import com.google.gson.annotations.JsonAdapter;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import javax.swing.table.DefaultTableModel;
 
 import models.Master_project;
 import util.DataStatic;
@@ -626,7 +627,7 @@ public class Master_projectCtrl {
 
         return new String[]{status, message, data};
     }
-
+    
     public String[] listShareProject(String idPerson, String typeSelect, String idProject) {
         String status = "4", message = "Error returning data", data = "{}";
         String idType = typeSelect;
@@ -677,5 +678,33 @@ public class Master_projectCtrl {
     public String getPropertyProject(String idperson, String idprojectmaster) {
         String idmastProject = codec.textDecryptor(idprojectmaster);
         return master.getprojectProperty(idperson, idmastProject);
+    }
+    
+    public String[] shareProjectComplete(String jsonPermit) {
+        String status = "4", message = "Error when sharing the project", data = "{}";
+        String permitShare = "", stateShare = "";        
+        
+        String [] response = master.insertMemberInProject(jsonPermit);
+        String queryResponse = response[0];
+        
+        status = queryResponse;
+        data = queryResponse;
+       
+        if (queryResponse.equals("2")){
+            message = "The project was shared successfully";
+        }
+        return new String[]{status, message, data};
+    }
+    
+    public String[] selectMembersInProject(String idMasterProject) {        
+        return master.selectMembersInProject(idMasterProject);        
+    }
+    
+    public String parseSharePermit(String permit){
+        return master.parseSharePermit(permit);
+    }
+    
+    public String parseShareState (String state){
+        return master.parseShareState(state);
     }
 }

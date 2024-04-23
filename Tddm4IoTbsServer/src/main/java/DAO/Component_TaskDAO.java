@@ -23,6 +23,7 @@ public class Component_TaskDAO {
     }
     
     public String [] insertTask(String xmlTask){
+        System.out.print(String.format("Select * from project_entregable_component_task_insert('%s')",xmlTask));
         String query = String.format("Select * from project_entregable_component_task_insert('%s')",xmlTask);
         
         DefaultTableModel table = conexion.returnRecord(query);
@@ -44,6 +45,7 @@ public class Component_TaskDAO {
     public String [] selectTasks(String type, String id_element,String email){
       
         String id=person.emailgetid(email);
+        System.out.println(String.format("Select * from project_entregable_component_task_select('%s', '%s','%s')", type, id_element,id));
         String query = String.format("Select * from project_entregable_component_task_select('%s', '%s','%s')", type, id_element,id);
         
         DefaultTableModel table = conexion.returnRecord(query);

@@ -44,14 +44,15 @@
         </div>
     </div>
 </div>
+
 <!--modal para compartir un proyecto-->
 <div class="modal fade" id="modalShareProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered sha" role="document">
         <div class="modal-content">
-            <form name="form_share_project" ng-submit="shareProject(form_share_project)">
+            <form name="form_share_project" ng-submit="shareProjectComplete(form_share_project)">
                 <div class="modal-header">
-                    <h5 class="modal-title">Share project whith</h5>
+                    <h5 class="modal-title">Share project with</h5>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -67,6 +68,75 @@
                             Enter your partner's email
                         </div>
                     </div>
+                    <div class="form-group" ng-if="flag_share_user_exists === false">
+                        <label class="col-form-label col-form-label-sm"> User name: </label>
+                        <input name="shared_user_name"
+                               type="text"
+                               ng-model="shared_user_name"
+                               ng-class="(form_share_project.shared_user_name.$invalid &&
+                                                       form_share_project.shared_user_name.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" maxlength="200" required/>
+                        <div class="invalid-feedback">
+                            Insert the name of the user
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="flag_share_user_exists === false">
+                        <label class="col-form-label col-form-label-sm"> User last name: </label>                        
+                        <input name="shared_user_last_name"
+                               type="text"
+                               ng-model="shared_user_last_name"
+                               ng-class="(form_share_project.shared_user_last_name.$invalid &&
+                                                       form_share_project.shared_user_last_name.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" maxlength="200" required/>
+                        <div class="invalid-feedback">
+                            Insert the last name(s) of the user
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label col-form-label-sm"> Role: </label>
+                        <select name="shared_role" ng-model="shared_role"
+                                ng-class="(form_share_project.shared_role.$invalid &&
+                                                       form_share_project.shared_role.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required>
+                            <option value="">----</option>
+                            <option value="U">Final user</option>
+                            <option value="F">Project facilitator</option>
+                            <option value="A">Project facilitator</option>
+                            <option value="C">Advisor</option>
+                            <option value="E">Develop team</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Select the role of the member
+                        </div>
+                    </div>
+                    <div class="form-group">   
+                        <label class="col-form-label col-form-label-sm"> Speciality: </label>
+                        <select name="shared_speciality" ng-model="shared_speciality"
+                                ng-class="(form_share_project.shared_speciality.$invalid &&
+                                                       form_share_project.shared_speciality.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required>
+                            <option value="">----</option>
+                            <option value="ALD">Algorithm Designer</option>
+                            <option value="SFA">Software Architect</option>
+                            <option value="FRD">Frontend Developer</option>
+                            <option value="BCD">Backend Developer</option>
+                            <option value="TTE">Testing Engineer (Tester)</option>
+                            <option value="DOE">DevOps Engineer</option>
+                            <option value="FSD">Full-Stack Developer</option>
+                            <option value="SCE">Security Engineer</option>
+                            <option value="MAD">Mobile App Developer</option>
+                            <option value="DTE">Data Engineer</option>
+                            <option value="GPD">Graphic Designer</option>
+                            <option value="ACD">Accessibility Designer</option>                           
+                        </select>
+                        <div class="invalid-feedback">
+                            Select the speciality of the user to share
+                        </div>
+                    </div>                    
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Permit: </label>
                         <select name="shared_sp" ng-model="shared_sp"
@@ -93,6 +163,44 @@
         </div>
     </div>
 </div>
+
+
+<!--modal para compartir un proyecto-->
+<div class="modal fade" id="modalMembersInProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document">
+        <div class="modal-content">
+            <form name="form_share_project" ng-submit="loadMembersInProjects()">
+                <div class="modal-header">
+                    <h5 class="modal-title">List of members in project</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Member email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="member in members_in_project" ng-show="members_in_project.length > 0">
+                                    <td>{{member.email_person}}</td>
+                                    <td>{{member.complete_role}}</td>
+                                </tr>                        
+                            </tbody>
+                        </table>                        
+                    </div>                   
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeSeeMembersInProject()">Close</button>                  
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 <div class="modal fade" id="modalCreateProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered sha" role="document">
@@ -199,6 +307,11 @@
                                 </button>
                             </div>
                             <div class="col-xl-4 col-md-3 mb-2">
+                                <button class="btn button-dt btn-sm w-100" ng-click="openSeeMembersInProject(dom_myprojects)">
+                                    See members
+                                </button>
+                            </div>
+                            <div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-ds btn-sm w-100" ng-click="deleteProject(dom_myprojects)">
                                     Delete Project
                                 </button>
@@ -221,7 +334,7 @@
                     <i class="fas fa-chevron-circle-left float-end"></i> Return  
                 </button>
                  <button type="button" ng-click="loadEntregablesProject()" class="btn button-d btn-sm float-right mr-4">
-                    <i class="fas fa-check-double"></i> Planning And Progress Control  
+                    <i class="fas fa-check-double"></i> Planning and Progress Control  
                 </button>
             </div>
         </div>

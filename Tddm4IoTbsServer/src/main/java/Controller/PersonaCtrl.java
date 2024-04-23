@@ -441,4 +441,8 @@ public class PersonaCtrl {
         return  pdao.emailtoid(email);
     }
     
+    public String [] personExists(String email){
+        return pdao.personExists(email);
+    }
+    
 }

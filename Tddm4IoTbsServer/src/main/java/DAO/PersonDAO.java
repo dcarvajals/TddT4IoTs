@@ -231,6 +231,33 @@ public class PersonDAO {
             return "[]";
     }
     
-    
+    public String [] personExists(String email)
+    {
+        conex = new Conection();
+        System.out.println(String.format("select * from email_to_id('%s')", email));
+        
+        String query = String.format("select * from email_to_id('%s')", email);
+        DefaultTableModel table=conex.returnRecord(query);
+        
+        String status = "4";
+        String message = "The person doesn't exists";
+        Boolean userExists = false;
+        
+        if(table.getRowCount() > 0){
+            String queryStatus = table.getValueAt(0, 0).toString();
+            
+            userExists = queryStatus.equals("2");
+            System.out.println(queryStatus);
+            if (userExists){
+                status = "2";
+                message = "The person exists";
+            }
+            
+        }
+        
+        return new String [] {
+            status, message, userExists.toString()
+        };           
+    }
     
 }

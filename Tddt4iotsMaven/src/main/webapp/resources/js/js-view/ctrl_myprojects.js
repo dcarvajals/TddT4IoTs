@@ -8,6 +8,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
         angular.element($('[ng-controller="application"]')).scope().changeTittlePage("My Projects", true);
         $scope.loadProjects();
         $scope.appPage.Select = "myprojects";
+        $scope.flag_share_user_exists = true;
     });
 
     /*
@@ -15,12 +16,14 @@ app.controller("myprojects_controller", function ($scope, $http) {
      * Active => A
      * Inactive => I
      * */
-
+    
+    $scope.members_in_project = [];
     $scope.myprojects = [];
     $scope.myprojects_entregables = [];
 
     $scope.selected_project = {};
     $scope.flag_selected_project = false;
+    $scope.flag_share_user_exists = true;
 
     $scope.loadEntregablesProject = () => {
         if ($scope.selected_project !== undefined && $scope.selected_project !== null) {
@@ -65,6 +68,44 @@ app.controller("myprojects_controller", function ($scope, $http) {
                     // console.log(data);
                     $scope.$apply(function () {
                         $scope.myprojects = data.data;
+                    });
+
+                    alertAll(data);
+                    // console.log($scope.myprojects);
+                },
+                error: function (objXMLHttpRequest) {
+                    // console.log("error: ", objXMLHttpRequest);
+                }
+            });
+        } else {
+            location.href = "index";
+        }
+    };
+    
+    //Function that loads the members in a specific project
+    $scope.loadMembersInProjects = (id_masterproject) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        alert(id_masterproject)
+        if (dataUser !== undefined && dataUser !== null) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                url: urlWebServicies + 'projects/selectMembers',
+                data: JSON.stringify({
+                    "user_token": dataUser.user_token,
+                    "type": "PROJECT_USER",
+                    "idproj": id_masterproject
+                }),
+                beforeSend: function (xhr) {
+                    loading();
+                },
+                success: function (data) {
+                    swal.close();
+                    // console.log(data);
+                    $scope.$apply(function () {
+                        $scope.members_in_project = data.data;
+                        alert($scope.members_in_project);
                     });
 
                     alertAll(data);
@@ -399,6 +440,83 @@ app.controller("myprojects_controller", function ($scope, $http) {
             }
         }
     };
+    
+    $scope.shareProjectComplete = (form) => {
+        console.log(form);
+        if (form.$valid) {
+            var dataUser = store.session.get("user_tddm4iotbs");
+            
+            if (form.shared_np.$viewValue === dataUser["email_person"]) {
+                alertAll({status: 3, information: "You cannot share your project to yourself."});
+                return;
+            }
+            if (dataUser !== undefined && dataUser !== null) {
+                var shareJson = "";
+                alert($scope.flag_share_user_exists);
+                if ($scope.flag_share_user_exists === false) {
+                    shareJson = JSON.stringify({
+                        "user_token": dataUser.user_token,
+                        "idproj": id_masterprojectShare,
+                        "email": form.shared_np.$viewValue,                        
+                        "name_person": form.shared_user_name.$modelValue,
+                        "lastname_person": form.shared_user_last_name.$modelValue,
+                        "permit": form.shared_sp.$modelValue,
+                        "role": form.shared_role.$modelValue,
+                        "speciality": form.shared_speciality.$modelValue,
+                        "stateShare": 'WAITING'
+                    });
+                } else {
+                    shareJson = JSON.stringify({
+                        "user_token": dataUser.user_token,
+                        "idproj": id_masterprojectShare,
+                        "email": form.shared_np.$viewValue,                        
+                        "permit": form.shared_sp.$modelValue,
+                        "role": form.shared_role.$modelValue,
+                        "speciality": form.shared_speciality.$modelValue,
+                        "stateShare": 'WAITING'
+                    });
+                }
+                
+                //Reset the value of the flag
+                $scope.flag_share_user_exists = true;
+                
+                $.ajax({
+                    method: "POST",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    url: urlWebServicies + 'projects/shareProjectComplete',
+                    data: shareJson,
+                    beforeSend: function (xhr) {
+                        loading();
+                    },
+                    success: function (data) {
+                        
+                        $scope.$apply(() => {
+                            //If the user is not valid then change the flag to force the user
+                            //to enter the names and last names.
+                            if (data.data["valid_user"] !== null){
+                                $scope.flag_share_user_exists = data.data["valid_user"];
+                                
+                                if ($scope.flag_share_user_exists ===  true) {
+                                    $("#modalShareProject").modal('hide');
+                                }
+                            }
+                            else {
+                                $scope.flag_share_user_exists = false;
+                            }
+                        });
+                        swal.close();
+                        alertAll(data);
+                    },
+                    error: function (objXMLHttpRequest) {
+                        // console.log("error: ", objXMLHttpRequest);
+                    }
+                });
+            } else {
+                location.href = "index";
+            }
+        }
+    };
 
     // descargar
     $scope.downloadPrjMav = () => {
@@ -467,10 +585,21 @@ app.controller("myprojects_controller", function ($scope, $http) {
     $scope.openInsertProject = () => {
         $("#modalCreateProject").modal();
     };
+    
     let id_masterprojectShare = '';
+    
     $scope.openShareProject = function (objetct_selected_project) {
         $("#modalShareProject").modal();
         id_masterprojectShare = objetct_selected_project.id_masterproject;
+    };
+    
+    $scope.openSeeMembersInProject = function (object_selected_project) {
+        $("#modalMembersInProject").modal();        
+        $scope.loadMembersInProjects(object_selected_project.id_masterproject);
+    };
+    
+     $scope.closeSeeMembersInProject = () => {
+        $("#modalMembersInProject").modal('hide');        
     };
 
     $scope.cancelProject = () => {
@@ -484,5 +613,17 @@ app.controller("myprojects_controller", function ($scope, $http) {
         $("#modalShareProject").modal('hide');
     };
 
-
+    $scope.parseRole = function (role){
+        if (role === "A") {
+            return "Project facilitator";
+        } else if (role === "F") {
+            return "Project facilitator";
+        } else if (role === "U") {
+            return "Final user";
+        } else if (role === "C") {
+            return "Advisor";
+        } else if (role === "E") {
+            return "Develop team";
+        }        
+    };
 });

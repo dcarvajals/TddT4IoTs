@@ -259,6 +259,18 @@ public final class Methods {
             return defaulx;
         }
     }
+    
+    public static JsonObject replacePropertyJson(JsonObject json, String keyName, String value){
+        
+        //Check if the key exists on the json received
+        if (json.has(keyName)) {
+            
+            //If exists then update the value
+            json.addProperty(keyName, value);
+        }
+        
+        return json;
+    }
 
     public static JsonObject objectToJson(Object jsonO) {
         try {

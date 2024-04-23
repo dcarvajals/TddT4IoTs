@@ -383,5 +383,31 @@ public class PersonApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
-
+    
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/checkValidPerson")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response checkPeronExists(String data) {
+        String response;
+        
+        //Transform the string received into a json object
+        JsonObject Jso = Methods.stringToJSON(data);
+        
+        if (Jso.size() > 0) {
+            //Get the email inserted sended as a parameter
+            String userEmail = Methods.JsonToString(Jso, "user_email", "");
+            
+            String [] personExists = pControl.personExists(userEmail);                        
+            response = Methods.getJsonMessage(personExists[0], personExists[1], personExists[2]);
+        } else {
+            response= Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(response)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
 }

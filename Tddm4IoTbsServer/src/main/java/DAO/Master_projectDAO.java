@@ -242,5 +242,64 @@ public class Master_projectDAO {
         else 
             return "[]";
     }
-
+    
+    public String[] insertMemberInProject(String permit_json) {
+        System.out.println(String.format("select * from permit_master_insert('%s'::jsonb)", permit_json));
+        String query = String.format("select * from permit_master_insert('%s'::jsonb)", permit_json);
+        DefaultTableModel tab = conex.returnRecord(query);
+        if (tab.getRowCount() > 0) {
+            return new String[]{
+                tab.getValueAt(0, 0).toString(),
+            };
+        } else {
+            return new String[]{"4"};
+        }
+    }
+    
+    public String[] selectMembersInProject(String idMasterProject) {
+        System.out.println(String.format("Select * from select_members_project('%s')", idMasterProject));
+        String query = String.format("Select * from select_members_project('%s')", idMasterProject);
+        DefaultTableModel table = conex.returnRecord(query);
+        
+        if(table.getRowCount() > 0){
+            return new String[]{
+                table.getValueAt(0, 0).toString()
+            };
+        }
+        
+        return new String []{
+            "[]"
+        };
+    }
+    
+    public String parseSharePermit(String permit){
+        String permitShare = permit;
+        
+        if (permit.equals("SHARE_ADMIN")) {
+            permitShare = "A";
+        } else if (permit.equals("SHARE_WRITER")) {
+            permitShare = "W";
+        } else {
+            permitShare = "R";
+        }
+        
+        return permitShare;
+    }
+    
+    public String parseShareState(String state){
+        String stateShare = state;
+        switch (state) {
+            case "WAITING":
+                stateShare = "S";
+                break;
+            case "ACTIVE":
+                stateShare = "A";
+                break;
+            default:
+                stateShare = "I";
+                break;
+        }
+        
+        return stateShare;
+    }
 }

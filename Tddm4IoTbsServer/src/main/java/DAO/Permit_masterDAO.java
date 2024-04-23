@@ -82,5 +82,21 @@ public class Permit_masterDAO {
         }
     }
     
-    
+    /**
+     * Function to change the status or permission that a user has to a project
+     *
+     * @param permit_json is a json object that contains the information of the
+     * member which is going to insert on a specific project.
+     */
+    public String[] insertMemberInProject(String permit_json) {
+        String query = String.format("select * from permit_master_insert('%s')", permit_json);
+        DefaultTableModel tab = conex.returnRecord(query);
+        if (tab.getRowCount() > 0) {
+            return new String[]{
+                tab.getValueAt(0, 0).toString(),
+            };
+        } else {
+            return new String[]{"4"};
+        }
+    }
 }

@@ -542,7 +542,42 @@ public class Master_projectApis {
                 .build();
     }
     
-    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/selectMembers")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response selectMembers(String data) {
+        String message;
+        System.out.println("selectMembers()");
+        
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+            String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+            String idProj = Methods.JsonToString(Jso, "idproj", "");
+            
+            //Decrypt the id of the project
+            WeEncoder codec = new WeEncoder();
+            idProj = codec.textDecryptor(idProj);                    
+            
+            String[] clains = Methods.getDataToJwt(sessionToken);
+
+            String[] res = Methods.validatePermit(clains[0], clains[1], 1);
+            if (res[0].equals("2")) {
+                res = mpControl.selectMembersInProject(idProj);
+                message = Methods.getJsonMessage("2", "The members was loaded successfully.", res[0]);
+            } else {
+                message = Methods.getJsonMessage("4", "Error in the request parameters.", "[]");
+            }
+
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
 
     @Produces(MediaType.APPLICATION_JSON)
     @POST
@@ -566,6 +601,99 @@ public class Master_projectApis {
             if (res[0].equals("2")) {
                 res = mpControl.shareProject(clains[0], emailShare, idproj, permit, stateShare);
                 message = Methods.getJsonMessage(res[0], res[1], res[2]);
+            } else {
+                message = Methods.getJsonMessage("4", "Error in the request parameters.", "[]");
+            }
+
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/shareProjectComplete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response shareProjectComplete(String data) {
+        String message;
+        System.out.println("shareProjectComplete()");
+        
+        //Transform the string input into a json object
+        JsonObject Jso = Methods.stringToJSON(data);
+        
+        if (Jso.size() > 0) {
+            
+            //Flag to check if the data is correct
+            Boolean isCorrectUserToShare = true;
+            
+            String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+            String idproj = Methods.JsonToString(Jso, "idproj", "");
+            
+            String emailShare = Methods.JsonToString(Jso, "email", "");
+            String permit = Methods.JsonToString(Jso, "permit", "");
+            String stateShare = Methods.JsonToString(Jso, "stateShare", "");
+            
+            String shared_user_name = Methods.JsonToString(Jso, "name_person", "");
+            String shared_user_last_name = Methods.JsonToString(Jso, "lastname_person", "");
+                        
+            //Check if the actual user have permission to execute this function
+            String[] clains = Methods.getDataToJwt(sessionToken);
+            String[] validPermissions = Methods.validatePermit(clains[0], clains[1], 1);
+            
+            //Check if the email of the user to add exists
+            PersonaCtrl personaCtrl = new PersonaCtrl();
+            String [] personChecking = personaCtrl.personExists(emailShare);
+            
+            //If is not equal to two that means the person don't exists
+            if (!personChecking[0].equals("2")){
+                
+                //Check if in the json recieved are the person name and last name
+                if (shared_user_name.equals("") || shared_user_last_name.equals("")) {
+                    //ERROR INCOMPLETE DATA
+                    isCorrectUserToShare = false;
+                    
+                    message = Methods.getJsonMessage("4", 
+                            "The user don't exists, please send the names and last names.", 
+                            "[]");                    
+                }
+            }
+            
+            if (validPermissions[0].equals("2")) {
+                JsonObject jsonUserValid = new JsonObject();
+                jsonUserValid.addProperty("valid_user", isCorrectUserToShare);
+                    
+                if (isCorrectUserToShare){
+                    //Replace the values with the simplified value
+                    Jso = Methods.replacePropertyJson(Jso, "permit", mpControl.parseSharePermit(permit));
+                    Jso = Methods.replacePropertyJson(Jso, "stateShare", mpControl.parseShareState(stateShare));
+
+                    //Change the id encrypted of the project
+                    WeEncoder codec = new WeEncoder();
+                    Jso = Methods.replacePropertyJson(Jso, "idproj", codec.textDecryptor(idproj));
+                    
+                    //Create a random password to the new user who is going to be inserted
+                    String result = java.util.UUID.randomUUID().toString();
+                    String password = result.substring(0, 5);                    
+                    String code_verificacion = codec.getEmailCode();
+                    
+                    Jso.addProperty("password", password);
+                    Jso.addProperty("codeverificacion", code_verificacion);
+                    Jso.addProperty("pathimg_person", (emailShare + ".png"));
+                    
+                    //Send the data to the database to execute the function
+                    System.out.println("THE PASSWORD " + password);
+                    System.out.println(Jso.toString());
+                    String [] response = mpControl.shareProjectComplete(Jso.toString());
+
+                    message = Methods.getJsonMessage(response[0], response[1], response[2]);
+                } else {                    
+                    message = Methods.getJsonMessage("4", "The user don't exists, please write the names.", jsonUserValid.toString());
+                }                
             } else {
                 message = Methods.getJsonMessage("4", "Error in the request parameters.", "[]");
             }

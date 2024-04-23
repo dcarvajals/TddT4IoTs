@@ -22,6 +22,7 @@ public class Project_EntregableDAO {
     }
     
     public String [] createPprojectEntregable(String entregable){
+        System.out.println(String.format("Select * from project_entregable_insert('%s')", entregable));
         String query = String.format("Select * from project_entregable_insert('%s')", entregable);
         DefaultTableModel table = conexion.returnRecord(query);        
         
@@ -73,7 +74,8 @@ public class Project_EntregableDAO {
     
     public String [] selectProjectEntregable(String type, String idProject,String email){
         
-        String d=person.emailgetid(email);
+        String d = person.emailgetid(email);
+        System.out.println( String.format("Select * from project_entregable_select('%s','%s','%s')", type, idProject,d));
         String query = String.format("Select * from project_entregable_select('%s','%s','%s')", type, idProject,d);
         DefaultTableModel table = conexion.returnRecord(query);        
         
