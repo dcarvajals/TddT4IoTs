@@ -63,6 +63,7 @@ public class Component_TaskDAO {
     }
     
     public String [] updateTask(String xmlEditTask){
+        System.out.println(String.format("Select * from project_entregable_component_task_update('%s')", xmlEditTask));
         String query = String.format("Select * from project_entregable_component_task_update('%s')", xmlEditTask);        
         DefaultTableModel table = conexion.returnRecord(query);
         

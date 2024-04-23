@@ -46,11 +46,11 @@
 </div>
 
 <!--modal para compartir un proyecto-->
-<div class="modal fade" id="modalShareProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+<div class="modal fade" id="modalShareProjectComplete" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered sha" role="document">
         <div class="modal-content">
-            <form name="form_share_project" ng-submit="shareProjectComplete(form_share_project)">
+            <form name="form_share_project_complete" ng-submit="shareProjectComplete(form_share_project_complete)">
                 <div class="modal-header">
                     <h5 class="modal-title">Share project with</h5>
                 </div>
@@ -154,7 +154,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-danger" ng-click="cancelShareProject()">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeShareProject()">Cancel</button>
                     <button type="submit" class="btn btn-sm btn-primary" ng-disabled="form_share_project.$invalid">
                         Share
                     </button>
@@ -384,8 +384,11 @@
                     <h5 class="mt-0"><strong> Module Diagramas Uml </strong></h5>
                     <span>Generate and edit class diagrams by entering the respective descriptions of a use case diagram.</span>
                     <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
-                        <div class="col-4 border mr-3 pl-0">
-                            <img src="resources/img/img-app/uml.png" class="w-100 border-dark" alt="useCaseExample">
+                        <div class="col-3 border mr-3 pl-0">
+                            <img src="resources/img/img-app/useCaseDPro.png" class="w-100 border-dark" alt="useCaseExample">
+                        </div>
+                        <div class="col-3 border pl-0">
+                            <img src="resources/img/img-app/classDiagramPro.png" class="w-100 border-dark" alt="useCaseExample">
                         </div>
                     </div>
         
@@ -453,7 +456,7 @@
                     <span>Design the system of your IoT device and generate a code base for its operation.</span>
                     <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
                         <div class="col-4 border mr-3 pl-0">
-                            <img src="resources/img/img-app/iot.png" class="w-100 border-dark" alt="iotExample">
+                            <img src="resources/img/img-app/TddM4IoTs_IoT(6).png" class="w-100 border-dark" alt="IoTExample">
                         </div>
                     </div>
                     <span>Download a file containing java code based on class diagram.</span>
