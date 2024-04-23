@@ -218,7 +218,7 @@ public class Component_TaskApis {
             
         
             String [] response = taskController.updateTask(toInsert);
-        
+            System.out.println(toInsert.toString());
             message = Methods.getJsonMessage(response[0], response[1], response[2]);
         
             if(response[0].equals("2")){
