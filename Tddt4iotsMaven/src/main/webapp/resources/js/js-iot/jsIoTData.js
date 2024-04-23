@@ -9,6 +9,9 @@
 app = angular.module('app', []);
 app.controller('controllerWorkIoT', function ($scope, $http) {
 
+    // expandir el controlador a otro script js
+    app.expandControllerIoT($scope);
+
     $scope.DatoUsuario = {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;
 
@@ -40,8 +43,12 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     $scope.fromNode = {};
     $scope.toNode = {};
     $scope.cable = {};
-    $scope.comunicationMethods = [];
-    $scope.modeConnection = {};
+    $scope.interchangeMethods = [];
+    $scope.communicationMethods = [];
+    $scope.modeInterchangeConnection = {};
+    $scope.modeProtocolConnection = {};
+    $scope.maxAddCode = 2;
+    $scope.quantityCode = 0;
 
     $(document).ready(() => {
         if (window.location.search !== "") {
@@ -68,6 +75,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             $scope.loadColors();
             $scope.loadProject();
             $scope.loadComunicationMethod();
+            $scope.loadInterchangeProtocol();
         }
     });
 
@@ -102,7 +110,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    //console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -155,7 +163,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     loadComponents(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    //console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -182,9 +190,9 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         moduleParam.addClass("animate__slideInDown");
         moduleParam.show();
 
-        console.log("tipo de componente => ", type_component);
-        console.log("code", obj);
-        console.log("conexiones: ", objLink);
+        //console.log("tipo de componente => ", type_component);
+        //console.log("code", obj);
+        //console.log("conexiones: ", objLink);
 
         $scope.arrayParameters = [];
 
@@ -285,7 +293,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             $scope.codeParameter["Methods"] = b64_to_utf8(obj.code.Methods);
         });
 
-        console.log("PUERTOS CONECTADOS DEL COMPONENTE SELECCIONADO: ", $scope.arrayParameters);
+        //console.log("PUERTOS CONECTADOS DEL COMPONENTE SELECCIONADO: ", $scope.arrayParameters);
         $("#sectionCode").show();
         $("#blockCode").hide();
     };
@@ -306,15 +314,18 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             "dataJson": JSON.stringify([
                 {
                     "diagramType": "ports",
-                    "dataJson": JSON.parse(saveNewModel()),
-                    "base64": ""
+                    "dataJson": JSON.parse(saveNewModel())
+                } , {
+                    "diagramType": "structureCode",
+                    "dataJson": {code: $scope.jsonCode}
+                } , {
+                    "diagramType": "script",
+                    "dataJson": codeGeneral.getValue()
                 }
             ]),
-            "dataScript": codeGeneral.getValue(),
             "module": "EasyIoT",
             "idproj": id_project
         };
-        console.log(saveNewModel());
         apiSaveDispositive(api_param);
     };
 
@@ -335,7 +346,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    //console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -367,11 +378,32 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                 success: function (data) {
                     swal.close();
                     data.data = JSON.stringify(data.data);
-                    searchModel(data.data);
+                    if(api_param.module === "EasyIoT") {
+                        searchModel(data.data);
+
+                        let api_param = {
+                            "user_token": $scope.DatoUsuario.user_token,
+                            "module": "structureCode",
+                            "idproj": id_project
+                        };
+                        apiLoadProject(api_param);
+                    } else if (api_param.module === "structureCode") {
+
+                        if(data.data === "{}") {
+                            return;
+                        }
+
+                        $scope.$apply(function () {
+                            let jsonCode = JSON.parse(data.data);
+                           $scope.jsonCode = jsonCode.code;
+                           updateCodeEditor();
+                           $scope.codeLoad.setValue(codeGeneral.getValue());
+                        });
+                    }
                     alertAll(data);
                 },
                 error: function (objXMLHttpRequest) {
-                    console.log("error: ", objXMLHttpRequest);
+                    //console.log("error: ", objXMLHttpRequest);
                 }
             });
         } else {
@@ -380,7 +412,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     };
 
     saveNewModel = () => {
-        //console.log(myDiagram.model.toJson());
+        ////console.log(myDiagram.model.toJson());
         var m = new go.GraphLinksModel();
 
         m.nodeIsGroupProperty = "_isg";
@@ -416,7 +448,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             for (let j = 0; j < ports.length; j++) {
                 if (components[i].key === ports[j]._g) {
                     cont++;
-                    console.log(cont);
+                    //console.log(cont);
                     components[i].ports.push(ports[j]);
                 } else {
                     cont = 0;
@@ -424,12 +456,12 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             }
         }
 
-        console.log(components);
-        console.log(ports);
+        //console.log(components);
+        //console.log(ports);
 
         m.addNodeDataCollection(components);
         m.addLinkDataCollection(myDiagram.model.linkDataArray);
-        console.log(m.toJson());
+        //console.log(m.toJson());
         return m.toJson();
     };
 
@@ -440,7 +472,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     // Metodo para guardar la configuracion inicial de un puerto que fue 
     // configurado como salida/entrada o digital/analogico
     $scope.changeConfigurationPort = (form) => {
-        console.log($scope.fromNode);
+        //console.log($scope.fromNode);
         
         $scope.fromNode.digital = form.sc_portFrom_type.$viewValue === "digital";
         $scope.fromNode.analog = form.sc_portFrom_type.$viewValue === "analog";
@@ -472,7 +504,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             }
         }
         
-        console.log($scope.fromNode);
+        //console.log($scope.fromNode);
     };
 
     // ******************** //
@@ -581,7 +613,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                         out_inp: true
                     });
 
-                    console.log($scope.jsonCode[2].pinMode);
+                    //console.log($scope.jsonCode[2].pinMode);
                     //updateShina($scope.jsonCode);
                     updateCodeEditor();
                     return;
@@ -592,7 +624,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
                         namePort: $scope.arrayParameters[position].name_port,
                         out_inp: false
                     });
-                    console.log($scope.jsonCode[2].pinMode);
+                    //console.log($scope.jsonCode[2].pinMode);
                     //updateShina($scope.jsonCode);
                     updateCodeEditor();
                     return;
@@ -607,8 +639,8 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
             }
         }
 
-        console.log($scope.jsonValueDigitalRead);
-        console.log($scope.jsonCode[0].pinMode);
+        //console.log($scope.jsonValueDigitalRead);
+        //console.log($scope.jsonCode[0].pinMode);
         //updateShina($scope.jsonCode);
         updateCodeEditor();
     };
@@ -626,18 +658,41 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     };
 
     // agregar todo lo relacion a los modos de conexion del componente iot de comunicacion
-    $scope.addModeConection = function () {
-        console.log('Selected method:', $scope.modeConnection);
-        $scope.jsonCode[5].libraryCommnunication = [];
-        $scope.jsonCode[6].variablesCommnunication = [];
-        $scope.jsonCode[7].setupCommunication = [];
-        $scope.jsonCode[8].loopCommunication = [];
-        $scope.jsonCode[9].methodsCommnunication = [];
-        $scope.jsonCode[5].libraryCommnunication.push($scope.modeConnection.code.valueLibraries);
-        $scope.jsonCode[6].variablesCommnunication.push($scope.modeConnection.code.valueVariables);
-        $scope.jsonCode[7].setupCommunication.push($scope.modeConnection.code.valueSetup);
-        $scope.jsonCode[8].loopCommunication.push($scope.modeConnection.code.valueLoop);
-        $scope.jsonCode[9].methodsCommnunication.push($scope.modeConnection.code.valueMethods);
+    $scope.addCommunicationProtocol = function (position) {
+        //console.log('Selected method:', $scope.modeProtocolConnection);
+        $scope.quantityCode++;
+        if($scope.quantityCode > $scope.maxAddCode) {
+            $scope.jsonCode[5].libraryCommnunication = [];
+            $scope.jsonCode[6].variablesCommnunication = [];
+            $scope.jsonCode[7].setupCommunication = [];
+            $scope.jsonCode[8].loopCommunication = [];
+            $scope.jsonCode[9].methodsCommnunication = [];
+            $scope.quantityCode = 0;
+        }
+        $scope.jsonCode[5].libraryCommnunication.push($scope.modeProtocolConnection.code.valueLibraries);
+        $scope.jsonCode[6].variablesCommnunication.push($scope.modeProtocolConnection.code.valueVariables);
+        $scope.jsonCode[7].setupCommunication.push($scope.modeProtocolConnection.code.valueSetup);
+        $scope.jsonCode[8].loopCommunication.push($scope.modeProtocolConnection.code.valueLoop);
+        $scope.jsonCode[9].methodsCommnunication.push($scope.modeProtocolConnection.code.valueMethods);
+        updateCodeEditor();
+    }
+
+    $scope.addInterchangeData = function (index) {
+        //console.log('Selected method:', $scope.modeInterchangeConnection);
+        $scope.quantityCode++;
+        if($scope.quantityCode > $scope.maxAddCode) {
+            $scope.jsonCode[5].libraryCommnunication = [];
+            $scope.jsonCode[6].variablesCommnunication = [];
+            $scope.jsonCode[7].setupCommunication = [];
+            $scope.jsonCode[8].loopCommunication = [];
+            $scope.jsonCode[9].methodsCommnunication = [];
+            $scope.quantityCode = 0;
+        }
+        $scope.jsonCode[5].libraryCommnunication.push($scope.modeInterchangeConnection.code.valueLibraries);
+        $scope.jsonCode[6].variablesCommnunication.push($scope.modeInterchangeConnection.code.valueVariables);
+        $scope.jsonCode[7].setupCommunication.push($scope.modeInterchangeConnection.code.valueSetup);
+        $scope.jsonCode[8].loopCommunication.push($scope.modeInterchangeConnection.code.valueLoop);
+        $scope.jsonCode[9].methodsCommnunication.push($scope.modeInterchangeConnection.code.valueMethods);
         updateCodeEditor();
     }
 
@@ -692,7 +747,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
 
         //code += analize($scope.jsonCode[2].logic, 1);
 
-        code += "}";
+        code += "} \n";
 
         for(let indexMethodsCom = 0; indexMethodsCom < $scope.jsonCode[9].methodsCommnunication.length; indexMethodsCom++) {
             code += $scope.jsonCode[9].methodsCommnunication[indexMethodsCom] + "\n";
@@ -700,22 +755,49 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
 
         codeGeneral.setValue(code);
 
-        console.log(code);
+        //console.log(code);
         //function para inicializar los tooltip de los componentes de boostrap
         $(function () {
             $('[data-toggle="tooltip"]').tooltip();
         });
     }
 
-    // cargar los metodos de comunicacion
+    // cargar los protcolos de bajo nivel
+    $scope.loadInterchangeProtocol = () => {
+        $scope.loadProtocol({"filePath": "/interchange.json"}, 1);
+    };
+
+    // cargar los protocolos de comunicaciones
     $scope.loadComunicationMethod = () => {
-        $http.get('resources/json/comunication.json').then(function(response) {
-            // Asumiendo que el archivo JSON tiene una estructura como { "methods": [...] }
-            $scope.communicationMethods = response.data;
-            console.log('Métodos de comunicación cargados:', $scope.communicationMethods);
-        }).catch(function(error) {
-            console.error('Error al cargar los métodos de comunicación:', error);
-        });
+        $scope.loadProtocol({"filePath": "/comunication.json"}, 2);
+    };
+
+    // cargar los protcolos de bajo nivel
+    $scope.loadProtocol = (parameter, option) => {
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'fileManagerApi/loadFile',
+            data: JSON.stringify({...parameter}),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {
+                swal.close();
+                //console.log(data);
+                $scope.$apply(function () {
+                    if(option === 1) {
+                        $scope.interchangeMethods = data.data;
+                    } else {
+                        $scope.communicationMethods = data.data
+                    }
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.error("Error: ", objXMLHttpRequest);
+            }
+        })
     };
 
     // descargar el codigo
@@ -735,6 +817,7 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
         // Clean up the URL object
         window.URL.revokeObjectURL(url);
     };
+
 
 
 });

@@ -15,7 +15,7 @@ public class DataStatic {
 
     private static String protocol = "http";
 //    private static String domain = "aplicaciones.uteq.edu.ec/";
-    private static String domain = "localhost:8080/";
+    private static String domain = "82.180.136.74/";
 
     private static String uriServer = "Tddm4IoTbsServer/";
     private static String uriApplication = "tddt4iots/";

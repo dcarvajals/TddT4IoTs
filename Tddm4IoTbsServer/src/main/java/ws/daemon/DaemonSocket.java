@@ -129,6 +129,7 @@ public class DaemonSocket {
                  */
                 int row = getGroup(message.getString("header"));
                 String getConf = message.getString("config");
+                System.out.println("message: " + message.toString());
                 if (row != -1 && row < connected.size() && getConf.length() > 0) {
                     connected.get(row).shareMessage(ses, message, "to", getConf);
                 } else {

@@ -34,6 +34,10 @@
         <script src="resources/codemirror/clike.min.js" type="text/javascript"></script>
         <script src="resources/codemirror/matchbrackets.js" type="text/javascript"></script>
         <script src="resources/js/js-library/gojs.js" type="text/javascript"></script>
+
+        <!-- Incluir Ace Editor vía CDN -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+
     </head>
     <body  ng-controller="application">
         <div id="wrapper">
@@ -123,6 +127,13 @@
                     <a class="nav-link" ng-click="redirect('componentsiot')">
                         <i class="oi oi-wrench"></i>
                         <span>IoT Components</span></a>
+                </li>
+                
+                <!-- Nav Item - Pages Collapse Menu -->
+                <li class="nav-item {{appPage.Select==='settingsprotocol'?'active activeMenu':''}}">
+                    <a class="nav-link" ng-click="redirect('settingsprotocol')">
+                        <i class="oi oi-code"></i>
+                        <span>Settings Protocol</span></a>
                 </li>
 
                 <!-- Divider -->
@@ -238,6 +249,7 @@
         <script src="resources/js/js-view/ctrl_projectentregable.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_diagramsuml.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_dispositiveIoT.js" type="text/javascript"></script>
+        <script src="resources/js/js-view/ctrl_settingsprotocol.js" type="text/javascript"></script>
         <script src="resources/js/js-functions/ctrl_interprete.js" type="text/javascript"></script>
         <script src="resources/js/js-codeedit.js" type="text/javascript"></script>
         <script src="resources/js/js-view/js-drawcomponent.js" type="text/javascript"></script>

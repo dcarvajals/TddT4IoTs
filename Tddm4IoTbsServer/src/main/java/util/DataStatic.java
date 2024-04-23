@@ -73,9 +73,10 @@ public class DataStatic {
     public static String folderEasy = "EasyIoT/";
     public static String folderMvmSpring = "SprProject";
     public static String folderAngular = "AngProject";
-    public static String pathTemp = "D:\\Repositorios\\TddT4IoTs\\storageTddm4IoTbs\\src\\main\\webapp\\";
+    //public static String pathTemp = "D:\\Repositorios\\TddT4IoTs\\storageTddm4IoTbs\\src\\main\\webapp\\";
 
     public static String folderTemplate = "tddm4iotbs_template/";
+    public static String folderJson = "tddt4iots_json/";
     public static String folderMvn = "mvn_config/";
     public static String folferTempateJava = "template_java/";
     public static String folferTempateAngular = "template_angular/";

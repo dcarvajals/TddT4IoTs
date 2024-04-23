@@ -48,7 +48,7 @@ public class TerminalWindows {
 
     public boolean closeProcess() {
         p.destroy();
-        status = false;
+        status = false;   
         return true;
     }
 

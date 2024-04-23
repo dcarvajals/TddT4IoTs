@@ -9,9 +9,14 @@ import DAO.Master_projectDAO;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
+import java.io.BufferedWriter;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import models.Master_project;
 import util.DataStatic;
@@ -39,7 +44,8 @@ public class Master_projectCtrl {
         //IoT
         optionsIoT = new String[][]{
             {"ports", "iotPro.json", new_model, "iotPro.png"},
-            {"script", "script.ino", "", ""}
+            {"structureCode", "structureCode.json", ""},
+            {"script", "script.ino", ""}
         };
         //Uml
         optionsUml = new String[][]{
@@ -250,8 +256,7 @@ public class Master_projectCtrl {
                 if (jarr.size() > 0) {
                     FileAccess fac = new FileAccess();
                     Thread th = new Thread(() -> {
-
-                        for (int ijarr = 0; ijarr < 10; ijarr++) {
+                        for (int ijarr = 0; ijarr < jarr.size(); ijarr++) {
                             JsonObject jso = Methods.JsonElementToJSO(jarr.get(ijarr));
                             String flag = Methods.JsonToString(jso, "diagramType", "");
                             int index = -1;
@@ -261,12 +266,39 @@ public class Master_projectCtrl {
                                 }
                             }
 
-                            JsonObject minDataJson = Methods.JsonToSubJSON(jso, "dataJson");
-                            String base64 = Methods.JsonToString(jso, "base64", "");
-                            if (index != -1) {
-                                boolean r = fac.writeFileText(pathModule + fileModule[index][1], minDataJson.toString());
-                                if (!fileModule[index][3].equals("")) {
-                                    fac.SaveImg(base64, pathModule + fileModule[index][3]);
+                            // validar si el archivo no existe, esto por los proyectos que no tienen estos archivos creados inicialmente
+                            // Crear un objeto File con la ruta proporcionada
+                            File file = new File(pathModule + fileModule[index][1]);
+
+                            // Verificar si el archivo no existe
+                            if (!file.exists()) {
+                                try {
+                                    // Crear el archivo y directorios necesarios
+                                    file.createNewFile();         // Crea el archivo
+                                } catch (IOException ex) {
+                                    Logger.getLogger(Master_projectCtrl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+
+                            if (fileModule[index][0].equals("script")) {
+                                // Obteniendo el separador de línea del sistema
+                                String lineSeparator = System.getProperty("line.separator");
+                                String dataJsonScript = Methods.JsonToString(jso, "dataJson", "");
+                                // Reemplazando los \n con el separador de línea del sistema
+                                String adjustedContent = dataJsonScript.replace("\\n", lineSeparator);
+                                if (index != -1) {
+                                    //boolean r = fac.writeFileText(pathModule + fileModule[index][1], adjustedContent);
+                                    // Usar try-with-resources para asegurar que el FileWriter y BufferedWriter se cierren después de su uso
+                                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathModule + fileModule[index][1]))) {
+                                        writer.write(adjustedContent);
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(Master_projectCtrl.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            } else {
+                                JsonObject minDataJson = Methods.JsonToSubJSON(jso, "dataJson");
+                                if (index != -1) {
+                                    boolean r = fac.writeFileText(pathModule + fileModule[index][1], minDataJson.toString());
                                 }
                             }
                         }
@@ -384,9 +416,26 @@ public class Master_projectCtrl {
                 params = "4";
             } else if (module.equals("Test")) {
                 params = "5";
+            } else if (module.equals("structureCode")) {
+                params = "6";
+
+                // validar si el archivo no existe, esto por los proyectos que no tienen estos archivos creados inicialmente
+                // Crear un objeto File con la ruta proporcionada
+                String modulePath = path + DataStatic.folderProyect + resp[1] + "/";
+                File file = new File(modulePath + DataStatic.folderEasy + "structureCode.json");
+
+                // Verificar si el archivo no existe
+                if (!file.exists()) {
+                    try {
+                        // Crear el archivo y directorios necesarios
+                        file.createNewFile();         // Crea el archivo
+                    } catch (IOException ex) {
+                        Logger.getLogger(Master_projectCtrl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
 
-            if (params.matches("[12345]")) {
+            if (params.matches("[123456]")) {
                 String modulePath = path + DataStatic.folderProyect + resp[1] + "/";
 
                 String fileModule = "";
@@ -400,6 +449,8 @@ public class Master_projectCtrl {
                     fileModule = modulePath + DataStatic.folderUml + "sequencePro.json";
                 } else if (params.equals("5")) {
                     fileModule = modulePath + DataStatic.folderUml + "junitTest.json";
+                } else if (params.equals("6")) {
+                    fileModule = modulePath + DataStatic.folderEasy + "structureCode.json";
                 }
 
                 FileAccess fac = new FileAccess();

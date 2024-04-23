@@ -1,0 +1,129 @@
+<div class="modal fade" id="modalNewUpdateProtocol" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document">
+        <div class="modal-content">
+            <form name="formProtocol" ng-submit="addNewProtocol(formProtocol)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Protocol</h5>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="ip_nameprotocol">Name:</label>
+                        <input type="text" id="ip_nameprotocol"
+                               name="ip_nameprotocol"
+                               ng-model="ip_nameprotocol"
+                               autocomplete="false"
+                               ng-class="(formProtocol.ip_nameprotocol.$invalid &&
+                                                       formProtocol.ip_nameport.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required />
+                        <div class="invalid-feedback">
+                            Please enter the name protocol
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Libraries Code:</label>
+                        <div id="editorLibraries" class="code-editor" style="height: 100px"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Variables Code:</label>
+                        <div id="editorVariables" class="code-editor" style="height: 100px"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Setup Code:</label>
+                        <div id="editorSetup" class="code-editor" style="height: 100px"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Loop Code:</label>
+                        <div id="editorLoop" class="code-editor" style="height: 100px"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Methods Code:</label>
+                        <div id="editorMethods" class="code-editor" style="height: 100px"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button ng-click="closeModalNewProtocol()" type="button" class="btn btn-sm btn-danger">Cancel</button>
+                    <button  type="submit" class="btn btn-sm btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
+        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Settings protocol</h5>
+        <ul class="breadcrumb fw-bold fs-7 small">
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/settingsprotocol" class="text-muted text-hover-primary">Settings protocol</a>
+            </li>
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
+
+    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">{{protocolLoaded}}</h6>
+            <div class="dropdown">
+                <button class="btn button-dt btn-sm w-100"
+                        ng-click="selectProject(dom_myprojects)"
+                        type="button" id="protocolList"
+                        data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                    Protocol <i class="fas fa-chevron-down ml-4"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <button ng-click="changeSourceProtocol('/comunication.json')"
+                            class="dropdown-item"><i class="fas fa-chart-line"></i> Communication Protocol
+                    </button>
+                    <button ng-click="changeSourceProtocol('/interchange.json')"
+                            class="dropdown-item"><i class="fas fa-cloud"></i> Interchange Data Protocol
+                    </button>
+                </div>
+            </div>
+            <button class="btn button-d btn-sm"
+                    type="button" id="newProtocol"
+                    style="position: absolute;right: 0;margin-right: 11rem;"
+                    ng-click="openModalNewProtocol()">
+                New Protocol
+            </button>
+        </div>
+
+        <div class="card-body" style="height: auto; overflow: auto">
+
+            <div class="alert alert-primary" role="alert" id="component_table"
+                 ng-repeat="dom_array_protocol in dataArrayProtocol | filter: {name_component: searchComponentMyCom}" ng-show="dataArrayProtocol.length > 0">
+                <div class="media mb-2">
+                    <img src="resources/img/img-app/050-wifi.png" class="align-self-center mr-3" alt="..."
+                         width="40">
+                    <div class="media-body">
+                        <div>
+                            <strong> Protocol name: </strong> {{dom_array_protocol.name}}
+                        </div>
+                        <div class="row">
+                            <button class="btn button-dt btn-sm ml-2"
+                                    ng-click="selectedProtocol(dom_array_protocol, $index)">
+                                Update
+                            </button>
+
+                            <button class="btn button-ds btn-sm ml-2"
+                                    ng-click="deleteProtocol($index)">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

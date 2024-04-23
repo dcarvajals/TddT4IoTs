@@ -32,6 +32,7 @@ public class ApplicationConfig extends Application {
         resources.add(apis.ComponentsApis.class);
         resources.add(apis.Entregable_MembersApis.class);
         resources.add(apis.Entregable_TaskApis.class);
+        resources.add(apis.FileMangarApi.class);
         resources.add(apis.Master_projectApis.class);
         resources.add(apis.PersonApis.class);
         resources.add(apis.Project_EntregableApis.class);
