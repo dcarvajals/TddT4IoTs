@@ -24,7 +24,7 @@ public class Entregable_MembersDAO {
     }
     
     public String [] selectMemberEntregable(String idMasterProject){       
-        System.out.println("--- "+idMasterProject);
+        System.out.println(String.format("Select * from select_members_project('%s')", idMasterProject));
         String query = String.format("Select * from select_members_project('%s')", idMasterProject);
         DefaultTableModel table = conexion.returnRecord(query);
         
@@ -39,6 +39,7 @@ public class Entregable_MembersDAO {
     
     
     public String [] selectMembersEntregable(String type, String componentOrTask){
+        System.out.println(String.format("Select * from entregable_members_select('%s', '%s')", type, componentOrTask));
         String query = String.format("Select * from entregable_members_select('%s', '%s')", type, componentOrTask);        
         DefaultTableModel table = conexion.returnRecord(query);
         
@@ -55,7 +56,8 @@ public class Entregable_MembersDAO {
             };
     }
     
-    public String [] insertEntregableMember(String xml){        
+    public String [] insertEntregableMember(String xml){  
+        System.out.println( String.format("Select * from entregable_members_insert('%s')", xml));
         String query = String.format("Select * from entregable_members_insert('%s')", xml);
         DefaultTableModel table = conexion.returnRecord(query);
         
