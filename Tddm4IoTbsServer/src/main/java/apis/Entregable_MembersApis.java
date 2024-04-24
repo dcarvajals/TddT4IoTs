@@ -125,7 +125,7 @@ public class Entregable_MembersApis {
                     +        "<permit_master>" +permit_master+"</permit_master>\n"
                     + "</project_task_member>";
             
-            System.out.println(toInsert);
+            System.out.println("XML A INSERTAR \n " + toInsert);
             
             String[] response = eMembersCtrl.updateMember(toInsert);
                 

@@ -1214,7 +1214,7 @@ $scope.loadComponentsEntregable =null;
                 }),
                 error: function (objXMLHttpRequest)
                 {
-                    
+                    alert("Hola");
                 },
                 success: function (data) {
                    alertAll(data);
@@ -1224,9 +1224,7 @@ $scope.loadComponentsEntregable =null;
         }
     };
 
-
     //modalpdf
-
     $scope.openModalpdf = (type) => {
 
     };
