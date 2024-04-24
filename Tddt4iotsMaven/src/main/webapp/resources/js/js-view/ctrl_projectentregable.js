@@ -794,14 +794,13 @@ $scope.loadComponentsEntregable =null;
                     loading();
                 },
                 success: function (data) {                    
-                    $scope.loadComponentTasks();
+                    $scope.loadComponentTasks();                    
                     $scope.closeCreateComponentTask();
-                    alertAll(data);
+                    alertAll(data);                    
+                    
                     swal.close();
                     $scope.loadComponentEntregableSelected($scope.project_entregable_component_selected.id_entregable_component);
                     $('#progress_bar_component_task').load();
-
-
                 },
                 error: function (objXMLHttpRequest) {
                     // console.log("error", objXMLHttpRequest);
