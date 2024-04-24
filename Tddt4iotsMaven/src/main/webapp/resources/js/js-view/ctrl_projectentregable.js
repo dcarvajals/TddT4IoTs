@@ -200,6 +200,8 @@ $scope.loadComponentsEntregable =null;
                     "type": idtype
                 }),
                 success: function (data) {
+                    console.log("memberssssssssssssssss");
+                    console.log(data.data);
                     $scope.$apply(function () {
                         $scope.project_members_entregable = data.data;
                     });                    
@@ -374,15 +376,18 @@ $scope.loadComponentsEntregable =null;
                             $scope.openErrorModal();
                         } else {
                             $scope.$apply(() => {
-                                $scope.loadEntregablesProject();
-
+                                $scope.loadEntregablesProject();    
+                                
                                 $("#modalCreateEntre").modal('hide');
                                 swal.close();
 
                                 $scope.selectProjectMaster();
                                 $('#progress_bar_master_project').load();
+                                
                             });
                             alertAll(data);
+                            $scope.formreset(form);
+                            delete_forms_values();
                         }
                     },
                     error: function (objXMLHttpRequest) {
@@ -800,8 +805,10 @@ $scope.loadComponentsEntregable =null;
                     alertAll(data);                    
                     
                     swal.close();
+                     delete_forms_values();
                     $scope.loadComponentEntregableSelected($scope.project_entregable_component_selected.id_entregable_component);
                     $('#progress_bar_component_task').load();
+                   
                 },
                 error: function (objXMLHttpRequest) {
                     // console.log("error", objXMLHttpRequest);
@@ -1356,19 +1363,31 @@ $scope.loadComponentsEntregable =null;
         
         return false;
     };
+    
+    $scope.formreset = (form) => {
+        
+        if(form)
+        {
+            form.$setPristine();
+            form.$setUntouched();
+            
+        }
+        
+    }
+    
+    
 });
 
 
 function delete_forms_values()
 {
-  /*  console.log("comenzara a eliminar informacion");
+    console.log("comenzara a eliminar informacion");
     let controllersforms=document.querySelectorAll(".deletevalue");
     
     for(let x of controllersforms)
-        x.value="";*/
+        x.value="";
     
-    let form=document.querySelectorAll(".formreset");
-    form.reset();
+    
     console.log("Informacion reseteada de formulario");
 }
 

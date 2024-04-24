@@ -151,6 +151,7 @@ public class Entregable_MembersApis {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getMembersComponent(String data) {
         String message = "";
+        
         JsonObject Jso = Methods.stringToJSON(data);
         System.out.println(data);
         if (Jso.size() > 0) {

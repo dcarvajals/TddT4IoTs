@@ -209,7 +209,7 @@
                                 </td> 
                                 <td>
                                      <select class="form-control" id="modal_members_role_show_select" style="font-size: 13px"  name="role_view_member"
-                                    ng-value="'{{members.role_member}}'" ng-hide="typeMemberViewSelected !== 2"
+                                    ng-value="'{{members.role_member}}'" ng-hide=""
                                     disabled >
                                     <option value="U">Final user</option>
                                     <option value="F">Project facilitator</option>
@@ -220,7 +220,7 @@
                                 </td>
                                 <td>
                                     <select class="form-control" style="font-size: 13px" name="status_task_create" ng-value="'{{members.status_member}}'"
-                                        ng-hide="typeMemberViewSelected !== 2" disabled
+                                        ng-hide="" disabled
                                         >
                                     <option value="A" >Active </option>
                                     <option value="I">Inactive </option>
@@ -412,6 +412,7 @@
 
 
                         <input name="id_entregable" value="0"
+                               
                                ng-model="id_entregable"
                                ng-class="(form_new_entre.id_entregable.$invalid &&
                                                        form_new_entre.id_entregable.$dirty) ?
@@ -434,6 +435,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Deliverable name:</label>
                         <input name="name_entregable"
+                               class="deletevalue"
                                ng-model="name_entregable"
                                ng-class="(form_new_entre.name_entregable.$invalid &&
                                                        form_new_entre.name_task.$dirty) ?
@@ -446,6 +448,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Deliverable description:</label>
                         <textarea name="description_entregable"
+                                  class="deletevalue"
                                   ng-model="description_entregable"
                                   ng-class="(form_new_entre.description_entregable.$invalid &&
                                                           form_new_entre.description_entregable.$dirty) ?
@@ -460,6 +463,7 @@
                         <label class="col-form-label col-form-label-sm"> Start develop date: </label>
                         <input name="startdate_entregable" type="date" id="startdate_entregable"
                                ng-model="startdate_entregable"
+                               class="deletevalue"
                                ng-class="(form_new_entre.startdate_entregable.$invalid &&
                                                        form_new_entre.startdate_entregable.$dirty) ?
                                                        'form-control form-control-sm is-invalid'
@@ -477,6 +481,7 @@
                                                    'form-control form-control-sm is-invalid'
                                                    : 'form-control form-control-sm'" maxlength="200"
                            min="2023-01-01"
+                           class="deletevalue"
                            required />
                     <br>
                     <div class="form-group">
@@ -511,6 +516,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Percentage of the project (%):</label>
                         <input name="base_percentage_entregable" value="Path" type="number" min="0" max="100"
+                               class="deletevalue"
                                ng-model="base_percentage_entregable"
                                ng-class="(form_new_entre.base_percentage_entregable.$invalid &&
                                                        form_new_entre.base_percentage_entregable.$dirty) ?
@@ -1447,6 +1453,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <input name="id_entregable" value="{{selected_entregable.id_entregable_task}}"
+                               
                                ng-model="id_entregable"
                                ng-class="(form_new_task.id_entregable.$invalid &&
                                                        form_new_task.id_entregable.$dirty) ?
@@ -1459,6 +1466,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Component name:</label>
                         <input name="name_component"
+                               class="deletevalue"
                                ng-model="name_component"
                                ng-class="(form_new_task.name_component.$invalid &&
                                                        form_new_task.name_component.$dirty) ?
@@ -1470,6 +1478,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Component description:</label>
                         <textarea name="description_component"
+                                  class="deletevalue"
                                   ng-model="description_component"
                                   ng-class="(form_new_task.description_component.$invalid &&
                                                           form_new_task.description_component.$dirty) ?
@@ -1491,6 +1500,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Start develop date: </label>
                         <input name="startdate_component" type="date" id="startdate_component"
+                               class="deletevalue"
                                ng-model="startdate_component"
                                ng-class="(form_new_task.startdate_component.$invalid &&
                                                        form_new_task.startdate_component.$dirty) ?
@@ -1502,6 +1512,7 @@
 
                     <label class="col-form-label col-form-label-sm"> Estimated date finish:</label>
                     <input name="stimateddate_component" type="date" id="stimateddate_component"
+                           class="deletevalue"
                            ng-model="stimateddate_component" ng-click="checkValidDate('startdate_component', 'stimateddate_component')"
                            ng-class="(form_new_task.stimateddate_component.$invalid &&
                                                    form_new_task.stimateddate_component.$dirty) ?
@@ -1511,6 +1522,7 @@
 
                     <label class="col-form-label col-form-label-sm"> Percentage of the entregable (%):</label>
                     <input name="base_percentage_component" type="number"
+                           class="deletevalue"
                            ng-model="base_percentage_component"
                            ng-class="(form_new_task.base_percentage_component.$invalid &&
                                                    form_new_task.base_percentage_component.$dirty) ?
@@ -1562,6 +1574,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <input name="id_entregable" value="{{selected_entregable.id_entregable_task}}"
+                               
                                ng-model="id_entregable"
                                ng-class="(form_new_component_task.id_entregable.$invalid &&
                                                        form_new_component_task.id_entregable.$dirty) ?
@@ -1574,6 +1587,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Task name:</label>
                         <input name="name_task_create"
+                               class="deletevalue"
                                ng-model="task_name_create"
                                ng-class="(form_new_component_task.name_task_create.$invalid &&
                                                        form_new_component_task.name_task_create.$dirty) ?
@@ -1585,6 +1599,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Task description:</label>
                         <textarea name="description_task_create"
+                                  class="deletevalue"
                                   ng-model="description_task_create"
                                   ng-class="(form_new_component_task.description_task_create.$invalid &&
                                                           form_new_component_task.description_task_create.$dirty) ?
@@ -1606,6 +1621,7 @@
                     <div class="form-group">
                         <label class="col-form-label col-form-label-sm"> Start develop date: </label>
                         <input name="startdate_task" type="date" id="startdate_task"
+                               class="deletevalue"
                                ng-model="startdate_task"
                                ng-class="(form_new_component_task.startdate_task.$invalid &&
                                                        form_new_component_task.startdate_task.$dirty) ?
@@ -1616,6 +1632,7 @@
 
                     <label class="col-form-label col-form-label-sm"> Estimated date finish: </label>
                     <input name="stimateddate_task_create" type="date" id="stimateddate_task_create"
+                           class="deletevalue"
                            ng-model="stimateddate_task_create" ng-click="checkValidDate('startdate_task', 'stimateddate_task_create')"
                            ng-class="(form_new_component_task.stimateddate_task_create.$invalid &&
                                                    form_new_component_task.stimateddate_task_create.$dirty) ?
@@ -1625,6 +1642,7 @@
 
                     <label class="col-form-label col-form-label-sm"> Percentage of the component (%): </label>
                     <input name="base_percentage_task_create" type="number"
+                           class="deletevalue"
                            ng-model="base_percentage_task_create"
                            ng-class="(form_new_component_task.base_percentage_task_create.$invalid &&
                                                    form_new_component_task.base_percentage_task_create.$dirty) ?
