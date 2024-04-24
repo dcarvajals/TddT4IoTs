@@ -487,19 +487,20 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         loading();
                     },
                     success: function (data) {
-                        
                         $scope.$apply(() => {
                             //If the user is not valid then change the flag to force the user
                             //to enter the names and last names.
                             if (data.data["valid_user"] !== null){
                                 $scope.flag_share_user_exists = data.data["valid_user"];
-                                
-                                if ($scope.flag_share_user_exists ===  true) {
-                                    $("#modalShareProjectComplete").modal('hide');
-                                }
                             }
                             else {
                                 $scope.flag_share_user_exists = false;
+                            }
+                            if (data.status ===  "2" || data.status ===  2) {
+                                $("#modalShareProjectComplete").modal('hide');
+                                $scope.shared_user_name = "";
+                                $scope.shared_user_last_name = "";
+                                $scope.shared_np = "";
                             }
                         });
                         swal.close();

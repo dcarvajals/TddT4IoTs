@@ -1158,6 +1158,8 @@ $scope.loadComponentsEntregable =null;
 
     $scope.updateMembers = (form) =>
     {        
+        console.log("******");
+        console.log(form);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (form.$valid)
         {
@@ -1167,7 +1169,8 @@ $scope.loadComponentsEntregable =null;
                 contentType: "application/json; charset=utf-8",
                 url: urlWebServicies + "members/updateMembers",
                 data: JSON.stringify({
-                    'email_member': form.email_member_edit.$viewValue,
+                    
+                    'permit_master': form.selecteditem.$viewValue.id_permitmaster,
                     'role_member': form.role_member_edit.$viewValue,                    
                     'status_member' : form.status_member_edit.$viewValue,
                     'id_task' : $scope.entregable_component_task_selected.id_task,
@@ -1176,7 +1179,7 @@ $scope.loadComponentsEntregable =null;
                 }),
                 error: function (objXMLHttpRequest)
                 {
-                    
+                    alert("Hola");
                 },
                 success: function (data) {
                    alertAll(data);
@@ -1186,9 +1189,7 @@ $scope.loadComponentsEntregable =null;
         }
     };
 
-
     //modalpdf
-
     $scope.openModalpdf = (type) => {
 
     };

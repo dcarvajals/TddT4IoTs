@@ -102,6 +102,7 @@ public class Entregable_MembersApis {
     public Response updateMembersComponent(String data) {
         String message = "";
         JsonObject Jso = Methods.stringToJSON(data);        
+        System.out.println("ssssssssssssss");
         if (Jso.size() > 0) {
             String id_task = Methods.JsonToString(Jso, "id_task", "");
             String role_member = Methods.JsonToString(Jso, "role_member", "");            
@@ -109,6 +110,7 @@ public class Entregable_MembersApis {
             String email_member = Methods.JsonToString(Jso, "email_member", "");
             String email = Methods.JsonToString(Jso, "emailperson", "");
             String id_masterproject = Methods.JsonToString(Jso, "idmasterproject", "");
+            String permit_master=Methods.JsonToString(Jso, "permit_master", "");
             
             WeEncoder encoder = new WeEncoder();
             id_masterproject = encoder.textDecryptor(id_masterproject);
@@ -119,10 +121,12 @@ public class Entregable_MembersApis {
                     + "    <id_task>" + id_task + "</id_task>\n"
                     + "    <email_member>" + email_member + "</email_member>\n"
                     + "    <personid>" +personCtrl.emailgetid(email)+"</personid>\n"
-                    + "    <id_masterproject>"+ id_masterproject +"</id_masterproject>\n" 
+                    + "    <id_masterproject>"+ id_masterproject +"</id_masterproject>\n"
+                    +        "<permit_master>" +permit_master+"</permit_master>\n"
                     + "</project_task_member>";
             
-
+            System.out.println("XML A INSERTAR \n " + toInsert);
+            
             String[] response = eMembersCtrl.updateMember(toInsert);
                 
             message = Methods.getJsonMessage(response[0], response[1], response[2]);               
