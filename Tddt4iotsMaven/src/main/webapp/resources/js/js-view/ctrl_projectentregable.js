@@ -500,6 +500,7 @@ $scope.loadComponentsEntregable =null;
                         });
 
                         alertAll(data);
+                        delete_forms_values();
                     },
                     error: function (objXMLHttpRequest) {
                         // console.log("error: ", objXMLHttpRequest);
@@ -1361,11 +1362,14 @@ $scope.loadComponentsEntregable =null;
 
 function delete_forms_values()
 {
-    console.log("comenzara a eliminar informacion");
+  /*  console.log("comenzara a eliminar informacion");
     let controllersforms=document.querySelectorAll(".deletevalue");
     
     for(let x of controllersforms)
-        x.value="";
+        x.value="";*/
+    
+    let form=document.querySelectorAll(".formreset");
+    form.reset();
     console.log("Informacion reseteada de formulario");
 }
 

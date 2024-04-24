@@ -23,13 +23,17 @@ public class DataStatic {
 //    public static String dbPassword = "carvajal2000";
 //    public static String dbPort = "5432";
 //    public static String dbHost = "localhost";//local
-    
-     //app.applications uteq
     public static String dbName = "tddt4iots";
+    public static String dbUser = "postgres";
+    public static String dbPassword = "ACD5254BA9BB71B85948D702E8D9426569F6541BDC569E31B0F0CB25085A3F4F";
+    public static String dbPort = "5432";
+    public static String dbHost = "82.180.136.74";
+     //app.applications uteq
+ /*   public static String dbName = "tddt4iots";
     public static String dbUser = "aplicaciones";
     public static String dbPassword = "z8E9bYdQpHmOvtfH6Up5dE1HKCh35pgwlEDuZqMklOtg3Zm2UA";
     public static String dbPort = "9010";
-    public static String dbHost = "aplicaciones.uteq.edu.ec";//remoto
+    public static String dbHost = "aplicaciones.uteq.edu.ec";*///remoto
     
 //    
     /**
