@@ -1156,8 +1156,45 @@ $scope.loadComponentsEntregable =null;
         $("#modalEditMembersTask").modal('hide');        
     };
 
+
+   $scope.saveMembers = (form) =>
+    {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        console.log(form);
+        console.log(form.selecteditem.$viewValue.id_permitmaster);
+        if (form.$valid)
+        {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                url: urlWebServicies + "members/saveMemberss",
+                data: JSON.stringify({
+                    'permit_master': form.selecteditem.$viewValue.id_permitmaster,
+                    'role': form.role.$viewValue,
+                    'idTask': $scope.selected_Task,
+                    'status': form.status_new_member.$viewValue,
+                    "emailperson": dataUser.email_person,
+                    "idmasterproject": $scope.selected_project
+                }),
+                error: function (objXMLHttpRequest)
+                {
+                    // console.log("error", objXMLHttpRequest);
+                },
+                success: function (data) {
+                    alertAll(data);
+                    $scope.shareprojectM(form.email.$viewValue);
+                }
+            });
+            //alert("asssssssssss");
+        }
+    };
+
+
     $scope.updateMembers = (form) =>
     {        
+        console.log("**************");
+        console.log(form);
         var dataUser = store.session.get("user_tddm4iotbs");
         if (form.$valid)
         {
@@ -1167,7 +1204,8 @@ $scope.loadComponentsEntregable =null;
                 contentType: "application/json; charset=utf-8",
                 url: urlWebServicies + "members/updateMembers",
                 data: JSON.stringify({
-                    'email_member': form.email_member_edit.$viewValue,
+                    
+                    'permit_master': form.selecteditem.$viewValue.id_permitmaster,
                     'role_member': form.role_member_edit.$viewValue,                    
                     'status_member' : form.status_member_edit.$viewValue,
                     'id_task' : $scope.entregable_component_task_selected.id_task,
@@ -1266,38 +1304,6 @@ $scope.loadComponentsEntregable =null;
         });
     };
     
-   $scope.saveMembers = (form) =>
-    {
-        var dataUser = store.session.get("user_tddm4iotbs");
-        console.log(form);
-        console.log(form.selecteditem.$viewValue.id_permitmaster);
-        if (form.$valid)
-        {
-            $.ajax({
-                method: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                url: urlWebServicies + "members/saveMemberss",
-                data: JSON.stringify({
-                    'permit_master': form.selecteditem.$viewValue.id_permitmaster,
-                    'role': form.role.$viewValue,
-                    'idTask': $scope.selected_Task,
-                    'status': form.status_new_member.$viewValue,
-                    "emailperson": dataUser.email_person,
-                    "idmasterproject": $scope.selected_project
-                }),
-                error: function (objXMLHttpRequest)
-                {
-                    // console.log("error", objXMLHttpRequest);
-                },
-                success: function (data) {
-                    alertAll(data);
-                    $scope.shareprojectM(form.email.$viewValue);
-                }
-            });
-            //alert("asssssssssss");
-        }
-    };
 
 
     $scope.shareprojectM=(emailp)=>
