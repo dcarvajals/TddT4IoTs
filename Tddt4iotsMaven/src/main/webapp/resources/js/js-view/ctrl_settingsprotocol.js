@@ -21,6 +21,7 @@ app.controller("settings_controller", function ($scope, $http) {
     $(document).ready(() => {
         $scope.loadInterchangeProtocol({"filePath": $scope.sourceJson});
         initEditors();
+        $scope.appPage.Select = "settingsprotocol";
     });
 
     $scope.changeSourceProtocol = (sourcePath) => {
