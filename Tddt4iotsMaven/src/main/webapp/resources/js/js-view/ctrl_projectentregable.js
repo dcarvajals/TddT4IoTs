@@ -280,17 +280,42 @@ $scope.loadComponentsEntregable =null;
     };
     
     $scope.typeMemberViewSelected = -1;
-
+    
     $scope.openModalViewMembers = (element, type) => {        
         $scope.typeMemberViewSelected = type;
         if(type === 0){
-            document.getElementById("modal_title_view_members").textContent = element.name_entregable + ": Members";
+            document.getElementById("modal_title_view_members_candtask").textContent = element.name_entregable + ": Collaborators";
+            $scope.selected_entregable = element;            
+            $scope.selectEntregableMembers(type, element.id_entregable);
+            $("#modalViewMembersdeliverable").modal();
+            return;
+        }
+        if(type === 1){
+            document.getElementById("modal_title_view_members_candtask").textContent = element.name_component + ": Collaborators";
+            $scope.project_entregable_component_selected = element;
+            $scope.selectEntregableMembers(type, element.id_entregable_component);
+            $("#modalViewMembersComponent").modal();
+            return;
+        }
+        if(type === 2){
+            document.getElementById("modal_title_view_members").textContent = element.name_task + ": Members";
+            $scope.entregable_component_task_selected = element;
+            $scope.selectEntregableMembers(type, element.id_task);
+            $("#modalViewMembers").modal();
+            return;
+        }
+    };
+
+    $scope.openModalViewMembers2 = (element, type) => {        
+        $scope.typeMemberViewSelected = type;
+        if(type === 0){
+            document.getElementById("modal_title_view_members").textContent = element.name_entregable + ": Collaborators";
             
             $scope.selected_entregable = element;            
             $scope.selectEntregableMembers(type, element.id_entregable);          
         }
         if(type === 1){
-            document.getElementById("modal_title_view_members").textContent = element.name_component + ": Members";
+            document.getElementById("modal_title_view_members").textContent = element.name_component + ": Collaborators";
             
             //document.getElementById("modal_members_role_show_label").visibility = "hidden";
             //document.getElementById("modal_members_role_show_select").visibility = "hidden";
@@ -299,7 +324,7 @@ $scope.loadComponentsEntregable =null;
             $scope.selectEntregableMembers(type, element.id_entregable_component);
         }
         if(type === 2){
-            document.getElementById("modal_title_view_members").textContent = element.name_task + ": Members";
+            document.getElementById("modal_title_view_members").textContent = element.name_task + ": Collaborators";
             $scope.entregable_component_task_selected = element;
             $scope.selectEntregableMembers(type, element.id_task);
         }
@@ -525,6 +550,18 @@ $scope.loadComponentsEntregable =null;
 
     $scope.closeModalViewMembers = () => {
         $("#modalViewMembers").modal('hide');
+    };
+    
+     $scope.closeModalViewMembersTask = () => {
+        $("#modalViewMembers").modal('hide');
+    };
+    
+    $scope.closeModalViewMembersComponent = () => {
+        $("#modalViewMembersComponent").modal('hide');
+    };
+    
+    $scope.closeModalViewMembersDeliverable = () => {
+        $("#modalViewMembersdeliverable").modal('hide');
     };
 
     $scope.openEntregableModal = (actionModal, entregable_selected) => {

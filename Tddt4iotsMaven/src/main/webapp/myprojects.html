@@ -52,7 +52,7 @@
         <div class="modal-content">
             <form name="form_share_project_complete" ng-submit="shareProjectComplete(form_share_project_complete)">
                 <div class="modal-header">
-                    <h5 class="modal-title">Share project with</h5>
+                    <h5 class="modal-title">Add collaborators</h5>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -123,6 +123,7 @@
                             <option value="SFA">Software Architect</option>
                             <option value="FRD">Frontend Developer</option>
                             <option value="BCD">Backend Developer</option>
+                            <option value="ISA">IoT System Architect</option>
                             <option value="TTE">Testing Engineer (Tester)</option>
                             <option value="DOE">DevOps Engineer</option>
                             <option value="FSD">Full-Stack Developer</option>
@@ -130,7 +131,8 @@
                             <option value="MAD">Mobile App Developer</option>
                             <option value="DTE">Data Engineer</option>
                             <option value="GPD">Graphic Designer</option>
-                            <option value="ACD">Accessibility Designer</option>                           
+                            <option value="ACD">Accessibility Designer</option>                            
+                            <option value="ALD">Client/End user</option>
                         </select>
                         <div class="invalid-feedback">
                             Select the speciality of the user to share
@@ -167,25 +169,29 @@
 <!--modal para compartir un proyecto-->
 <div class="modal fade" id="modalMembersInProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered sha" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg sha" role="document">
         <div class="modal-content">
             <form name="form_share_project" ng-submit="loadMembersInProjects()">
                 <div class="modal-header">
-                    <h5 class="modal-title">List of members in project</h5>
+                    <h5 class="modal-title">List of collaborators</h5>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Member email</th>
+                                    <th>Collaborator</th>
+                                    <th>Email</th>
                                     <th>Role</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="member in members_in_project" ng-show="members_in_project.length > 0">
+                                    <td>{{member.name_person}} {{member.lastname_person}}</td>
                                     <td>{{member.email_person}}</td>
                                     <td>{{member.complete_role}}</td>
+                                                                       
                                 </tr>                        
                             </tbody>
                         </table>                        
@@ -302,12 +308,12 @@
                             </div>
                             <div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-dt btn-sm w-100" ng-click="openShareProject(dom_myprojects)">
-                                    Share Project
+                                    Add collaborators
                                 </button>
                             </div>
                             <div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-dt btn-sm w-100" ng-click="openSeeMembersInProject(dom_myprojects)">
-                                    Members
+                                    List collaborators
                                 </button>
                             </div>
                             <div class="col-xl-4 col-md-3 mb-2">

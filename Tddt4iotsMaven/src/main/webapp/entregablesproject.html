@@ -148,7 +148,7 @@
 
                             <div class="col-xl-4 col-md-3 mb-2" ng-hide="!hideButtons(entregables.members)">
                                 <button class="btn button-dt btn-sm w-100" ng-click="openModalViewMembers(entregables, 0)">
-                                    View Members
+                                    List collaborators
                                 </button>
                             </div>    
 
@@ -186,14 +186,14 @@
         <div class="modal-content">
             <form name="form_new_project">
                 <div class="modal-header">
-                    <h5 class="modal-title"  id="modal_title_view_members">{{alldata_selected_project.name_mp}}: Members</h5>
+                    <h5 class="modal-title"  id="modal_title_view_members">{{alldata_selected_project.name_mp}}: Collaborators</h5>
                 </div>
                 <div class="modal-body">
                     <!-- Members in proyect:  -->
                     <table class="table">
                         <thead>
                             <tr>
-                                <th scope="col">Full name</th>
+                                <th scope="col">Collaborator</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Role</th>
                                 <th scope="col">Status</th>
@@ -208,64 +208,207 @@
                                     <p><small>{{members.email_person}}</small></p>
                                 </td> 
                                 <td>
-                                     <select class="form-control" id="modal_members_role_show_select" style="font-size: 13px"  name="role_view_member"
-                                    ng-value="'{{members.role_member}}'" ng-hide=""
-                                    disabled >
-                                    <option value="U">Final user</option>
-                                    <option value="F">Project facilitator</option>
-                                    <option value="A">Project facilitator</option>
-                                    <option value="C">Advisor</option>
-                                    <option value="E">Develop team</option>
-                                    </select>   
+                                    <p ng-if="members.role_member=='U'">
+                                        Final User
+                                    </p>
+                                    <p ng-if="members.role_member=='F'">
+                                       Project facilitator
+                                    </p>
+                                     <p ng-if="members.role_member=='A'">
+                                       Project facilitator
+                                    </p>
+                                    <p ng-if="members.role_member=='C'">
+                                       Advisor
+                                    </p>
+                                    <p ng-if="members.role_member=='E'">
+                                       Develop team
+                                    </p>
                                 </td>
                                 <td>
-                                    <select class="form-control" style="font-size: 13px" name="status_task_create" ng-value="'{{members.status_member}}'"
-                                        ng-hide="" disabled
-                                        >
-                                    <option value="A" >Active </option>
-                                    <option value="I">Inactive </option>
-                                    </select>
+                                    <p ng-if="members.status_member=='A'">
+                                        Active
+                                    </p>
+                                    <p ng-if="members.status_member=='I'">
+                                        Inactive
+                                    </p>
                                 </td>
                             </tr>
                         </tbody>
-                       <!-- <div class="form-group" ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
-                        
-                        <label class="col-form-label col-form-label-sm">Full name: </label>
-                        <input name="name_np" class="form-control form-control-sm" maxlength="30" value="{{members.name_person + ' ' + members.lastname_person}}" disabled/>
-                        <div class="invalid-feedback">
-                        </div>
-                        
-                        <label class="col-form-label col-form-label-sm">Email: </label>
-                        <input name="name_np" class="form-control form-control-sm" maxlength="30" value="{{members.email_person}}" disabled/>
-                        <div class="invalid-feedback">
-                        </div>
-
-                        <label  id="modal_members_role_show_label" class="col-form-label col-form-label-sm"
-                                ng-hide="typeMemberViewSelected !== 2"> Role:  </label>
-                        <select class="form-control" id="modal_members_role_show_select" style="font-size: 15px"  name="role_view_member"
-                                ng-value="'{{members.role_member}}'" ng-hide="typeMemberViewSelected !== 2"
-                                disabled >
-                            <option value="U">Final user</option>
-                            <option value="F">Project facilitator</option>
-                            <option value="A">Project facilitator</option>
-                            <option value="C">Advisor</option>
-                            <option value="E">Develop team</option>
-                        </select>   
-                        
-                        <label class="col-form-label col-form-label-sm" ng-hide="typeMemberViewSelected !== 2"> Status:</label>
-                        <select class="form-control" style="font-size: 15px" name="status_task_create" ng-value="'{{members.status_member}}'"
-                                ng-hide="typeMemberViewSelected !== 2" disabled
-                                >
-                            <option value="A" >Active </option>
-                            <option value="I">Inactive </option>
-                        </select>
-                        
-                        <br>
-                    </div>-->
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeModalViewMembers()">Close</button>                    
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeModalViewMembersTask()">Close</button>                    
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalViewMembersComponent" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document" style="max-width: 1000px!important">
+        <div class="modal-content">
+            <form name="form_new_project">
+                <div class="modal-header">
+                    <h5 class="modal-title"  id="modal_title_view_members_candtask">{{alldata_selected_project.name_mp}}: Collaborators</h5>
+                </div>
+                <div class="modal-body">
+                    <!-- Members in proyect:  -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Collaborator</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Task</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
+                                <td rowspan="{{members.inf.length}}" style="vertical-align: middle;">
+                                    <p><small>{{members.name_person + ' ' + members.lastname_person}}<small></p>
+                                </td>
+                                <td rowspan="{{members.inf.length}}" style="vertical-align: middle;">
+                                    <p><small>{{members.email_person}}</small></p>
+                                </td> 
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        
+                                        
+                                        <p ng-if="m.role_member=='U'">
+                                           Final User
+                                        </p>
+                                        <p ng-if="m.role_member=='F'">
+                                           Project facilitator
+                                        </p>
+                                         <p ng-if="m.role_member=='A'">
+                                           Project facilitator
+                                        </p>
+                                        <p ng-if="m.role_member=='C'">
+                                           Advisor
+                                        </p>
+                                        <p ng-if="m.role_member=='E'">
+                                           Develop team
+                                        </p>
+                                    </div>
+                                    
+                                </td>
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        <p ng-if="m.status_member=='A'">
+                                            Active
+                                        </p>
+                                        <p ng-if="m.status_member=='I'">
+                                            Inactive
+                                        </p>
+                                    </div>
+                                     
+                                </td>
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        <p>
+                                            {{m.name_task}}
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                      
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeModalViewMembersComponent()">Close</button>                    
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalViewMembersdeliverable" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document" style="max-width: 1000px!important">
+        <div class="modal-content">
+            <form name="form_new_project">
+                <div class="modal-header">
+                    <h5 class="modal-title"  id="modal_title_view_members_candtask">{{alldata_selected_project.name_mp}}: Collaborators</h5>
+                </div>
+                <div class="modal-body">
+                    <!-- Members in proyect:  -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Collaborator</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Component</th>
+                                <th scope="col">Task</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="members in project_members_entregable" ng-show="project_members_entregable.length > 0">
+                                <td rowspan="{{members.inf.length}}" style="vertical-align: middle;">
+                                    <p><small>{{members.name_person + ' ' + members.lastname_person}}<small></p>
+                                </td>
+                                <td rowspan="{{members.inf.length}}" style="vertical-align: middle;">
+                                    <p><small>{{members.email_person}}</small></p>
+                                </td> 
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        
+                                        
+                                        <p ng-if="m.role_member=='U'">
+                                           Final User
+                                        </p>
+                                        <p ng-if="m.role_member=='F'">
+                                           Project facilitator
+                                        </p>
+                                         <p ng-if="m.role_member=='A'">
+                                           Project facilitator
+                                        </p>
+                                        <p ng-if="m.role_member=='C'">
+                                           Advisor
+                                        </p>
+                                        <p ng-if="m.role_member=='E'">
+                                           Develop team
+                                        </p>
+                                    </div>
+                                    
+                                </td>
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        <p ng-if="m.status_member=='A'">
+                                            Active
+                                        </p>
+                                        <p ng-if="m.status_member=='I'">
+                                            Inactive
+                                        </p>
+                                    </div>
+                                     
+                                </td>
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        <p>
+                                            {{m.name_component}}
+                                        </p>
+                                    </div>
+                                </td>
+                                <td ng-if="members.inf!=''">
+                                    <div ng-repeat="m in members.inf">
+                                        <p>
+                                            {{m.name_task}}
+                                        </p>
+                                    </div>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                      
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeModalViewMembersDeliverable()">Close</button>                    
                 </div>
             </form>
         </div>
@@ -849,7 +992,7 @@
 
                             <div class="col-xl-4 col-md-3 mb-2" ng-hide="!hideButtons(component.rol)">
                                 <button class="btn button-ds btn-sm w-100" ng-click="openModalViewMembers(component, 1)">
-                                    View Members
+                                    List collaborators
                                 </button>
                             </div>
 
@@ -1028,7 +1171,7 @@
 
                             <div class="col-xl-4 col-md-3 mb-2"  ng-hide="!hideButtons(task.role_member)">
                                 <button class="btn button-d btn-sm w-100" ng-click="openModalViewMembers(task, 2)">
-                                    View Members
+                                    List members
                                 </button>
                             </div>
 
@@ -2013,7 +2156,7 @@
         <div class="modal-content">
             
                 <div class="modal-header">
-                    <h5 class="modal-title">Information: Members roles</h5>
+                    <h5 class="modal-title">Information: Collaborators roles</h5>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
