@@ -6410,6 +6410,41 @@ a.close.disabled {
   vertical-align: text-top !important;
 }
 
+.bg-st-noi { background-color: #219e3e !important; }
+.bg-st-iot { background-color: #348cac !important; }
+.bg-st-ioo { background-color: #e7c55e !important; }
+.bg-st-ipi { background-color: #348cac !important; }
+.bg-st-ipo { background-color: #e7c55e !important; }
+.bg-st-fot { background-color: #00771c !important; }
+.bg-st-foo { background-color: #e08f1d !important; }
+.bg-st-dni { background-color: #cf4337 !important; }
+
+.bg-txt-noi { color: #eef2ff !important; }
+.bg-txt-iot { color: #eef2ff !important; }
+.bg-txt-ioo { color: #1c2d5f !important; }
+.bg-txt-ipi { color: #eef2ff !important; }
+.bg-txt-ipo { color: #1c2d5f !important; }
+.bg-txt-fot { color: #eef2ff !important; }
+.bg-txt-foo { color: #eef2ff !important; }
+.bg-txt-dni { color: #eef2ff !important; }
+
+.bg-st-txtdark { background-color: #1c2d5f !important; }
+.bg-st-txtlght { background-color: #dde5ff !important; }
+
+.chartCard {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    align-items: center;
+    justify-content: center;
+}
+      
+.chartContainer {
+    width: 100%;
+    height: 80%;    
+    background: white;
+}
+
 .bg-primary {
   background-color: #4e73df !important;
 }

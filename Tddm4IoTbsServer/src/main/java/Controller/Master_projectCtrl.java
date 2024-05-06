@@ -747,6 +747,26 @@ public class Master_projectCtrl {
         return new String[]{status, message, data};
     }
     
+    public String [] getGanttObjects(String id_project) {
+        id_project = codec.textDecryptor(id_project);
+        String gantt = master.getGanttObjects(id_project);
+        
+        String status = "2";
+        String message = "The data of the project was loaded successfully";
+        String data = gantt;
+        
+        if(data.equals("")){
+            message = "The selected project doesn't have any entries for the planning module";
+            status = "4";
+            data = "[]";
+        }
+       
+        return new String [] {
+            status, message, data
+        };
+       
+    }
+    
     public String[] selectMembersInProject(String idMasterProject) {        
         return master.selectMembersInProject(idMasterProject);        
     }

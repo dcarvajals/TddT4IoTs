@@ -831,5 +831,29 @@ public class Master_projectApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+    
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/getGanttObjects")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getGanttObjects(String data) {
+        String message;
+        JsonObject Jso = Methods.stringToJSON(data);
+        System.out.println(data);
+        if (Jso.size() > 0) {                
+            String id_master_project = Methods.JsonToString(Jso, "idmasterproject", "");
+           
+            String [] res = mpControl.getGanttObjects(id_master_project);
+            message = Methods.getJsonMessage(res[0], res[1], res[2]);
+       } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
 }
 

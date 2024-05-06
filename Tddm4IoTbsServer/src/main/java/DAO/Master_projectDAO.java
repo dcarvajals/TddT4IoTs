@@ -60,6 +60,19 @@ public class Master_projectDAO {
             return "";
         }
     }
+    
+    public String getGanttObjects(String id_project) {
+        String query = String.format("Select * from get_gantt_objects('%s')", id_project);
+        System.out.println(query);
+        DefaultTableModel table = conex.returnRecord(query);
+        
+        if(table.getRowCount() > 0){
+            return table.getValueAt(0, 0).toString();
+        }
+        else{
+            return "";
+        }
+    }
 
     /**
      * Method used to create a project.

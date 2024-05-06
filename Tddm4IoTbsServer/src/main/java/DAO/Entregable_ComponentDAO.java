@@ -22,6 +22,7 @@ public class Entregable_ComponentDAO {
     }
     
     public String [] createEntregableTask(String entregable_task){
+        System.out.println(entregable_task);
         String query = String.format("Select * from project_entregable_component_insert('%s')", entregable_task);
         DefaultTableModel table = conexion.returnRecord(query);
         

@@ -38,6 +38,7 @@ public class Project_EntregableDAO {
     }
     
     public String[] updateProjectEntregable(String xmlEntregable){
+        System.out.println(String.format("Select * from project_entregable_update('%s')", xmlEntregable));
         String query = String.format("Select * from project_entregable_update('%s')", xmlEntregable);
         DefaultTableModel table = conexion.returnRecord(query);
         

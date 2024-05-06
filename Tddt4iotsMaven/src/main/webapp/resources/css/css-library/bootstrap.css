@@ -6533,6 +6533,15 @@ a.close.disabled {
   vertical-align: text-top !important;
 }
 
+.bg-st-noi { background-color: #7DFC9A !important; }
+.bg-st-iot { background-color: #17a2b8 !important; }
+.bg-st-ioo { background-color: #FBF22E !important; }
+.bg-st-ipi { background-color: #17a2b8 !important; }
+.bg-st-ipo { background-color: #FBF22E !important; }
+.bg-st-fot { background-color: #369C4D !important; }
+.bg-st-foo { background-color: #F7AC40 !important; }
+.bg-st-dni { background-color: #FB2E2E !important; }
+
 .bg-primary {
   background-color: #007bff !important;
 }

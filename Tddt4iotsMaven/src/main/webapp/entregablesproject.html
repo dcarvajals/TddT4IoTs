@@ -32,6 +32,11 @@
                     </button>
                 </div>
                 <div class="float-right mr-4">
+                    <button class="btn button-d btn-sm" ng-click="getGanttObjectts()">
+                        <i class="fas fa-file-contract"></i> Gantt diagram
+                    </button>
+                </div>
+                <div class="float-right mr-4">
                     <button class="btn button-pe btn-sm" ng-click="openModalEntregablesBasePercentage()" ng-show="project_entregable.length > 0">
                         <i class="fas fa-percentage"></i> Percentages
                     </button>
@@ -70,11 +75,13 @@
 
                 <div class="progress">
                     <div class="progress-bar"  id="progress_bar_master_project"
-                         ng-class="alldata_selected_project.general_percent < 25 ? 'progress-bar bg-danger' :
-                                                 alldata_selected_project.general_percent < 50 ? 'progress-bar bg-warning' :
-                                                 alldata_selected_project.general_percent < 75 ? 'progress-bar bg-info' :
-                                                 'progress-bar bg-success'"
-                         role="progressbar" style="width: {{alldata_selected_project.general_percent}}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{alldata_selected_project.general_percent}}%</div>
+                         ng-class="{{getDevelopStatus(alldata_selected_project.develop_status).data[0].Class}}"
+                         role="progressbar" style="width: {{alldata_selected_project.actual_percentage}}%;" 
+                            aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                        <span class="{{getDevelopStatus(alldata_selected_project.develop_status).data[0].TextClass}}">
+                            {{alldata_selected_project.actual_percentage}}%
+                        </span>
+                    </div>
                 </div>
 
                 <strong> Description: </strong> {{alldata_selected_project.description_mp}}
@@ -111,16 +118,20 @@
 
                                 <div class="">
                                     <h5 class="col-sm-12">{{entregables.name_entregable}}
-                                        <span class="badge {{getDevelopStatus(entregables.develop_status_entregable).data[0].Class}}"
-                                              >{{getDevelopStatus(entregables.develop_status_entregable).data[0].Status}}</span></h5>
+                                        <span class="badge {{getDevelopStatus(entregables.develop_status_entregable).data[0].Class}}">
+                                            <span class="{{getDevelopStatus(entregables.develop_status_entregable).data[0].TextClass}}">
+                                                {{getDevelopStatus(entregables.develop_status_entregable).data[0].Status}}
+                                            </span>
+                                        </span>
+                                    </h5>
                                 </div>
                                 <div class="progress">
                                     <div class="progress-bar {{getDevelopStatus(entregables.develop_status_entregable).data[0].Class}}"                                          
                                          role="progressbar" style="width: {{entregables.actual_percentage_entregable}}%;"
                                          aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-
-                                        {{entregables.actual_percentage_entregable}}%
-
+                                            <span class="{{getDevelopStatus(entregables.develop_status_entregable).data[0].TextClass}}">
+                                                {{entregables.actual_percentage_entregable}}%
+                                            </span>
                                     </div>
                                 </div>
 
@@ -912,7 +923,11 @@
 
                 <div class="progress">
                     <div class="progress-bar {{getDevelopStatus(selected_entregable.develop_status_entregable).data[0].Class}}" role="progressbar" id="progress_bar_project_entregable"
-                         style="width: {{selected_entregable.actual_percentage_entregable}}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{selected_entregable.actual_percentage_entregable}}%</div>
+                         style="width: {{selected_entregable.actual_percentage_entregable}}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                        <span class="{{getDevelopStatus(selected_entregable.develop_status_entregable).data[0].TextClass}}">
+                            {{selected_entregable.actual_percentage_entregable}}%
+                        </span>
+                    </div>
                 </div>               
 
                 <strong>  Description: </strong> {{selected_entregable.description_entregable}}
@@ -953,13 +968,20 @@
 
                                 <h5 class="col-sm-12">{{component.name_component}} 
                                     <span class="badge {{getDevelopStatus(component.develop_status_component).data[0].Class}}">
-                                        {{getDevelopStatus(component.develop_status_component).data[0].Status}}
+                                        <span class="{{getDevelopStatus(component.develop_status_component).data[0].TextClass}}">
+                                            {{getDevelopStatus(component.develop_status_component).data[0].Status}}
+                                        </span>
                                     </span> 
                                 </h5>
 
                                 <div class="progress" id="progress_bar_entregable_component">
                                     <div class="progress-bar {{getDevelopStatus(component.develop_status_component).data[0].Class}}"                                          
-                                         role="progressbar" style="width: {{component.actual_percentage_component}}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{component.actual_percentage_component}}%</div>
+                                         role="progressbar" style="width: {{component.actual_percentage_component}}%;" aria-valuenow="25" 
+                                            aria-valuemin="0" aria-valuemax="100">
+                                        <span class="{{getDevelopStatus(component.develop_status_component).data[0].TextClass}}">
+                                            {{component.actual_percentage_component}}%
+                                        </span>                                            
+                                    </div>
                                 </div>
 
                             </div>
@@ -1023,7 +1045,7 @@
 <div class="container-fluid" ng-show="flag_selected_task === true && flag_selected_component === true && flag_selected_entregable === true">
     <!-- Page Heading -->
     <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Project - Entregables - Components - Tasks</h5>
+        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Project - Deliverables - Components - Tasks</h5>
         <ul class="breadcrumb fw-bold fs-7 small">
             <li class="breadcrumb-item text-muted">
                 <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
@@ -1081,7 +1103,10 @@
                 <div class="progress">
                     <div class="progress-bar {{getDevelopStatus(project_entregable_component_selected.develop_status_component).data[0].Class}}" role="progressbar" id="progress_bar_component_task"
                          style="width: {{project_entregable_component_selected.actual_percentage_component}}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-                        {{project_entregable_component_selected.actual_percentage_component}}%
+                        <span class="{{getDevelopStatus(component.develop_status_component).data[0].TextClass}}">
+                            {{project_entregable_component_selected.actual_percentage_component}}%
+                        </span>
+                        
                     </div>
                 </div>
 
@@ -1121,14 +1146,20 @@
 
                             <div class="col-12 mb-3">
 
-                                <h5 class="col-sm-12">{{task.name_task}} <span class="badge {{getDevelopStatus(task.develop_status_task).data[0].Class}}">
-                                        {{getDevelopStatus(task.develop_status_task).data[0].Status}}
-                                    </span>  </h5>
+                                <h5 class="col-sm-12">{{task.name_task}} 
+                                    <span class="badge {{getDevelopStatus(task.develop_status_task).data[0].Class}}">
+                                        <span class="{{getDevelopStatus(task.develop_status_task).data[0].TextClass}}">
+                                            {{getDevelopStatus(task.develop_status_task).data[0].Status}}
+                                        </span>
+                                    </span>  
+                                </h5>
 
                                 <div class="progress">
                                     <div class="progress-bar {{getDevelopStatus(task.develop_status_task).data[0].Class}}"                                         
                                          role="progressbar" style="width:{{task.actual_percentage_task}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                        {{task.actual_percentage_task}}
+                                        <span class="{{getDevelopStatus(task.develop_status_task).data[0].TextClass}}">
+                                            {{task.actual_percentage_task}}%
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -1946,22 +1977,22 @@
                 <h5 class="modal-title">History of task - {{entregable_component_task_selected.name_task}}</h5>
             </div>
             <div class="modal-body">
-                <div ng-repeat="taskUpdated in history_update_task" ng-show="history_update_task.length > 0">
-                    <label class="col-form-label col-form-label-sm"> Date </label>
-                    <input type="datetime-local" class="form-control form-control-sm" 
-                           value="{{taskUpdated.update_date}}" disabled/>
-
-
-                    <label class="col-form-label col-form-label-sm"> Percentage (%)</label>
-                    <input type="number" class="form-control form-control-sm" min="0" max="100" 
-                           value="{{taskUpdated.percentage}}" disabled />
-
-                    <label class="col-form-label col-form-label-sm"> Description</label>
-                    <textarea class="form-control form-control-sm" min="0" max="100" 
-                              value="{{taskUpdated.description}}" disabled>{{taskUpdated.description}}</textarea>
-
-                    <br>
-                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Percentage</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>                        
+                        <tr ng-repeat="taskUpdated in history_update_task" ng-show="history_update_task.length > 0">
+                            <td>{{taskUpdated.update_date}}</td>
+                            <td>{{taskUpdated.percentage}}%</td>
+                            <td>{{taskUpdated.description}}</td>
+                        </tr>                               
+                    </tbody>
+                </table>                 
             </div>
             <div class="modal-footer">                
                 <button type="submit" class="btn btn-sm btn-primary" ng-click="closeModalViewHistoryTask()">
@@ -2147,6 +2178,31 @@
     </div>
 </div>
 
+
+<!-- MODAL TO SEE THE GANTT DIAGRAM-->
+<div class="modal fade" id="ganttModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div  role="document">
+        <div class="modal-dialog modal-xl modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="ganttTitle">Gantt diagram</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="chartCard">
+                        <div class="chartContainer">
+                            <canvas id="ganttChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeGanttModal()">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- MODAL TO SHOW THE TYPES OF MEMBERS -->
 <div class="modal fade" id="modalInformationMembers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
