@@ -312,15 +312,22 @@
                                 </button>
                             </div>
                             <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-dt btn-sm w-100" ng-click="openSeeMembersInProject(dom_myprojects)">
-                                    List collaborators
+                                <button class="btn button-perc btn-sm w-100" ng-click="getGanttObjectts(dom_myprojects)">
+                                    Project Monitoring
                                 </button>
                             </div>
+                        </div>
+                        <div class="row justify-content-start">
                             <div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-ds btn-sm w-100" ng-click="deleteProject(dom_myprojects)">
                                     Delete Project
                                 </button>
                             </div>
+                            <div class="col-xl-4 col-md-3 mb-2">
+                                <button class="btn button-dt btn-sm w-100" ng-click="openSeeMembersInProject(dom_myprojects)">
+                                    List collaborators
+                                </button>
+                            </div>                            
                         </div>
                     </div>
                 </div>
@@ -482,6 +489,30 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ganttModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div  role="document">
+        <div class="modal-dialog modal-xl modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="ganttTitle">Project Progress Monitoring</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="chartCard">
+                        <div class="chartContainer">
+                            <canvas id="ganttChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="closeGanttModal()">Close</button>
+                </div>
+
             </div>
         </div>
     </div>

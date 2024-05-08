@@ -556,6 +556,460 @@ app.controller("myprojects_controller", function ($scope, $http) {
         });
     };
 
+    $scope.getGanttObjectts = (selected_project) =>
+    {
+        console.log(selected_project);
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + "projects/getGanttObjects",
+            data: JSON.stringify({
+                "idmasterproject": selected_project.id_masterproject
+            }),
+            error: function (objXMLHttpRequest)
+            {
+                
+            },
+            success: function (data) {
+                var jsonData = data.data;
+                if (data.status === "2" || data.status === 2) {
+                    
+                    dataByElement = {
+                        'Project': {
+                            'spaces': 0
+                        },
+                        'Deliverable': {
+                            'spaces': 2
+                        },
+                        'Component': {
+                            'spaces': 4
+                        },
+                        'Task': {
+                            'spaces': 6
+                        }
+                    };
+                    
+                    dataByStatus = {
+                      'NOI': {
+                        'blockColor': 'rgba(50, 255, 50, 0.4)',
+                        'borderColor': 'rgba(35, 170, 35, 1)',
+                        'status': 'No initialized'
+                      },
+                      'IOT': {
+                        'blockColor': 'rgba(20, 130, 255, 0.4)',
+                        'borderColor': 'rgba(0, 70, 200, 1)',
+                        'status': 'Intialized on time'
+                      },
+                      'IOO': {
+                        'blockColor': 'rgba(255, 255, 25, 0.4)',
+                        'borderColor': 'rgba(165, 165, 0, 1)',
+                        'status': 'Intialized out of time'
+                      },
+                      'IPI': {
+                        'blockColor': 'rgba(20, 130, 255, 0.4)',
+                        'borderColor': 'rgba(0, 70, 200, 1)',
+                        'status': 'In proccess'
+                      },
+                      'IPO': {
+                        'blockColor': 'rgba(255, 255, 25, 0.4)',
+                        'borderColor': 'rgba(165, 165, 0, 1)',
+                        'status': 'Delayed'
+                      },
+                      'FOT': {
+                        'blockColor': 'rgba(219, 164, 12, 0.4)',
+                        'borderColor': 'rgba(190, 120, 10, 1)',
+                        'status': 'Finished on time'
+                      },
+                      'FOO': {
+                        'blockColor': 'rgba(30, 160, 30, 0.4)',
+                        'borderColor': 'rgba(19, 107, 0, 1)',
+                        'status': 'Finished out of time'
+                      },
+                      'DNI': {
+                        'blockColor': 'rgba(255, 50, 50, 0.4)',
+                        'borderColor':  'rgba(170, 30, 30, 1)',
+                        'status': 'Delayed and no intialized'
+                      }
+                    };
+
+                    //Object to save the colors for each object of the project (deliverable, component and task)
+                    var colorsObjectsProject = { 'blockColors': [], 'borderColors': [] };
+                    
+                    var miniumLevel = 'P';
+                    var masterProjectData = jsonData;
+                    var parsedProjectData = [];
+
+                    function validName(objectName) {
+                      for (item of parsedProjectData) {
+                        if (item.y === objectName) {          
+                          return false;          
+                        }
+                      }
+
+                      return true;
+                    }
+
+                    function parseTasks(component){
+                      tasks = component.tasks;
+
+                      if (!tasks) return;
+                      miniumLevel = 'T';
+                      tasks.forEach((task, index) => {
+                          //Get the values of the objects
+                          var name = task.name_task;
+                          var status = task.develop_status_task;
+                          var startdate = task.startdate_task;
+                          var stimateddate = task.stimateddate_task;
+                          var updatedate = task.percentageupdate_task;
+                          var percentage =  task.actual_percentage_task;
+
+                          var maxdate = stimateddate > updatedate ? stimateddate : updatedate;
+                          maxdate = maxdate === null ? stimateddate : maxdate;
+
+                          colorsObjectsProject.blockColors.push(dataByStatus[status].blockColor)
+                          colorsObjectsProject.borderColors.push(dataByStatus[status].borderColor)
+
+                          if (validName(name) === false) {
+                            name = ' ' + name;
+                          }
+
+                          parsedProjectData.push({            
+                            "x": [startdate, maxdate],
+                            "y": name,
+                            "status": status,
+                            "stimateddate": stimateddate,
+                            "updatedate": updatedate,
+                            "type": "Task",
+                            "percentage": percentage
+                          });
+                        });
+                     }
+
+                     function parseComponents(deliverable){
+                      components = deliverable.components;
+
+                      if (!components) return;
+                      miniumLevel = 'C';
+                      
+                      components.forEach((component, index) => {
+                          //Get the values of the objects
+                          var name = component.name_component;
+                          var status = component.develop_status_component;
+                          var startdate = component.startdate_component;
+                          var stimateddate = component.stimateddate_component;
+                          var updatedate = component.percentageupdate_component;
+                          var percentage = component.actual_percentage_component;
+
+                          var maxdate = stimateddate > updatedate ? stimateddate : updatedate;
+                          maxdate = maxdate === null ? stimateddate : maxdate;
+
+                          colorsObjectsProject.blockColors.push(dataByStatus[status].blockColor)
+                          colorsObjectsProject.borderColors.push(dataByStatus[status].borderColor)
+
+                          if (validName(name) === false) {
+                            name = ' ' + name;
+                          }
+
+                          parsedProjectData.push({            
+                            "x": [startdate, maxdate],
+                            "y": name,
+                            "stimateddate": stimateddate,
+                            "updatedate": updatedate,
+                            "type": "Component",
+                            "status": status,
+                            "percentage": percentage
+                          });
+
+                          parseTasks(component);
+                        });
+                     }
+
+                     function parseDeliverableData(masterProject){   
+
+                        deliverables = masterProject.deliverables;
+                        if (!deliverables) return;   
+                        miniumLevel = 'D';
+                        
+                        masterProject.deliverables.forEach((deliverable, index) => {          
+                          //Get the values of the objects
+                          var name = deliverable.name_entregable;
+                          var status = deliverable.develop_status_entregable;
+                          var startdate = deliverable.startdate_entregable;
+                          var updatedate = deliverable.percentageupdate_entregable;
+                          var stimateddate = deliverable.stimateddate_entregable;
+                          var percentage = deliverable.actual_percentage_entregable;
+                          
+                          var maxdate = stimateddate > updatedate ? stimateddate : updatedate;
+                          maxdate = maxdate === null ? stimateddate : maxdate;
+                          
+                          colorsObjectsProject.blockColors.push(dataByStatus[status].blockColor);
+                          colorsObjectsProject.borderColors.push(dataByStatus[status].borderColor);
+
+                          if (validName(name) === false) {
+                            name = ' ' + name;
+                          }
+
+                          parsedProjectData.push({            
+                            "x": [startdate, maxdate],
+                            "y": name,
+                            "stimateddate": stimateddate,
+                            "updatedate": updatedate,
+                            "status": status,
+                            "type": "Deliverable",
+                            "percentage": percentage
+                          });
+
+                          parseComponents(deliverable);
+                        });
+                     }
+
+                     function parseProjectData(masterProjectData){
+
+                        var projectName = masterProjectData.name_mp;
+                        var startplan_date = masterProjectData.startplan_date;
+                        var endplan_date = masterProjectData.endplan_date;
+                        var develop_status = masterProjectData.develop_status;
+                        var actual_percentage = masterProjectData.actual_percentage;
+
+                        colorsObjectsProject.blockColors.push(dataByStatus[develop_status].blockColor)
+                        colorsObjectsProject.borderColors.push(dataByStatus[develop_status].borderColor)
+                           
+                        miniumLevel = 'P';
+                        
+                        parsedProjectData.push({            
+                            "x": [startplan_date, endplan_date],
+                            "y": projectName,
+                            "stimateddate": endplan_date,
+                            "updatedate": endplan_date,
+                            "status": develop_status,
+                            "type": "Project",
+                            "percentage": actual_percentage
+                        });
+
+                        parseDeliverableData(masterProjectData);
+                     }
+
+                    parseProjectData(masterProjectData);
+
+                    //Get the min and max date of the project
+                    const minDate = new Date(parsedProjectData[0].x[0]);//new Date(Math.min(...parsedProjectData.map(data => new Date(data.x[0]))));
+                    const maxDate = new Date(parsedProjectData[0].x[1]);//new Date(Math.max(...parsedProjectData.map(data => new Date(data.x[1]))));
+                    
+                    const leftPadding = miniumLevel === 'P' ? 0 : miniumLevel === 'D' ? 2 : miniumLevel === 'C' ? 4 : 6;
+                    
+                    const data = {    
+                        datasets: [
+                            {
+                                label: 'On time',
+                                data: parsedProjectData,
+                                borderWidth: 1,
+                                borderSkipped: false,
+                                borderRadius: 5,
+                                backgroundColor: colorsObjectsProject.blockColors,
+                                borderColor: colorsObjectsProject.borderColors
+                            }   
+                        ]
+                    };
+
+                    const options = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        layout: {
+                          padding: {
+                            right: 300,
+                            left: leftPadding
+                          }
+                        },        
+                        scales: {         
+                            x: {
+                                type: 'time',                
+                                time: {
+                                    unit: 'month'
+                                },
+                                ticks: {
+                                    beginAtZero: true,
+                                    font: {
+                                        family: 'monospace',
+                                        size: 16
+                                    }
+                                },
+                                min: minDate,
+                                max: maxDate,
+                                grid: {
+                                  color: 'rgba(0, 0, 0, 0.2)',
+                                  display: true,
+                                  stacked: true
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.5)',
+                                    display: false
+                                },
+                                ticks: {
+                                    beginAtZero: true,
+                                    display: true,
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    font: {
+                                        family: 'monospace',
+                                        size: 16
+                                    }
+                                }
+                            }
+                          },
+                        plugins: {
+                            zoom: {
+                                zoom: {
+                                    wheel: {
+                                        enabled: true
+                                    },
+                                    pinch: {
+                                        enabled: true
+                                    },              
+                                    mode: 'x'
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }                           
+                        }
+                    };
+
+                    const extraDataOfGantt = {
+                      afterDatasetsDraw(chart, args, pluginOptions) {
+                        const { ctx, data, chartArea: { top, bottom, left, right, height }, scales: {x, y}} = chart;
+
+                        ctx.font = '16px monospace';
+                        ctx.fillStyle = 'rgba(90, 92, 105, 1)';
+                        ctx.textBaseLine = 'middle';
+                        ctx.textAlign = 'left';
+
+                        var percentageData = data.datasets[0].data;
+
+                        percentageData.forEach((datapoint, index) => {         
+                          percentage = datapoint.percentage + "%";
+                          name = datapoint.y;
+                          type = datapoint.type;
+                          status = dataByStatus[datapoint.status].status;
+                          
+                          spaces = '';
+                          if (type === "Deliverable" || type === "Project"){
+                            ctx.font = 'bolder 16px monospace';                          
+                          } else {            
+                            ctx.font = '16px monospace';            
+                          }                       
+
+                          var posY = y.getPixelForValue(index);
+                          //ctx.fillText(spaces + type, 0, posY);
+                          //ctx.fillText(name, 0, posY);
+                          ctx.fillText(percentage, right + 20, posY);
+                          ctx.fillText(status, right + 100, posY);
+                        });
+                      }
+                    };
+
+                    const drawLineToday = {
+                      afterDatasetsDraw(chart, args, pluginOptions) {
+                        const { ctx, data, chartArea: { top, bottom, left, right }, scales: {x, y}} = chart;
+
+                        ctx.beginPath();
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([6, 6]);
+                        ctx.moveTo(x.getPixelForValue(new Date()), top);
+                        ctx.lineTo(x.getPixelForValue(new Date()), bottom);
+                        ctx.stroke();
+                      }
+                    };
+                    
+                    function numberToBlankSpaces(number) {
+                        var spaces = '';
+                        for (var i = 0; i < number; i++) { 
+                            spaces += ' ';
+                        }
+                        return spaces;
+                    }
+                    
+                    const rewriteLabelsOfElements = {
+                        afterDatasetsDraw(chart, args, pluginOptions) {
+                            const { ctx, data, chartArea: { top, bottom, left, right }, scales: {x, y}} = chart;
+                           
+                            var elementsData = data.datasets[0].data;
+                            var i = 0;
+                            
+                            ctx.save();
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'middle';
+                            
+                            chart.data.labels.forEach(function(label, index) {
+                                var xPoint = 0;//xAxis.left;
+                                var yPoint = y.getPixelForValue(label);
+                                ctx.fillText(numberToBlankSpaces(dataByElement[elementsData[i].type].spaces) + label, xPoint, yPoint);
+                                
+                                i++;
+                            });                            
+
+                            ctx.restore();
+                      }
+                    };
+                    
+                    const config = {
+                      type: 'bar',
+                      data,
+                      options: options,
+                      plugins: [extraDataOfGantt, drawLineToday, rewriteLabelsOfElements]
+                    };
+                    
+                    var myChart = Chart.getChart("ganttChart");
+                    if (myChart !== undefined )
+                    myChart.destroy();
+                    
+                    myChart = new Chart(
+                      document.getElementById('ganttChart'),
+                      config
+                    );
+
+                    //Variables for move the chart
+                    var isDragging = false;
+                    var startX;
+
+                    myChart.canvas.addEventListener('mousedown', function(event) {
+                        isDragging = true;
+                        startX = event.clientX;
+                    });
+
+                    myChart.canvas.addEventListener('mousemove', (e) => {
+                        if (isDragging) {
+                            const { scales: { x, y } } = myChart;
+                            const movementX = e.clientX - startX;
+
+                            //Calculate the movement in terms of pixels
+                            const movementPx = movementX / (x.right - x.left) * (x.max - x.min) / 5;
+
+                            //Update the min and max values of the x axis without changing the scale
+                            myChart.options.scales.x.min -= movementPx;
+                            myChart.options.scales.x.max -= movementPx;
+
+                            // Update the chart
+                            myChart.update();
+                          }
+                        });
+
+                    myChart.canvas.addEventListener('mouseup', function() {
+                          isDragging = false;
+                    });
+                    
+                    $("#ganttModal").modal();
+                }
+                
+                alertAll(data);                
+            }
+        });
+    };
+
     function download(filename, textInput) {
         var element = document.createElement('a');
         //element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(textInput));
@@ -614,6 +1068,10 @@ app.controller("myprojects_controller", function ($scope, $http) {
     $scope.closeShareProject = () => {
         $("#modalShareProjectComplete").modal('hide');
         $scope.flag_share_user_exists = true;
+    };
+    
+    $scope.closeGanttModal = () => {
+        $("#ganttModal").modal('hide');
     };
 
     $scope.parseRole = function (role){

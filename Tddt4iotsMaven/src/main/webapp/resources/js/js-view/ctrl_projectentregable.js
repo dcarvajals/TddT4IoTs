@@ -1466,8 +1466,8 @@ $scope.loadComponentsEntregable =null;
 
                           var maxdate = stimateddate > updatedate ? stimateddate : updatedate;
 
-                          colorsObjectsProject.blockColors.push(dataByStatus[status].blockColor)
-                          colorsObjectsProject.borderColors.push(dataByStatus[status].borderColor)
+                          colorsObjectsProject.blockColors.push(dataByStatus[status].blockColor);
+                          colorsObjectsProject.borderColors.push(dataByStatus[status].borderColor);
 
                           if (validName(name) === false) {
                             name = ' ' + name;
@@ -1548,7 +1548,11 @@ $scope.loadComponentsEntregable =null;
                                     unit: 'month'
                                 },
                                 ticks: {
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    font: {
+                                        family: 'monospace',
+                                        size: 16
+                                    }
                                 },
                                 min: minDate,
                                 max: maxDate,
@@ -1556,15 +1560,22 @@ $scope.loadComponentsEntregable =null;
                                   color: 'rgba(0, 0, 0, 0.2)',
                                   display: true,
                                   stacked: true
-                              }
+                                }                                
                             },
                             y: {
                                 stacked: true,
                                 grid: {
                                     color: 'rgba(0, 0, 0, 0.5)',
                                     display: false
-                                }
-                              }                
+                                },
+                                ticks: {
+                                    beginAtZero: true,
+                                    font: {
+                                        family: 'monospace',
+                                        size: 16
+                                    }
+                                }                               
+                            }                
                           },
                         plugins: {
                           zoom: {
@@ -1588,7 +1599,7 @@ $scope.loadComponentsEntregable =null;
                       afterDatasetsDraw(chart, args, pluginOptions) {
                         const { ctx, data, chartArea: { top, bottom, left, right, height }, scales: {x, y}} = chart;
 
-                        ctx.font = '12px Helvetica';
+                        ctx.font = '16px monospace';
                         ctx.fillStyle = 'rgba(90, 92, 105, 1)';
                         ctx.textBaseLine = 'middle';
 
@@ -1600,9 +1611,9 @@ $scope.loadComponentsEntregable =null;
                           status = dataByStatus[datapoint.status].status;
 
                           if (type === "Deliverable" || type === "Project"){
-                            ctx.font = 'bolder 12px Helvetica';
+                            ctx.font = 'bolder 16px monospace';
                           } else {            
-                            ctx.font = '12px Helvetica';            
+                            ctx.font = '16px monospace';            
                           }
 
                           var posY = y.getPixelForValue(index);
@@ -1677,8 +1688,7 @@ $scope.loadComponentsEntregable =null;
                 
                 alertAll(data);                
             }
-        });            
-        
+        });
     };
 
     //modalpdf
