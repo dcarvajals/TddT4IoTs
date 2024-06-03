@@ -3184,7 +3184,7 @@ Node.prototype.drop = function (b, e) {
     }
     this._moved = false;
     this._resizing = false
-    console.log("POS X: ", this._x, " POS Y: ", this._y, this);
+    //console.log("POS X: ", this._x, " POS Y: ", this._y, this);
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
     ac.utilWebSocket("dragObjeect",
         {"posx": this._x, "posy": this._y, "typeDiagram": this._diagram._type, "name": this.getName()});
@@ -3668,7 +3668,7 @@ Node.prototype.drawComponentsShape = function (b) {
     }
 };
 Node.prototype.setMoveable = function () {
-    this._moveable = false;
+    this._moveable = true;
 };
 Node.prototype.setProportional = function () {
     this._proportional = true
@@ -5305,7 +5305,7 @@ Relation.prototype.select = function (c, e) {
     return false
 };
 Relation.prototype.drag = function (a, b) {
-    /*if (this._selectedLine) {
+    if (this._selectedLine) {
         if (this._elemA == this._elemB) {
             this._selected = 2;
             this._points[this._selected].setPoint(a, b)
@@ -5330,7 +5330,7 @@ Relation.prototype.drag = function (a, b) {
             }
             this._moved = true
         }
-    }*/
+    }
 };
 Relation.prototype._checkForNewNodes = function (a, c) {
     if (this._selectedPoint && (this._selected == 0 || this._selected == this._points.length - 1)) {

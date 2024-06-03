@@ -465,8 +465,9 @@ function createUseCase(attributes) {
     let objectcase = new UMLUseCase({x: 670, y: attributes.pos_Y, background: '#FFC66D'});
     diagramUseCase.addElement(objectcase);
     objectcase.setName(attributes.name);
-    objectcase.setWidth(attributes.name.length * 12);
+    objectcase.setWidth(attributes.name.length * 12)
     diagramUseCase.draw();
+    objectcase.setMoveable();
     objectcase.setMenu([
         [function () {
                 selectedUseCase(objectcase, true);
@@ -632,15 +633,8 @@ function createSystem(projectName) {
     system.setWidth(530);
     system.setName(projectName);
     //no cambie de tamanio
-    system.setMoveable();
-
+    //system.setMoveable();
     system.setMenu([]);
-
-    /**
-     * [function () {
-     *             alertAll({"status": 3, "information": "No options."});
-     *         }, '---'],
-     * */
 
     diagramUseCase.addElement(system);
     diagramUseCase.draw();

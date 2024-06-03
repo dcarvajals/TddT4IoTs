@@ -11,7 +11,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     // expandir el controlador al script de maven project
     app.expandControllerMavenProject($scope);
-    
+
     // expandir el controlador al script de angular project
     app.expandControllerAngularProject($scope);
 
@@ -90,15 +90,6 @@ controller = app.controller("workAreaController", function ($scope) {
                 $scope.showLS = false;
             });
             $scope.loadDataProject(id_project, $scope.DatoUsuario.user_token);
-            initDiagramUml();
-            $scope.loadUseCase();
-            $scope.loadInterpret();
-            $scope.initCode();
-            // conectar los usuarios por websocket
-            $scope.webSocketInit(id_project);
-            // verificar si existe un proyecto maven a descargar
-            //$scope.downloadPrjMav();
-            //swal.close();
         }
     });
 
@@ -114,7 +105,7 @@ controller = app.controller("workAreaController", function ($scope) {
     /**
      * FUNCION PARA CARGAR LOS DATOS DEL PROYECTO
      * */
-    let nameProject = "";
+    $scope.nameProject = "";
     let wsLoadDataProject = (api_param) => {
         let dataUser = store.session.get("user_tddm4iotbs");
         if (dataUser !== undefined && dataUser !== null) {
@@ -135,7 +126,14 @@ controller = app.controller("workAreaController", function ($scope) {
                     console.log(data);
                     $scope.$apply(() => {
                         $scope.dataProject = data.data[0];
-                        nameProject = $scope.dataProject.name_mp;
+                        $scope.nameProject = $scope.dataProject.name_mp;
+
+                        initDiagramUml();
+                        $scope.loadUseCase();
+                        $scope.loadInterpret();
+                        $scope.initCode();
+                        // conectar los usuarios por websocket
+                        $scope.webSocketInit(id_project);
                     });
                     alertAll(data);
                 },
@@ -1526,6 +1524,15 @@ controller = app.controller("workAreaController", function ($scope) {
      * ##############################################################################################################
      * */
 
+    function customDecycle(obj) {
+        return JSON.decycle(obj, (key, value) => {
+            if (typeof value === 'string') {
+                return value.replace(/''/g, "'");
+            }
+            return value;
+        });
+    }
+
     $scope.saveModeling = () => {
         console.log($scope.jsonUseCase);
         console.log(JSON.parse(JSON.stringify($scope.jsonClass)));
@@ -1649,6 +1656,32 @@ controller = app.controller("workAreaController", function ($scope) {
         apiLoadModeling(api_param);
     };
 
+    function hasDuplicateHashKeys(arr, key) {
+        const seen = new Set();
+        for (let item of arr[key]) {
+            if (seen.has(item.$$hashKey)) {
+                return true;
+            }
+            seen.add(item.$$hashKey);
+        }
+        return false;
+    }
+
+    function updateDuplicateHashKeys(arr, key) {
+        const seen = new Set();
+        let newHashKeyCounter = 0;
+
+        arr[key].forEach(item => {
+            if (seen.has(item.$$hashKey)) {
+                // Asignar un nuevo $$hashKey único
+                item.$$hashKey = `unique_${newHashKeyCounter++}`;
+            }
+            seen.add(item.$$hashKey);
+        });
+
+        return arr;
+    }
+
     apiLoadModeling = (api_param) => {
         $.ajax({
             method: "POST",
@@ -1665,15 +1698,36 @@ controller = app.controller("workAreaController", function ($scope) {
                     case "DiagramUml":
                         if (!isObjEmpty(data.data)) {
                             clearDiagram();
+
+                            // Verificar si hay duplicados
+                            if (hasDuplicateHashKeys(data.data.data, "useCase")) {
+                                // Modificar $$hashKey duplicados
+                                data.data.data = updateDuplicateHashKeys(data.data.data, "useCase");
+                            }
+
+                            // Verificar si hay duplicados
+                            if (hasDuplicateHashKeys(data.data.data, "actors")) {
+                                // Modificar $$hashKey duplicados
+                                data.data.data = updateDuplicateHashKeys(data.data.data, "actors");
+                            }
+
                             let jsonresponse = data.data.data;
                             $scope.$apply(() => {
                                 $scope.jsonUseCase = jsonresponse;
                             });
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(data.data.graph, "text/xml");
+                            const UMLSystem = xmlDoc.getElementsByTagName("UMLSystem")[0];
+                            const itemElement = UMLSystem.getElementsByTagName("item")[0];
+                            itemElement.setAttribute("value", $scope.nameProject);
+                            const serializer = new XMLSerializer();
+                            const updatedXmlString = serializer.serializeToString(xmlDoc);
+                            data.data.graph = updatedXmlString;
                             importDiagram(diagramUseCase, data.data.graph, "UseCase");
                             getDataDiagram(diagramUseCase, $scope.jsonUseCase);
                         } else {
                             // crea el sistema principal dentro del diagrama (rectangulo central)
-                            createSystem(nameProject);
+                            createSystem($scope.nameProject);
                         }
                         diagramUseCase.draw();
                         $scope.loadClass();

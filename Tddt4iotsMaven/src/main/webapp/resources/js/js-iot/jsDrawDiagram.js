@@ -262,7 +262,7 @@ function initDiagramProject() {
 
 validarConexionCables = (fromNode, toNode, link) => { 
     let ac = angular.element($('[ng-controller="controllerWorkIoT"]')).scope();
-    let validationCable = {showAlert: true, status: 4, information: ""};
+    let validationCable = {showAlert: true, status: 4, information: "The port is not configured correctly."};
     if((fromNode.digital || fromNode.analog || fromNode.digital_analog) 
             && (!fromNode.input && !fromNode.output && !fromNode.input_output)) {
         // validar la conexion entre puertos digitales y analogicos
