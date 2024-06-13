@@ -61,7 +61,7 @@ a span{cursor: pointer;}
 /*scroll bonito*/
 * {
     scrollbar-width: thin;
-    scrollbar-color: #39297C rgba(0,0,0,0);
+    scrollbar-color: #006700 rgba(0,0,0,0);
 }
 
 /* Works on Chrome, Edge, and Safari */
@@ -74,9 +74,9 @@ a span{cursor: pointer;}
 }
 
 *::-webkit-scrollbar-thumb {
-    background-color: #39297C;
+    background-color: #006700;
     /*border-radius: 20px;*/
-    border: 0px solid #39297C;
+    border: 0px solid #006700;
 }
 
 .scroll{

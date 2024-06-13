@@ -17,6 +17,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.DatoUsuario = {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;
+    $scope.notifications = [];
 
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
@@ -62,6 +63,7 @@ controller = app.controller("workAreaController", function ($scope) {
     $scope.showTool = "UMLUseCaseDiagram";
 
     $scope.notifications = [];
+    $scope.viewConsole = false;
 
     //datos para el diagrama de secuencia
     $scope.secuenceData = {
@@ -92,6 +94,10 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.loadDataProject(id_project, $scope.DatoUsuario.user_token);
         }
     });
+
+    $scope.showHideConsole = ()=> {
+        $scope.viewConsole = !$scope.viewConsole;
+    }
 
     $scope.loadDataProject = (idProject, user_token) => {
         let dataLoadDataProject = {
@@ -1048,6 +1054,11 @@ controller = app.controller("workAreaController", function ($scope) {
     $scope.interpretUseCaseDescription = function (flag, scope_usecase, scope_original) {
         let minjson = getHackDiagram(scope_usecase.$modelValue);
         console.log(minjson);
+        // leer todas las notificaciones que se ingresan en ese momento
+        for(let i = 0; i < minjson[1].notifications.length; i++) {
+            let notification = minjson[1].notifications[i];
+            $scope.notifications.push(notification);
+        }
         switch (scope_original) {
             case "usecase_description_original" :
                 $scope.usecase_description_original = minjson[0];
@@ -2059,7 +2070,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.editionClasDiagram = false;
     $scope.description = ["public", "private", "protected", "static", "abstract", "final", "interface"];
-    $scope.data_type = ['String', 'Int', 'Float', 'Boolean', 'Double', 'Long'];
+    $scope.data_type = ['String', 'Int', 'Float', 'Boolean', 'Double', 'Long', 'Byte[]'];
     $scope.dataType = [];
     $scope.visibility = [];
     $scope.attributes = [];

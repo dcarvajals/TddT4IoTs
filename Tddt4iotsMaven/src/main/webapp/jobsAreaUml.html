@@ -1159,9 +1159,24 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="h-25 bg-gray-200 p-2 overflow-auto" style="max-height: 400px" ng-show="viewConsole">
+                            <!-- notification.component.html -->
+                            <div ng-repeat="notification in notifications" class="notification" ng-class="notification.type">
+                                <strong class="notification-title">{{ notification.type }}</strong>
+                                <p class="notification-message">{{ notification.information }}</p>
+                            </div>
+                        </div>
+
                     </div>
                     <div class="modal-footer">
-                        <div class="w-100 h-25"> consola </div>
+                        <div class="w-100 h-25">
+                            <button ng-click="showHideConsole()" class="btn button-d btn-sm">
+                                <i class="oi oi-terminal" ></i>
+                                Console <span class="badge badge-danger"> {{notifications.length}} </span>
+                            </button>
+                            <button ng-click="notifications.length = 0" class="btn button-dt btn-sm"> <i class="oi oi-trash" ></i> Clear </button>
+                        </div>
                         <br>
                         <button ng-click="cancelUseCase(form_usecase)" type="button" class="btn btn-sm btn-danger">Cancel
                         </button>

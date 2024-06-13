@@ -4,7 +4,7 @@ app.expandControllerMavenProject = function ($scope) {
 
     $scope.mavenProject = '';
     $scope.selectedEntitieObj = {};
-    $scope.jsonMavenProject = {entities: [], conectionDB: {}, test: []};
+    $scope.jsonMavenProject = {entities: [], conectionDB: {}, test: [], relationships: []};
 
     /**
      * ##############################################################################################################
@@ -118,7 +118,9 @@ app.expandControllerMavenProject = function ($scope) {
         // realizar una copia del json de los enums
         $scope.jsonMavenProject.enums = Object.assign([], $scope.jsonClass.diagram[0].enums);
         // realizar una copia del json de las test
-        $scope.jsonMavenProject.test = Object.assign([], $scope.jsonTdd.receiveTDDJSOM); 
+        $scope.jsonMavenProject.test = Object.assign([], $scope.jsonTdd.receiveTDDJSOM);
+        // realizar una copia del json de las relaciones
+        $scope.jsonMavenProject.relationships = Object.assign([], $scope.jsonClass.relationships);
         // aumentar los nuevos parametros
         $scope.addNewParams($scope.jsonMavenProject.entities);
         // validar campos de la tabla de los atributos
@@ -156,12 +158,25 @@ app.expandControllerMavenProject = function ($scope) {
     $scope.addNewParams = (entities) => {
         for (let positionEntitie = 0; positionEntitie < entities.length; positionEntitie++) {
             let attributes = entities[positionEntitie].attributes;
+            let hasId = false;
             for (let positionAttributes = 0; positionAttributes < attributes.length; positionAttributes++) {
                 let attribute = attributes[positionAttributes];
+                if(!hasId) {
+                    hasId = attribute["name"] === "id";
+                }
                 // aumentar los nuevos parametros
                 attribute["not_null"] = positionAttributes === 0;
                 attribute["primary_key"] = positionAttributes === 0;
                 attribute["length_precision"] = attribute["type"] === "String" ? 30 : -1;
+            }
+            if(!hasId) {
+                attributes.unshift({
+                    "name": "id",
+                    "type": "Long",
+                    "not_null": true,
+                    "primary_key": true,
+                    "length_precision": -1
+                });
             }
         }
     };

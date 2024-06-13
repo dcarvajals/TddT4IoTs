@@ -87,6 +87,9 @@ public class DataStatic {
     public static String folderMvn = "mvn_config/";
     public static String folferTempateJava = "template_java/";
     public static String folferTempateAngular = "template_angular/";
+    
+    // Parametros para generar proyecto de spring
+    public static String VERSION_SPRING = "3.2.0";
 
     public static String getLocation(String context) {
         if (!fileLocation.equals("")) {

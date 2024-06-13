@@ -10,7 +10,7 @@ import jakarta.persistence.*;{$s}
 ${imports}
 {$s}
 @Entity{$s}
-@Table(name = "{$nameClass}"){$s}
+@Table(name = "{$nameClassFile}"){$s}
 @Data{$s}
 @NoArgsConstructor{$s}
 public class {$nameClass} {{$s}

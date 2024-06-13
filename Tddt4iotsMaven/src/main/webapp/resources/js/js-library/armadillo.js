@@ -40,8 +40,9 @@ function setNotifications(status, information, data) {
         status: 0, information: "Thank you for using armadillo.js",
         type: "", data: []
     };
+    var timestamp = new Date().toLocaleString();
     notification.status = status;
-    notification.information = information;
+    notification.information = "["+ timestamp + "] "+ information;
     notification.data = data;
     notification.type = status === 0 ? "information" : status === 1 ? "success"
             : status === 2 ? "warning" : "error";
@@ -348,7 +349,7 @@ function packages(text) {
         superText = superText.toString().replace(parts[row], pack[0]);
     }
     if (parts.length === 0) {
-        setNotifications(2, "No new packages with the symbol (^) were found.", []);
+        //setNotifications(2, "No new packages with the symbol (^) were found.", []);
         pack = classx(text);//: packname,
         enumsx = enums(pack[0]); // enumeradores
         datas.push({packName: "Default", class: pack[1], enums: enumsx[1]});

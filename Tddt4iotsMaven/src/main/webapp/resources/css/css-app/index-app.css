@@ -181,3 +181,46 @@
 .activeMenu i{
     color: #006700 !important;
 }
+
+.notification {
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: white;
+    font-family: 'Courier New';
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    opacity: 0.9;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.notification-title {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.notification-message {
+    margin: 10px 0 0 0;
+}
+
+.notification.success {
+    background-color: #4caf50; /* Verde */
+    border-left: 5px solid #388e3c;
+}
+
+.notification.error {
+    background-color: #f44336; /* Rojo */
+    border-left: 5px solid #d32f2f;
+}
+
+.notification.warning {
+    background-color: #ff9800; /* Naranja */
+    border-left: 5px solid #f57c00;
+}
+
+.notification.information {
+    background-color: #2196f3; /* Azul */
+    border-left: 5px solid #1976d2;
+}

@@ -7,17 +7,23 @@ package util;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import dto.ValidarHerenciaResponseDTO;
 import java.io.File;
+import java.text.Normalizer;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author tonyp
  */
+@Slf4j
 public class MakerProjects {
 
     private static String attrs = "";
 
     public static void createAngularProject(String contextPath, String relPath, String ProjectName1, String info) {
         FileAccess fac = new FileAccess();
+        ProjectName1 = normalizeText(ProjectName1);
         String ProjectName = ProjectName1 + DataStatic.folderAngular;
         String projectPath = contextPath + relPath;
 
@@ -37,9 +43,9 @@ public class MakerProjects {
 
         JsonArray entitiesJava = Methods.JsonToArray(entitiesJson, "entities");
 
-        System.out.println("#####################################################");
-        System.out.println("##         INICIO GENERACIÓN ANGULAR PROJECT       ##");
-        System.out.println("#####################################################");
+        log.info("#####################################################");
+        log.info("##         INICIO GENERACIÓN ANGULAR PROJECT       ##");
+        log.info("#####################################################");
 
         CommandWindow terminal = new CommandWindow();
         projectPath = projectPath + ProjectName;
@@ -50,7 +56,7 @@ public class MakerProjects {
             String folderTemplateAngular = contextPath + DataStatic.folderTemplate + DataStatic.folferTempateAngular;
 
             // crear la carpeta donde se crearan los modelos de cada entidad en ts
-            File folderModel = new File(projectPath + "/src/app/Models/");
+            File folderModel = new File(projectPath + "src\\app\\Models");
             if (!folderModel.exists() && !folderModel.isDirectory()) {
                 folderModel.mkdir(); // creamos la carpeta
             }
@@ -89,7 +95,7 @@ public class MakerProjects {
                             } else if (name.split(":").length == 2) {
                                 String[] nameSplit = name.split(":");
                                 String object = (nameSplit[1].contains("[]") ? nameSplit[1].replace("[]", "") : nameSplit[1]);
-                                imports += "import {" + object+ "} from \"./" + object + "\";\n";
+                                imports += "import {" + object + "} from \"./" + object + "\";\n";
                                 type = "";
                                 if (!name.contains("[]")) {
                                     if (cardinalidate.equals("1..*")) {
@@ -103,7 +109,7 @@ public class MakerProjects {
                             if (!name.contains("DAO")) {
                                 if (primary_key.equals("true") && !tieneid) {
                                     if (!name.equals("id")) {
-                                        System.out.println("NO TIENE EL ATRIBUTO ID, POR LO TANTO SE LE AGREGARA UNO POR DEFECTO");
+                                        log.info("NO TIENE EL ATRIBUTO ID, POR LO TANTO SE LE AGREGARA UNO POR DEFECTO");
                                         nameAttr += "\t id: number";
                                         posAttr = -1;
                                         tieneid = true;
@@ -123,22 +129,23 @@ public class MakerProjects {
                     templateInterface = templateInterface.replace("{$attributes}", nameAttr);
                     // crear los archivos .ts para entidad
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\app\\Models\\" + entitieName + ".ts", templateInterface);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando interface ts ->" + entitieName + " \n");
+                    classEntitie.writeFileText(projectPath + "src\\app\\Models\\" + entitieName + ".ts", templateInterface);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando interface ts ->" + entitieName + " \n");
                 }
             }
 
-            System.out.println("#####################################################");
-            System.out.println("##         FIN GENERACIÓN ANGULAR PROJECT          ##");
-            System.out.println("#####################################################");
-            System.out.println("Maker Maven: " + projectPath);
+            log.info("#####################################################");
+            log.info("##         FIN GENERACIÓN ANGULAR PROJECT          ##");
+            log.info("#####################################################");
+            log.info("Maker Maven: " + projectPath);
         }
     }
 
     public static void createMavenProject(String contextPath, String relPath, String ProjectName1, String info) {
 
         FileAccess fac = new FileAccess();
+        ProjectName1 = normalizeText(ProjectName1);
         String ProjectName = ProjectName1;
         String projectPath = contextPath + relPath;
 
@@ -152,25 +159,28 @@ public class MakerProjects {
 
         //validar si existe la carpeta madre donde se va guardar el proyecto
         File folderDad = new File(projectPath);
+        File folderDadZip = new File(projectPath + ".zip");
         if (!folderDad.exists() && !folderDad.isDirectory()) {
             folderDad.mkdir(); // creamos la carpeta
         } else {
             folderDad.delete(); // eliminamos la carpeta
+            folderDadZip.delete(); // eliminemos el zip
             folderDad.mkdir(); // la volvemos a crear
         }
 
         String[] commands = new String[]{
             String.format("cd \"%s\"", (projectPath)),
-            String.format("spring init --artifactId=%s --boot-version=3.1.2 --build=maven --dependencies=data-jpa,web,%s,ws,lombok --description=\"Description %s\" --groupId=com.tddt4iots --java-version=17 --language=java --name=%s --packaging=war --package-name=com.app.tddt4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, dependencieDataBase, ProjectName, ProjectName, projectPath)
+            String.format("spring init --artifactId=%s --boot-version=" + DataStatic.VERSION_SPRING + "  --build=maven --dependencies=data-jpa,web,%s,ws,lombok --description=\"Description %s\" --groupId=com.tddt4iots --java-version=17 --language=java --name=%s --packaging=war --package-name=com.app.tddt4iots --version=0.0.1-SNAPSHOT --force \"%s\"", ProjectName, dependencieDataBase, ProjectName, ProjectName, projectPath)
         };
 
         JsonArray entitiesJava = Methods.JsonToArray(entitiesJson, "entities");
         JsonArray enumsJava = Methods.JsonToArray(entitiesJson, "enums");
         JsonArray testJava = Methods.JsonToArray(entitiesJson, "test");
+        JsonArray relationships = Methods.JsonToArray(entitiesJson, "relationships");
 
-        System.out.println("#####################################################");
-        System.out.println("##         INICIO GENERACIÓN MAVEN PROJECT         ##");
-        System.out.println("#####################################################");
+        log.info("#####################################################");
+        log.info("##         INICIO GENERACIÓN MAVEN PROJECT         ##");
+        log.info("#####################################################");
 
         CommandWindow terminal = new CommandWindow();
         if (terminal.status) {
@@ -200,18 +210,23 @@ public class MakerProjects {
             templateApplication = templateApplication.replace("{$passworddatabase}", passwordDataBase);
             templateApplication = templateApplication.replace("{$create-drop-table}", create.equals("true") && createDrop.equals("false") ? "create" : create.equals("false") && createDrop.equals("true") ? "create-drop" : "none");
 
-            applicationProperties.writeFileText(projectPath + "\\src\\main\\resources\\application.properties", templateApplication);
+            applicationProperties.writeFileText(projectPath + "src\\main\\resources\\application.properties", templateApplication);
             //</editor-fold>
 
             //<editor-fold desc="Crear las entidades">
             //Model
-            tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\entities");
+            tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\entities");
             tmpFolder.mkdir();
 
             for (int posEntitie = 0; posEntitie < entitiesJava.size(); posEntitie++) {
                 // obtener el json de la posicion respectiva
                 JsonObject entitie = Methods.JsonElementToJSO(entitiesJava.get(posEntitie));
                 String entitieName = Methods.JsonToString(entitie, "className", "");
+                String entitieNamefile = Methods.JsonToString(entitie, "className", "");
+                ValidarHerenciaResponseDTO herenciaResponseDTO = validarHerencia(relationships, entitieName);
+                if(herenciaResponseDTO.isTieneHerencia()) {
+                    entitieName = herenciaResponseDTO.getNombreFinalClase();
+                }
                 String modifiers = Methods.JsonToString(entitie, "modifiers", "");
                 if (!modifiers.equals("interface") && !entitieName.contains("DAO")) {
                     // buscar la platilla para las entites
@@ -219,6 +234,8 @@ public class MakerProjects {
                     templateEntitie = templateEntitie.replace("{$s}", "\n");
                     // nombre de la clase
                     templateEntitie = templateEntitie.replace("{$nameClass}", entitieName);
+                    // nameClassFile
+                    templateEntitie = templateEntitie.replace("{nameClassFile}", entitieNamefile);
                     // crear los atributos de las clases
                     JsonArray attributes = Methods.JsonToArray(entitie, "attributes");
                     String nameAttr = "";
@@ -233,9 +250,9 @@ public class MakerProjects {
                         String type = Methods.JsonToString(attribute, "type", "");
 
                         if (!name.contains("DAO")) {
-                            if (primary_key.equals("true") && !tieneid) {
+                            if (primary_key.equals("true") && !tieneid && !herenciaResponseDTO.isTieneHerencia()) {
                                 if (!name.equals("id")) {
-                                    System.out.println("NO TIENE EL ATRIBUTO ID, POR LO TANTO SE LE AGREGARA UNO POR DEFECTO");
+                                    log.info("NO TIENE EL ATRIBUTO ID, POR LO TANTO SE LE AGREGARA UNO POR DEFECTO");
                                     templateEntitie = templateEntitie.replace("{$idClass}", "id");
                                     posAttr = -1;
                                     tieneid = true;
@@ -296,14 +313,14 @@ public class MakerProjects {
                     templateEntitie = templateEntitie.replace("${imports}", imports);
                     templateEntitie = templateEntitie.replace("{$attrs}", nameAttr);
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\entities\\" + entitieName + ".java", templateEntitie);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando clase ->" + entitieName + " \n");
+                    classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\entities\\" + entitieNamefile + ".java", templateEntitie);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando clase ->" + entitieNamefile + " \n");
                 }
             }
 
             //Repository
-            tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\repository");
+            tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\repository");
             tmpFolder.mkdir();
 
             // crear las clases dao
@@ -321,21 +338,21 @@ public class MakerProjects {
                     templateDao = templateDao.replace("{$nameClass}", entitieName);
 
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\repository\\" + entitieName + "Repository.java", templateDao);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando clase ->" + entitieName + " \n");
+                    classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\repository\\" + entitieName + "Repository.java", templateDao);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando clase ->" + entitieName + " \n");
                 }
             }
 
             //Enum
-            tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\enums");
+            tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\enums");
             tmpFolder.mkdir();
             for (int posEnum = 0; posEnum < enumsJava.size(); posEnum++) {
                 // obtener el json de la posicion respectiva
                 JsonObject enumx = Methods.JsonElementToJSO(enumsJava.get(posEnum));
                 String nameEnum = Methods.JsonToString(enumx, "name", "");
                 JsonArray elemeents = Methods.JsonToArray(enumx, "elements");
-                System.out.println("ELEMENTOS " + elemeents);
+                log.info("ELEMENTOS " + elemeents);
 
                 String elementos = "";
                 for (int i = 0; i < elemeents.size(); i++) {
@@ -351,13 +368,13 @@ public class MakerProjects {
                 templateEnum = templateEnum.replace("{$nameClass}", nameEnum);
                 templateEnum = templateEnum.replace("{$params}", elementos.replaceAll("\"", ""));
                 FileAccess classEntitie = new FileAccess();
-                classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\enums\\" + nameEnum + ".java", templateEnum);
-                System.out.println("PathZip: " + contextPath + relPath);
-                System.out.println("Creaando enum ->" + enumx + " \n");
+                classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\enums\\" + nameEnum + ".java", templateEnum);
+                log.info("PathZip: " + contextPath + relPath);
+                log.info("Creaando enum ->" + enumx + " \n");
             }
 
             //Controller
-            tmpFolder = new File(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\controller");
+            tmpFolder = new File(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\controller");
             tmpFolder.mkdir();
 
             // crear las clases apis
@@ -383,9 +400,9 @@ public class MakerProjects {
                         templateApi = templateApi.replace("{$idClass}", name);
 
                         FileAccess classEntitie = new FileAccess();
-                        classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\controller\\" + entitieName + "Controller.java", templateApi);
-                        System.out.println("PathZip: " + contextPath + relPath);
-                        System.out.println("Creaando clase ->" + entitieName + " \n");
+                        classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\controller\\" + entitieName + "Controller.java", templateApi);
+                        log.info("PathZip: " + contextPath + relPath);
+                        log.info("Creaando clase ->" + entitieName + " \n");
                     }
                 }
             }
@@ -435,9 +452,9 @@ public class MakerProjects {
                     templateServicie = templateServicie.replace("{$className}", entitieName);
                     templateServicie = templateServicie.replace("{$methosClass}", methodsClass);
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\service\\" + entitieName + "Service.java", templateServicie);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando servicie ->" + entitieName + "Servicie \n");
+                    classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\service\\" + entitieName + "Service.java", templateServicie);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando servicie ->" + entitieName + "Servicie \n");
                 }
             }
 
@@ -497,9 +514,9 @@ public class MakerProjects {
                     templateServicieImpl = templateServicieImpl.replace("{$classNameMinuscula}", makeFirstLetterLowerCase(entitieName));
                     templateServicieImpl = templateServicieImpl.replace("{$methosClass}", methodsClass);
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\main\\java\\com\\app\\tddt4iots\\service\\impl\\" + entitieName + "ServiceImpl.java", templateServicieImpl);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando servicieImpl ->" + entitieName + "Servicie \n");
+                    classEntitie.writeFileText(projectPath + "src\\main\\java\\com\\app\\tddt4iots\\service\\impl\\" + entitieName + "ServiceImpl.java", templateServicieImpl);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando servicieImpl ->" + entitieName + "Servicie \n");
                 }
             }
             //</editor-fold>
@@ -553,19 +570,52 @@ public class MakerProjects {
                     templateTestJava = templateTestJava.replace("{$javaClassName}", Methods.JsonToString(entitieTest, "class", ""));
                     templateTestJava = templateTestJava.replace("{$methodsTest}", codeMethods);
                     FileAccess classEntitie = new FileAccess();
-                    classEntitie.writeFileText(projectPath + "\\src\\test\\java\\com\\app\\tddt4iots\\" + classTestName + ".java", templateTestJava);
-                    System.out.println("PathZip: " + contextPath + relPath);
-                    System.out.println("Creaando clase Test ->" + classTestName + " \n");
+                    classEntitie.writeFileText(projectPath + "src\\test\\java\\com\\app\\tddt4iots\\" + classTestName + ".java", templateTestJava);
+                    log.info("PathZip: " + contextPath + relPath);
+                    log.info("Creaando clase Test ->" + classTestName + " \n");
                 }
             }
             //</editor-fold>
         }
 
-        System.out.println("#####################################################");
-        System.out.println("##         FIN GENERACIÓN MAVEN PROJECT            ##");
-        System.out.println("#####################################################");
-        System.out.println("Maker Maven: " + projectPath);
+        log.info("#####################################################");
+        log.info("##         FIN GENERACIÓN MAVEN PROJECT            ##");
+        log.info("#####################################################");
+        log.info("Maker Maven: " + projectPath);
 
+    }
+
+    private static ValidarHerenciaResponseDTO validarHerencia(JsonArray relationships, String nombreClase) {
+        ValidarHerenciaResponseDTO response = new ValidarHerenciaResponseDTO();
+        for (int posRelation = 0; posRelation < relationships.size(); posRelation++) {
+            // obtener el json de la posicion respectiva
+            JsonObject relation = Methods.JsonElementToJSO(relationships.get(posRelation));
+            String from = Methods.JsonToString(relation, "from", "");
+            String to = Methods.JsonToString(relation, "to", "");
+            String typeRelationship = Methods.JsonToString(relation, "typeRelatioship", "");
+            if (typeRelationship.equals("generalization")) {
+                if (from.equals(nombreClase)) {
+                    response.setNombreFinalClase(from + " : " + to);
+                    response.setTieneHerencia(true);
+                    break;
+                }
+            }
+        }
+        return response;
+    }
+    
+    private static String normalizeText(String input) {
+        // Normaliza el texto a su forma descompuesta (NFD)
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+
+        // Reemplaza caracteres especiales con sus equivalentes sin acentos
+        normalized = normalized.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        
+        // Reemplaza la ñ por n
+        normalized = normalized.replaceAll("ñ", "n");
+        normalized = normalized.replaceAll("Ñ", "N");
+
+        return normalized;
     }
 
     private static String makeFirstLetterLowerCase(String str) {
@@ -578,9 +628,9 @@ public class MakerProjects {
     }
 
     public static void encapsularProyectoZip(String contextPath, String relPath) {
-            FileAccess fac = new FileAccess();
-            fac.makeZipFromFolder(contextPath, relPath + ".zip");
-            System.out.println("PathZip: " + relPath);
+        FileAccess fac = new FileAccess();
+        fac.makeZipFromFolder(contextPath, relPath + ".zip");
+        log.info("PathZip: " + relPath);
     }
 
 }

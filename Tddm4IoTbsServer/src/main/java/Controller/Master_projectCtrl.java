@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import javax.swing.table.DefaultTableModel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import models.Master_project;
 import util.DataStatic;
@@ -29,6 +30,7 @@ import util.WeEncoder;
 /**
  * @author tonyp
  */
+@Slf4j
 public class Master_projectCtrl {
 
     private String[][] optionsIoT;
@@ -503,6 +505,7 @@ public class Master_projectCtrl {
                     MakerProjects.encapsularProyectoZip(
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular,
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular);
+                    log.info("Cambiar estado de descarga del proyecto Angular");
                     master.updateStatusDownload(idProj, "download_ang");
                     data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderAngular + ".zip" + "\"}";
                 } else if (params.equals("3")) {
@@ -515,6 +518,7 @@ public class Master_projectCtrl {
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring,
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll");
                     data = "{\"angularApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + "projectAll" + ".zip" + "\"}";
+                    log.info("Cambiar estado de descarga del proyecto Angular");
                     master.updateStatusDownload(idProj, "download_all");
 
                 } else if (params.equals("5")) {
@@ -595,6 +599,7 @@ public class Master_projectCtrl {
                     MakerProjects.encapsularProyectoZip(
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring,
                             path + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring);
+                    log.info("Cambiar estado de descarga del proyecto Maven");
                     master.updateStatusDownload(idProj, "download");
                     data = "{\"MavenApplication\":\"" + DataStatic.folderProyect + resp[1] + "/" + nameProject + DataStatic.folderMvmSpring + ".zip" + "\"}";
                 } else if (params.equals("4")) {
