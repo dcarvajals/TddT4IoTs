@@ -25,6 +25,8 @@
 
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
 
+        <!-- Clipboard.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
         <script src="resources/js/js-library/jquery.min.js"></script>
         <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
         <script src="resources/js/js-library/angular.js"></script>
@@ -1201,13 +1203,13 @@
                         <h5 class="modal-title">View Use Case</h5>
                     </div>
                     <div class="modal-body overflow-auto">
-                        <button class="btn btn-primary btn-sm" ng-click="copyUseCase()"> Copy to Clipboard </button>
+                        <button class="btn btn-primary btn-sm" ng-click="copyUseCase()" id="copyButton"> Copy to Clipboard </button>
                         <div class="custom-control custom-checkbox mt-1 mb-1">
                             <input type="checkbox" class="custom-control-input" id="showSymbol" checked ng-model="showLS">
                             <label class="custom-control-label" for="showSymbol">Show symbol language</label>
                         </div>
 
-                        <table class="table table-sm table-bordered mt-2" id="viewUseCaseTable">
+                        <table class="table table-sm table-bordered mt-2" id="viewUseCaseTable" tabindex="0">
                             <tr>
                                 <td> <strong> Use Case: </strong> </td>
                                 <td> {{ !showLS ? jsonUseCase.useCase[encontrado].name_i : jsonUseCase.useCase[encontrado].name}}</td>

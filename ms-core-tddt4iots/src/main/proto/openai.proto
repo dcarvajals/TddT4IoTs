@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package grpc_service;
+
+service OpenAIService {
+  rpc TrainModel (TrainRequest) returns (TrainResponse);
+}
+
+message TrainRequest {
+  string json_data = 1;
+}
+
+message TrainResponse {
+  string message = 1;
+}

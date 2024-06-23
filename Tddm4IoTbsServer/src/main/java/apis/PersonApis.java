@@ -410,4 +410,36 @@ public class PersonApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/validateToken")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response validateToken(String data) {
+        String message;
+        System.out.println("validateToken()");
+        
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+            String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+            String[] clains = Methods.getDataToJwt(sessionToken);
+            System.out.println("clains 0 => " + clains[0]);
+            System.out.println("clains 1 => " + clains[1]);
+
+            String[] res = Methods.validatePermit(clains[0], clains[1], 1);
+            if (res[0].equals("2")) {
+                String dataUser = "{\"userId\":" + clains[0] + " }";
+                message = Methods.getJsonMessage(res[0], res[1], dataUser);
+            } else {
+                message = Methods.getJsonMessage("4", "Error in the request parameters.", "[]");
+            }
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
 }

@@ -65,6 +65,7 @@ public class Master_projectApis {
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+            System.out.println("sessionToke: " + sessionToken);
             String type = Methods.JsonToString(Jso, "type", "");
             String[] clains = Methods.getDataToJwt(sessionToken);
             System.out.println("clains 0 => " + clains[0]);

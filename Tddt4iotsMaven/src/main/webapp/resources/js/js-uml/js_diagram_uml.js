@@ -2652,23 +2652,94 @@ controller = app.controller("workAreaController", function ($scope) {
     };
 
     $scope.copyUseCase = function () {
-        selectElementContents(document.getElementById('viewUseCaseTable'));
+        selectElementContents("viewUseCaseTable");
     };
 
-    function selectElementContents(table) {
-        //ar table = document.getElementById(el);
+    function selectElementContents(elementId) {
+        var table = document.getElementById(elementId);
+        var htmlContent = `
+            <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    table, th, td {
+                        border: 1px solid black;
+                    }
+                    th, td {
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    .table-active {
+                        background-color: #f2f2f2;
+                    }
+                    .center-d {
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>${table.outerHTML}</body>
+            </html>
+        `;
 
-        if (navigator.clipboard) {
-            var text = table.innerText.trim();
+        // Crear un elemento temporal para copiar el HTML
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        document.body.appendChild(tempDiv);
 
-            //var range = document.createRange();
-            //range.selectNode(table);
+        var clipboard = new ClipboardJS('#copyButton', {
+            text: function() {
+                return tempDiv.innerHTML;
+            }
+        });
 
-            navigator.clipboard.writeText(text).catch(function () {
-            });
+        clipboard.on('success', function(e) {
+            console.log('Contenido copiado al portapapeles!');
+            alert("Content successfully copied.");
+            e.clearSelection();
+            document.body.removeChild(tempDiv); // Eliminar el elemento temporal
+        });
+
+        clipboard.on('error', function(e) {
+            console.error('Error al copiar al portapapeles.');
+            alert("Failed to copy content.");
+            document.body.removeChild(tempDiv); // Eliminar el elemento temporal
+        });
+
+        // Activar el clic en el botón de copia
+        document.getElementById('copyButton').click();
+    }
+
+    function copyFallback(htmlContent) {
+        const container = document.createElement('div');
+        container.innerHTML = htmlContent;
+        container.style.position = 'fixed';
+        container.style.pointerEvents = 'none';
+        container.style.opacity = 0;
+        container.style.zIndex = -1;
+
+        document.body.appendChild(container);
+
+        /*const range = document.createRange();
+        range.selectNodeContents(container);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);*/
+
+        try {
+            const successful = document.execCommand('copy');
+            const msg = successful ? "Content successfully copied." : "Failed to copy content.";
+            console.log(msg);
+            alertAll({ "status": successful ? 2 : 0, "information": msg });
+        } catch (err) {
+            console.error('Error al copiar al portapapeles: ', err);
+            alertAll({ "status": 0, "information": "Failed to copy content." });
         }
-        console.log("COPIADO !!");
-        alertAll({"status": 2, "information": "Content successfully copied."});
+
+        selection.removeAllRanges();
+        document.body.removeChild(container);
     }
 
     /**
