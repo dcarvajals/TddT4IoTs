@@ -44,6 +44,11 @@ class OpenAIServiceStub(object):
                 request_serializer=openai__pb2.TrainRequest.SerializeToString,
                 response_deserializer=openai__pb2.TrainResponse.FromString,
                 _registered_method=True)
+        self.UseModel = channel.unary_unary(
+                '/grpc_service.OpenAIService/UseModel',
+                request_serializer=openai__pb2.TrainRequest.SerializeToString,
+                response_deserializer=openai__pb2.TrainResponse.FromString,
+                _registered_method=True)
 
 
 class OpenAIServiceServicer(object):
@@ -55,11 +60,22 @@ class OpenAIServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UseModel(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OpenAIServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'TrainModel': grpc.unary_unary_rpc_method_handler(
                     servicer.TrainModel,
+                    request_deserializer=openai__pb2.TrainRequest.FromString,
+                    response_serializer=openai__pb2.TrainResponse.SerializeToString,
+            ),
+            'UseModel': grpc.unary_unary_rpc_method_handler(
+                    servicer.UseModel,
                     request_deserializer=openai__pb2.TrainRequest.FromString,
                     response_serializer=openai__pb2.TrainResponse.SerializeToString,
             ),
@@ -89,6 +105,33 @@ class OpenAIService(object):
             request,
             target,
             '/grpc_service.OpenAIService/TrainModel',
+            openai__pb2.TrainRequest.SerializeToString,
+            openai__pb2.TrainResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UseModel(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/grpc_service.OpenAIService/UseModel',
             openai__pb2.TrainRequest.SerializeToString,
             openai__pb2.TrainResponse.FromString,
             options,

@@ -17,5 +17,7 @@ import java.util.List;
 public interface TrainingHistoryMapper {
     TrainingHistory trainingHistoryTo (TrainingHistoryDTO trainingHistoryDTO);
 
+    TrainingHistoryDTO trainingHistoryDtoTo (TrainingHistory trainingHistory);
+
     List<TrainingHistoryDTO> trainingHistoryDTOListTo (List<TrainingHistory> trainingHistory);
 }

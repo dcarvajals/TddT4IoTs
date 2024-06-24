@@ -61,6 +61,6 @@ public class TrainingHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_model", nullable = false)
-    private Model model;
+    private ModelPermission model;
 
 }

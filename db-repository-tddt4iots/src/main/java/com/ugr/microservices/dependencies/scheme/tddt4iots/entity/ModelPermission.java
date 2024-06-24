@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -34,5 +37,11 @@ public class ModelPermission {
 
     @Column(name = "active")
     private Boolean active;
+
+    @Column(name = "primary_train")
+    private Boolean primaryTrain;
+
+    @OneToMany(mappedBy = "model")
+    private List<TrainingHistory> trainingHistories = new ArrayList<>();
 
 }

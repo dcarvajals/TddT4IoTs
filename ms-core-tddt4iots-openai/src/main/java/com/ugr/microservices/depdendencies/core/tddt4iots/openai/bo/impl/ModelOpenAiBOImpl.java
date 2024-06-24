@@ -1,6 +1,7 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.impl;
 
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.ModelOpenAiBO;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGenericBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.config.ApplicationConfig;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.ModelMapper;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.PersonMapper;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,13 +32,11 @@ public class ModelOpenAiBOImpl implements ModelOpenAiBO {
     ModelService modelService;
 
     @Autowired
-    PersonService personService;
-
-    @Autowired
     ModelMapper modelMapper;
 
     @Autowired
-    PersonMapper personMapper;
+    Tddt4iotsGenericBO tddt4iotsGenericBO;
+
 
     public ModelOpenAiBOImpl(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
@@ -50,26 +50,11 @@ public class ModelOpenAiBOImpl implements ModelOpenAiBO {
     @Override
     public ModelDTO save(GenericTddt4iotsReqDTO<ModelDTO> request) throws GenericException, IOException, InterruptedException {
         // validar la session de la herramienta
-        ValidateTokenReqDTO validateTokenReqDTO = ValidateTokenReqDTO.builder()
-                .user_token(request.getUserToken())
-                .build();
-        ValidateTokenResDTO validateTokenResDTO = Tddt4iotsUtil.postRequest(
-                applicationConfig.getTddt4iotsServer() +
-                        Tddt4iotsCons.URL_VALIDATE_TOKEN,
-                validateTokenReqDTO,
-                ValidateTokenResDTO.class
-        );
-
-        if(validateTokenResDTO.getStatus() != 2 && validateTokenResDTO.getData().getUserId() != null) {
-            throw new GenericException(validateTokenResDTO.getInformation());
-        }
-
-        log.info(validateTokenResDTO.getInformation());
-        PersonDTO personDTO = personMapper.personTo(
-                personService.findById(validateTokenResDTO.getData().getUserId())
-        );
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
 
         request.getClassDTO().setIdPerson(personDTO);
+        request.getClassDTO().setActive(Boolean.TRUE);
+        request.getClassDTO().setCreateAt(new Date());
         return modelMapper.modelDTOTo(modelService.save(modelMapper.modelTo(request.getClassDTO())));
     }
 

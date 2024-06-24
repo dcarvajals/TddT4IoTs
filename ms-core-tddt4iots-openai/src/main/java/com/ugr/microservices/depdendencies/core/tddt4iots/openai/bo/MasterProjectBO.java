@@ -1,9 +1,7 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo;
 
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.MasterProjectDTO;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.CreateFileTrainingReq;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GetProjectFromDateReq;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.TrainingModelOpenAiReq;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.CreateFileTrainingResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.TrainingModelOpenAiRes;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
@@ -18,4 +16,6 @@ public interface MasterProjectBO {
     List<MasterProjectDTO> getProjectFromToDate (GetProjectFromDateReq request) throws GenericException;
     CreateFileTrainingResDTO createFileTraining (CreateFileTrainingReq request) throws GenericException, IOException, InterruptedException;
     List<TrainingModelOpenAiRes> trainingModelOpenAi (TrainingModelOpenAiReq request) throws GenericException;
+    void useModelOpenAi (GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException;
+
 }

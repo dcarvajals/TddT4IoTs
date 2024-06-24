@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ModelUseToolServiceImpl implements ModelUseToolService {
@@ -22,5 +23,16 @@ public class ModelUseToolServiceImpl implements ModelUseToolService {
     @Override
     public ModelUseTool save(ModelUseTool request) throws GenericException {
         return modelUseToolRepository.save(request);
+    }
+
+    @Override
+    public ModelUseTool getModelUseToolByPerson(Long idPerson) throws GenericException {
+        Optional<ModelUseTool> modelUseTool = modelUseToolRepository.getModelUseToolByPerson(idPerson);
+
+        if(modelUseTool.isEmpty()) {
+            throw new GenericException("The searched record does not exist");
+        }
+
+        return modelUseTool.get();
     }
 }

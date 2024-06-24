@@ -3,9 +3,7 @@ package com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.MasterProjectBO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.MasterProjectDTO;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.CreateFileTrainingReq;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GetProjectFromDateReq;
-import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.TrainingModelOpenAiReq;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.CreateFileTrainingResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.TrainingModelOpenAiRes;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericBasicResponse;
@@ -55,7 +53,7 @@ public class MasterProjectController {
         return response;
     }
 
-    @GetMapping(
+    @PostMapping(
             path = "/createFileTraining",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -71,7 +69,7 @@ public class MasterProjectController {
         return response;
     }
 
-    @GetMapping(
+    @PostMapping(
             path = "/trainingModelOpenAi",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -81,6 +79,23 @@ public class MasterProjectController {
         GenericBasicResponse<List<TrainingModelOpenAiRes>> response = new GenericBasicResponse<>();
         log.info("Request received: listProjectFromToDate");
         response.setData(masterProjectBO.trainingModelOpenAi(trainingModelOpenAiReq));
+        log.info("Request completed: listProjectFromToDate");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/useModelTraining",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<UseModelOpenaiRedDTO> useModelTraining (
+            @RequestBody GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<UseModelOpenaiRedDTO> response = new GenericBasicResponse<>();
+        log.info("Request received: listProjectFromToDate");
+        genericTddt4iotsReqDTO.setUserToken(userToken);
+        //response.setData();
+        masterProjectBO.useModelOpenAi(genericTddt4iotsReqDTO);
         log.info("Request completed: listProjectFromToDate");
         return response;
     }

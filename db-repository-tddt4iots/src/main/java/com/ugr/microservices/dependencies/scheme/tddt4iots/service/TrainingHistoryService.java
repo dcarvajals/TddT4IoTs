@@ -14,4 +14,5 @@ public interface TrainingHistoryService {
     List<TrainingHistory> getTrainingFromToDate (GetProjectFromDateReq getProjectFromDateReq) throws  GenericException;
     Optional<TrainingHistory> findId (Long id) throws GenericException;
     List<TrainingHistory> getTrainingHistoriesByIdModel (Long idModel) throws GenericException;
+    TrainingHistory getLastestTraining (Long idModel) throws GenericException;
 }

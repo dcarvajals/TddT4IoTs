@@ -9,8 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 public class ModelPermissionDTO {
     private Long id;
+    private PersonDTO person;
     private Boolean canUse;
     private Boolean canTrain;
     private Boolean active;
+    private Boolean primaryTrain;
     private ModelDTO model;
 }

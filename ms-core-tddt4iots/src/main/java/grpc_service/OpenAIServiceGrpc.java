@@ -46,6 +46,37 @@ public final class OpenAIServiceGrpc {
     return getTrainModelMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<grpc_service.Openai.TrainRequest,
+      grpc_service.Openai.TrainResponse> getUseModelMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UseModel",
+      requestType = grpc_service.Openai.TrainRequest.class,
+      responseType = grpc_service.Openai.TrainResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<grpc_service.Openai.TrainRequest,
+      grpc_service.Openai.TrainResponse> getUseModelMethod() {
+    io.grpc.MethodDescriptor<grpc_service.Openai.TrainRequest, grpc_service.Openai.TrainResponse> getUseModelMethod;
+    if ((getUseModelMethod = OpenAIServiceGrpc.getUseModelMethod) == null) {
+      synchronized (OpenAIServiceGrpc.class) {
+        if ((getUseModelMethod = OpenAIServiceGrpc.getUseModelMethod) == null) {
+          OpenAIServiceGrpc.getUseModelMethod = getUseModelMethod =
+              io.grpc.MethodDescriptor.<grpc_service.Openai.TrainRequest, grpc_service.Openai.TrainResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UseModel"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  grpc_service.Openai.TrainRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  grpc_service.Openai.TrainResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new OpenAIServiceMethodDescriptorSupplier("UseModel"))
+              .build();
+        }
+      }
+    }
+    return getUseModelMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -100,6 +131,13 @@ public final class OpenAIServiceGrpc {
         io.grpc.stub.StreamObserver<grpc_service.Openai.TrainResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getTrainModelMethod(), responseObserver);
     }
+
+    /**
+     */
+    default void useModel(grpc_service.Openai.TrainRequest request,
+        io.grpc.stub.StreamObserver<grpc_service.Openai.TrainResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUseModelMethod(), responseObserver);
+    }
   }
 
   /**
@@ -136,6 +174,14 @@ public final class OpenAIServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getTrainModelMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void useModel(grpc_service.Openai.TrainRequest request,
+        io.grpc.stub.StreamObserver<grpc_service.Openai.TrainResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getUseModelMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -159,6 +205,13 @@ public final class OpenAIServiceGrpc {
     public grpc_service.Openai.TrainResponse trainModel(grpc_service.Openai.TrainRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getTrainModelMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public grpc_service.Openai.TrainResponse useModel(grpc_service.Openai.TrainRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUseModelMethod(), getCallOptions(), request);
     }
   }
 
@@ -185,9 +238,18 @@ public final class OpenAIServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getTrainModelMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<grpc_service.Openai.TrainResponse> useModel(
+        grpc_service.Openai.TrainRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getUseModelMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_TRAIN_MODEL = 0;
+  private static final int METHODID_USE_MODEL = 1;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -208,6 +270,10 @@ public final class OpenAIServiceGrpc {
       switch (methodId) {
         case METHODID_TRAIN_MODEL:
           serviceImpl.trainModel((grpc_service.Openai.TrainRequest) request,
+              (io.grpc.stub.StreamObserver<grpc_service.Openai.TrainResponse>) responseObserver);
+          break;
+        case METHODID_USE_MODEL:
+          serviceImpl.useModel((grpc_service.Openai.TrainRequest) request,
               (io.grpc.stub.StreamObserver<grpc_service.Openai.TrainResponse>) responseObserver);
           break;
         default:
@@ -235,6 +301,13 @@ public final class OpenAIServiceGrpc {
               grpc_service.Openai.TrainRequest,
               grpc_service.Openai.TrainResponse>(
                 service, METHODID_TRAIN_MODEL)))
+        .addMethod(
+          getUseModelMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              grpc_service.Openai.TrainRequest,
+              grpc_service.Openai.TrainResponse>(
+                service, METHODID_USE_MODEL)))
         .build();
   }
 
@@ -284,6 +357,7 @@ public final class OpenAIServiceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new OpenAIServiceFileDescriptorSupplier())
               .addMethod(getTrainModelMethod())
+              .addMethod(getUseModelMethod())
               .build();
         }
       }

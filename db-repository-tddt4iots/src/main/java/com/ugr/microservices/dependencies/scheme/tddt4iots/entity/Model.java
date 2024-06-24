@@ -45,7 +45,4 @@ public class Model {
     @OneToMany(mappedBy = "model")
     private List<ModelUseTool> modelUseTools = new ArrayList<>();
 
-    @OneToMany(mappedBy = "model")
-    private List<TrainingHistory> trainingHistories = new ArrayList<>();
-
 }

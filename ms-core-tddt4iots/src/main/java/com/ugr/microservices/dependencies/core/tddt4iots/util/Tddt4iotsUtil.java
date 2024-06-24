@@ -19,7 +19,7 @@ public class Tddt4iotsUtil {
 
     private static final HttpClient httpClient = HttpClient.newHttpClient();
 
-    public static <T> T fetchDataFromUrl(String urlString, Class<T> valueType) {
+    public static <T> T fetchDataFromUrl(String urlString, Class<T> valueType) throws GenericException {
         T data = null;
         try {
             URL url = new URL(urlString);
@@ -27,9 +27,30 @@ public class Tddt4iotsUtil {
                 data = JSON_MAPPER.readValue(reader, valueType);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new GenericException(e.getMessage());
         }
         return data;
+    }
+
+    public static <T> T fetchDataFromJsonString(String jsonString, Class<T> valueType) throws GenericException {
+        T data = null;
+        try {
+            data = JSON_MAPPER.readValue(jsonString, valueType);
+        } catch (Exception e) {
+            throw new GenericException(e.getMessage());
+        }
+        return data;
+    }
+
+    // Método para serializar un objeto a un JSON string
+    public static <T> String convertObjectToJsonString(T object) throws GenericException {
+        String jsonString = null;
+        try {
+            jsonString = JSON_MAPPER.writeValueAsString(object);
+        } catch (Exception e) {
+            throw new GenericException(e.getMessage());
+        }
+        return jsonString;
     }
 
     // Método para peticiones GET que mapea la respuesta a un objeto de tipo T

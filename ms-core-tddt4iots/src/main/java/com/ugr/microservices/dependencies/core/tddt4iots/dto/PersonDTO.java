@@ -23,5 +23,5 @@ public class PersonDTO {
     private Instant dateregPerson;
     private String providerPerson;
     private String idCity;
-    private String openAiSecretKey;
+    private String openaiSecretKey;
 }

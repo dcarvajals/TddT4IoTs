@@ -10,6 +10,7 @@ public abstract class Tddt4iotsCons {
     public static final String FAILURE_STATUS_DEFAULT = "ERROR";
     public static final String USER = "user";
     public static final String ASSISTANT = "assistant";
+    public static final String SYSTEM = "system";
 
     // FOLDERS NFS
     public static final String URL_TDDT4IOTS_SERVER = "http://tddt4iots.com/Tddm4IoTbsServer/webapis/";

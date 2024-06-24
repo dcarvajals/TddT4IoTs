@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TrainingHistoryRepository extends JpaRepository<TrainingHistory, Integer> {
@@ -20,8 +21,15 @@ public interface TrainingHistoryRepository extends JpaRepository<TrainingHistory
 
     @Query(value = "SELECT TH FROM TrainingHistory TH JOIN TH.idPerson JOIN TH.model " +
             "WHERE TH.model.id = :idModel ORDER BY TH.dateCreation DESC")
-            List<TrainingHistory> getTrainingHistoriesByIdModel (
+    List<TrainingHistory> getTrainingHistoriesByIdModel (
                     @Param("idModel") Long idModel
+    );
+
+    @Query(value = "SELECT TH FROM TrainingHistory TH " +
+            "WHERE TH.model.model.id = :idModel AND " +
+            "TH.dateCreation = (SELECT MAX(TH2.dateCreation) FROM TrainingHistory TH2 WHERE TH2.model.model.id = :idModel)")
+    Optional<TrainingHistory> getLastestTraining (
+            @Param("idModel") Long idModel
     );
 
 }

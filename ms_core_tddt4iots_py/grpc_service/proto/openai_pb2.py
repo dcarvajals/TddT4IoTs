@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0copenai.proto\x12\x0cgrpc_service\"!\n\x0cTrainRequest\x12\x11\n\tjson_data\x18\x01 \x01(\t\" \n\rTrainResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2V\n\rOpenAIService\x12\x45\n\nTrainModel\x12\x1a.grpc_service.TrainRequest\x1a\x1b.grpc_service.TrainResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0copenai.proto\x12\x0cgrpc_service\"!\n\x0cTrainRequest\x12\x11\n\tjson_data\x18\x01 \x01(\t\" \n\rTrainResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2\x9b\x01\n\rOpenAIService\x12\x45\n\nTrainModel\x12\x1a.grpc_service.TrainRequest\x1a\x1b.grpc_service.TrainResponse\x12\x43\n\x08UseModel\x12\x1a.grpc_service.TrainRequest\x1a\x1b.grpc_service.TrainResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -25,6 +25,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TRAINREQUEST']._serialized_end=63
   _globals['_TRAINRESPONSE']._serialized_start=65
   _globals['_TRAINRESPONSE']._serialized_end=97
-  _globals['_OPENAISERVICE']._serialized_start=99
-  _globals['_OPENAISERVICE']._serialized_end=185
+  _globals['_OPENAISERVICE']._serialized_start=100
+  _globals['_OPENAISERVICE']._serialized_end=255
 # @@protoc_insertion_point(module_scope)

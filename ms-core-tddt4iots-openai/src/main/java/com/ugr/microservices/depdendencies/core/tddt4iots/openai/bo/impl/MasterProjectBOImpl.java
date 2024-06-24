@@ -2,20 +2,17 @@ package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.MasterProjectBO;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGenericBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.grpc.GrpcTrainingModelOpenAi;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.config.ApplicationConfig;
-import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.MasterProjectMapper;
-import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.PersonMapper;
-import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.TrainingHistoryMapper;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.cons.Tddt4iotsCons;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.Tddt4iotsUtil;
-import com.ugr.microservices.dependencies.scheme.tddt4iots.service.MasterProjectService;
-import com.ugr.microservices.dependencies.scheme.tddt4iots.service.PersonService;
-import com.ugr.microservices.dependencies.scheme.tddt4iots.service.TrainingHistoryService;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +30,13 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     private final ApplicationConfig applicationConfig;
 
     @Autowired
+    Tddt4iotsGenericBO tddt4iotsGenericBO;
+
+    @Autowired
     MasterProjectService masterProjectService;
+
+    @Autowired
+    ModelPermissionService modelPermissionService;
 
     @Autowired
     TrainingHistoryService trainingHistoryService;
@@ -42,10 +45,19 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     PersonService personService;
 
     @Autowired
+    ModelUseToolService modelUseToolService;
+
+    @Autowired
     MasterProjectMapper masterProjectMapper;
 
     @Autowired
     TrainingHistoryMapper trainingHistoryMapper;
+
+    @Autowired
+    ModelPermissionMapper modelPermissionMapper;
+
+    @Autowired
+    ModelUseToolMapper modelUseToolMapper;
 
     @Autowired
     PersonMapper personMapper;
@@ -74,24 +86,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     @Override
     public CreateFileTrainingResDTO createFileTraining(CreateFileTrainingReq request) throws GenericException, IOException, InterruptedException {
         // validar la session de la herramienta
-        ValidateTokenReqDTO validateTokenReqDTO = ValidateTokenReqDTO.builder()
-                .user_token(request.getUserToken())
-                .build();
-        ValidateTokenResDTO validateTokenResDTO = Tddt4iotsUtil.postRequest(
-                applicationConfig.getTddt4iotsServer() +
-                        Tddt4iotsCons.URL_VALIDATE_TOKEN,
-                validateTokenReqDTO,
-                ValidateTokenResDTO.class
-        );
-
-        if(validateTokenResDTO.getStatus() != 2 && validateTokenResDTO.getData().getUserId() != null) {
-            throw new GenericException(validateTokenResDTO.getInformation());
-        }
-
-        log.info(validateTokenResDTO.getInformation());
-        PersonDTO personDTO = personMapper.personTo(
-                personService.findById(validateTokenResDTO.getData().getUserId())
-        );
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
 
         CreateFileTrainingResDTO createFileTrainingResDTO = new CreateFileTrainingResDTO();
         GetProjectFromDateReq getProjectFromDateReq = GetProjectFromDateReq.builder()
@@ -251,19 +246,67 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         List<TrainingHistoryDTO> trainingHistoryDTOList = trainingHistoryMapper.trainingHistoryDTOListTo(
                 trainingHistoryService.getTrainingFromToDate(getProjectFromDateReq));
         for(TrainingHistoryDTO trainingHistoryDTO : trainingHistoryDTOList) {
-            // entrenamos todos los archivos que se han encontrado con la fecha indicada
-            String response = grpcTrainingModelOpenAi.trainModel(trainingHistoryDTO.getPathFileJson());
-            // actualizar los resultados del entrenamiento
-            trainingHistoryDTO.setResultTrining(response);
-            trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
-            TrainingModelOpenAiRes trainingModelOpenAiRes = TrainingModelOpenAiRes.builder()
-                    .result(response)
-                    .pathFileJson(trainingHistoryDTO.getPathFileJson())
-                    .build();
-            trainingModelOpenAiResList.add(trainingModelOpenAiRes);
+            if(trainingHistoryDTO.getResultTrining() != null) {
+                GrpcTrainModelResDTO grpcTrainModelResDTO =
+                        Tddt4iotsUtil.fetchDataFromJsonString(trainingHistoryDTO.getResultTrining(), GrpcTrainModelResDTO.class);
+                GrpcTrainModelReqDTO grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
+                        .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
+                        .model(grpcTrainModelResDTO.getData().getFineTunedModel())
+                        .pathFileTrain(trainingHistoryDTO.getPathFileJson())
+                        .build();
+                if(trainingHistoryDTO.getModel().getPrimaryTrain()) {
+                    grpcTrainModelReqDTO.setModel(trainingHistoryDTO.getModel().getModel().getName());
+                    trainingHistoryDTO.getModel().setPrimaryTrain(Boolean.FALSE);
+                    modelPermissionService.save(modelPermissionMapper.modelPermissionTo(
+                            trainingHistoryDTO.getModel()));
+                }
+                String requestGrpcTrainModel = Tddt4iotsUtil.convertObjectToJsonString(grpcTrainModelReqDTO);
+                log.info(requestGrpcTrainModel);
+                // entrenamos todos los archivos que se han encontrado con la fecha indicada
+                String response = grpcTrainingModelOpenAi.trainModel(requestGrpcTrainModel);
+                // actualizar los resultados del entrenamiento
+                trainingHistoryDTO.setResultTrining(response);
+                trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
+                TrainingModelOpenAiRes trainingModelOpenAiRes = TrainingModelOpenAiRes.builder()
+                        .result(response)
+                        .pathFileJson(trainingHistoryDTO.getPathFileJson())
+                        .build();
+                trainingModelOpenAiResList.add(trainingModelOpenAiRes);
+            }
         }
 
         return trainingModelOpenAiResList;
+    }
+
+    @Override
+    public void useModelOpenAi(GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException {
+        // validar la session de la herramienta
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(genericTddt4iotsReqDTO.getUserToken());
+        // buscamos los datos del modelo a utilizar por la persona
+        ModelUseToolDto modelUseToolDto = modelUseToolMapper.modelUseToolDtoTo(modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
+        GrpcTrainModelResDTO grpcTrainModelResDTO =
+                Tddt4iotsUtil.fetchDataFromJsonString(modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
+        List<MessageDTO> messages = new ArrayList<>();
+        MessageDTO messageDTOSystem = MessageDTO.builder()
+                .role(Tddt4iotsCons.SYSTEM)
+                .content("You are a wizard to interpret natural text describing requirements of a computer system, and you must generate everything needed for a class diagram and return the JSON as I have instructed you in the training.")
+                .build();
+        MessageDTO messageDTOUser = MessageDTO.builder()
+                .role(Tddt4iotsCons.USER)
+                .content(genericTddt4iotsReqDTO.getClassDTO().getDescriptionUseCase())
+                .build();
+        messages.add(messageDTOSystem);
+        messages.add(messageDTOUser);
+        GrpcUseModelReqDTO grpcUseModelReqDTO = GrpcUseModelReqDTO.builder()
+                .openAiSecretKey(personDTO.getOpenaiSecretKey())
+                .model(grpcTrainModelResDTO.getData().getFineTunedModel())
+                .messages(messages)
+                .build();
+        String grpcUseModelString = Tddt4iotsUtil.convertObjectToJsonString(grpcUseModelReqDTO);
+        // usamos el modelo entrenado
+        log.info(grpcUseModelString);
+        String response = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
+        log.info(response);
     }
 
     private List<ArmadilloApiResDTO> postMultipleRequests(String... names) {

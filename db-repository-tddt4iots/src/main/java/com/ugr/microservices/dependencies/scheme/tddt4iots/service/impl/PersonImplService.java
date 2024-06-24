@@ -25,4 +25,9 @@ public class PersonImplService implements PersonService {
 
         return person.get();
     }
+
+    @Override
+    public Person save(Person request) throws GenericException {
+        return personRepository.save(request);
+    }
 }

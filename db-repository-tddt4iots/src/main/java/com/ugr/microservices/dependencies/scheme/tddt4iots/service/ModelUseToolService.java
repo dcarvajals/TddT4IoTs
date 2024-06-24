@@ -10,4 +10,5 @@ import java.util.List;
 public interface ModelUseToolService {
     List<ModelUseTool> getAllModelUseTool (Long idPerson) throws GenericException;
     ModelUseTool save (ModelUseTool request) throws GenericException;
+    ModelUseTool getModelUseToolByPerson (Long idPerson) throws GenericException;
 }

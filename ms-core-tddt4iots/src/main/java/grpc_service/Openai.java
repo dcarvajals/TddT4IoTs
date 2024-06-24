@@ -1145,9 +1145,11 @@ public final class Openai {
     java.lang.String[] descriptorData = {
       "\n\014openai.proto\022\014grpc_service\"!\n\014TrainReq" +
       "uest\022\021\n\tjson_data\030\001 \001(\t\" \n\rTrainResponse" +
-      "\022\017\n\007message\030\001 \001(\t2V\n\rOpenAIService\022E\n\nTr" +
-      "ainModel\022\032.grpc_service.TrainRequest\032\033.g" +
-      "rpc_service.TrainResponseb\006proto3"
+      "\022\017\n\007message\030\001 \001(\t2\233\001\n\rOpenAIService\022E\n\nT" +
+      "rainModel\022\032.grpc_service.TrainRequest\032\033." +
+      "grpc_service.TrainResponse\022C\n\010UseModel\022\032" +
+      ".grpc_service.TrainRequest\032\033.grpc_servic" +
+      "e.TrainResponseb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

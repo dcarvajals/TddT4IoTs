@@ -37,5 +37,14 @@ public class TrainingServiceImpl implements TrainingHistoryService {
         return trainingHistoryRepository.getTrainingHistoriesByIdModel(idModel);
     }
 
+    @Override
+    public TrainingHistory getLastestTraining(Long idModel) throws GenericException {
+        Optional<TrainingHistory> trainingHistoryDTO = trainingHistoryRepository.getLastestTraining(idModel);
+        if(trainingHistoryDTO.isEmpty()) {
+            throw new GenericException("The searched record does not exist");
+        }
+        return trainingHistoryDTO.get();
+    }
+
 
 }

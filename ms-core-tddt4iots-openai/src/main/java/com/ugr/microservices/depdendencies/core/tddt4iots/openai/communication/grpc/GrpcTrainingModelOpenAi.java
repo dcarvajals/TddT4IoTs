@@ -23,4 +23,13 @@ public class GrpcTrainingModelOpenAi {
         return response.getMessage();
     }
 
+    public String useModel(String jsonData) {
+        Openai.TrainRequest request = Openai.TrainRequest.newBuilder()
+                .setJsonData(jsonData)
+                .build();
+        OpenAIServiceGrpc.OpenAIServiceBlockingStub openAIServiceBlockingStub  = grpcConnectionManager.getStubByChannel("integrator", OpenAIServiceGrpc.class, "newBlockingStub");
+        Openai.TrainResponse response = openAIServiceBlockingStub.useModel(request);
+        return response.getMessage();
+    }
+
 }

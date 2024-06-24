@@ -4,6 +4,7 @@ package grpc_service;
 
 service OpenAIService {
     rpc TrainModel (TrainRequest) returns (TrainResponse);
+    rpc UseModel (TrainRequest) returns (TrainResponse);
 }
 
 message TrainRequest {
