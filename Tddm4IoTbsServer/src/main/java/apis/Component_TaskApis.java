@@ -338,4 +338,37 @@ public class Component_TaskApis {
                 .build();
     }
     
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/getInfoTaskforComponent")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getInfoTask_for_component(String data) {
+        String message;
+        System.out.println("getInfoTask()");
+        System.out.println(data);
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+            int id_component = Methods.JsonToInteger(Jso, "id_component", 0);
+            System.out.println(id_component);
+            String [] res = taskController.get_list_task(id_component);
+            message = Methods.getJsonMessage(res[0], res[1], res[2]);
+          
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    
+    
+    
+    
+    
+    
+    
 }

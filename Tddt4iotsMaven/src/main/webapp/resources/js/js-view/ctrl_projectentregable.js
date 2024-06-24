@@ -41,14 +41,16 @@ app.controller("projectentregable_controller", function ($scope, $http) {
     $scope.idcomponenteSelectedViewTask=null;
     $scope.pathProj=null;
     
-$scope.loadComponentsEntregable =null;
+    $scope.loadComponentsEntregable =null;
     $scope.rolcomponent = "";
     $scope.rolentregable = "";
     $scope.rolusuario = store.session.get("user_tddm4iotbs");
 
-
-
-
+    
+    $scope.get_task_for_component_data=null;
+    $scope.get_components_for_deliverate_data=null;
+    
+    
     $(document).ready(function () {
         angular.element($('[ng-controller="application"]')).scope().changeTittlePage("My Projects - Deliverables", true);
         $scope.updateInformationElements();
@@ -1797,6 +1799,121 @@ $scope.loadComponentsEntregable =null;
             }
         });
     };
+    
+    
+    
+    $scope.Get_task_for_component = (id_component) => {
+        
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'componentTask/getInfoTaskforComponent',
+            data: JSON.stringify({
+                'id_component': id_component         
+            }),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {   
+                console.log(data);
+            },
+            error: function (objXMLHttpRequest) {
+                // console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+    
+    
+    $scope.Get_components_for_deliverable = (id_entregable) => {
+        
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'components/getInfoComponentfordeliverable',
+            data: JSON.stringify({
+                'id_entregable': id_entregable         
+            }),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {   
+                console.log(data);
+            },
+            error: function (objXMLHttpRequest) {
+                // console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+    
+    
+    $scope.open_entregable_info_component = (entregable) => {
+       console.log(entregable);
+       $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'components/getInfoComponentfordeliverable',
+            data: JSON.stringify({
+                'id_entregable': entregable.id_entregable         
+            }),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {
+                swal.close();
+                $scope.$apply(function () {
+                    $scope.get_components_for_deliverate_data = data.data;
+                });            
+                $("#modal_compotens_for_deliverate").modal();
+                console.log(data);
+            },
+            error: function (objXMLHttpRequest) {
+                swal.close();
+                console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+
+     $scope.close_entregable_info_component = () => {
+        $("#modal_compotens_for_deliverate").modal('hide');        
+    };
+    
+    
+    $scope.open_task_for_component = (component) => {
+       console.log(component);
+       $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWebServicies + 'componentTask/getInfoTaskforComponent',
+            data: JSON.stringify({
+                'id_component': component.id_entregable_component   
+            }),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {
+                swal.close();
+                $scope.$apply(function () {
+                    $scope.get_task_for_component_data = data.data;
+                });            
+                $("#modal_task_for_componets").modal();
+                console.log(data);
+            },
+            error: function (objXMLHttpRequest) {
+                swal.close();
+                console.log("error: ", objXMLHttpRequest);
+            }
+        });
+    };
+
+     $scope.close_task_for_component = () => {
+        $("#modal_task_for_componets").modal('hide');        
+    };
+    
+    
     
     $scope.typeMembersI = null;
     

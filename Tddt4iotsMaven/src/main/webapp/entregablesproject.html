@@ -170,6 +170,13 @@
                             </div>    
                         </div>
                         <div class="row justify-content-end" ng-hide="!hideButtons(entregables.members)">
+                            
+                            <div class="col-xl-4 col-md-3 mb-2" ng-hide="!hideButtons(entregables.members)">
+                                <button class="btn button-dt btn-sm w-100" ng-click="open_entregable_info_component(entregables)">
+                                    List Components
+                                </button>
+                            </div>  
+                            
                             <div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-perc btn-sm w-100" ng-click="viewFile(4, entregables.id_entregable, false, entregables.name_entregable)">
                                     View Report
@@ -1023,12 +1030,20 @@
                                     Edit Component
                                 </button>
                             </div>
-
+                           
                             <!--<div class="col-xl-4 col-md-3 mb-2">
                                 <button class="btn button-ds btn-sm w-100" ng-click="openModalTaskEditProccess(component)">
                                     Edit progress
                             </div>-->
 
+                        </div>
+                        
+                        <div class="row">
+                             <div class="col-xl-4 col-md-3 mb-2" ng-hide="!hideButtons(component.rol)">
+                                <button class="btn button-perc btn-sm w-100" ng-click="open_task_for_component(component)">
+                                    List Task
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2260,4 +2275,128 @@
         </div>
     </div>
 </div>
+
+
+<!-- MODAL TO SHOW THE TYPES OF MEMBERS -->
+<div class="modal fade" id="modal_compotens_for_deliverate" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered sha">
+        <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h5 class="modal-title">Information: Components</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name Component</th>
+                                    <th>Description</th>
+                                    <th>Status</th>                                   
+                                </tr>
+                            </thead>
+                            <tbody>                        
+                                <tr ng-repeat="component in get_components_for_deliverate_data">
+                                    <td>{{component.name_component}}</td>
+                                    <td>{{component.description_component}}</td>  
+                                    <td>{{component.status_component}}</td>
+                                </tr>
+                            </tbody>
+                        </table>                       
+                    </div>                   
+                </div> 
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="close_entregable_info_component()">
+                        Close
+                    </button>                    
+                </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- MODAL TO SHOW THE TYPES OF MEMBERS -->
+<div class="modal fade" id="modal_compotens_for_deliverate" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered sha">
+        <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h5 class="modal-title">Information: Task</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name Component</th>
+                                    <th>Description</th>
+                                    <th>Status</th>                                   
+                                </tr>
+                            </thead>
+                            <tbody>                        
+                                <tr ng-repeat="component in get_components_for_deliverate_data">
+                                    <td>{{component.name_component}}</td>
+                                    <td>{{component.description_component}}</td>  
+                                    <td>{{component.status_component}}</td>
+                                </tr>
+                            </tbody>
+                        </table>                       
+                    </div>                   
+                </div> 
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="close_entregable_info_component()">
+                        Close
+                    </button>                    
+                </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- MODAL TO SHOW THE TYPES OF MEMBERS -->
+<div class="modal fade" id="modal_task_for_componets" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered sha">
+        <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h5 class="modal-title">Information: Task</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name Task</th>
+                                    <th>Description</th>
+                                    <th>Status</th>                                   
+                                </tr>
+                            </thead>
+                            <tbody>                        
+                                <tr ng-repeat="task in get_task_for_component_data">
+                                    <td>{{task.name_task}}</td>
+                                    <td>{{task.description_task}}</td>  
+                                    <td>{{task.status_task}}</td>
+                                </tr>
+                            </tbody>
+                        </table>                       
+                    </div>                   
+                </div> 
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="close_task_for_component()">
+                        Close
+                    </button>                    
+                </div>
+        </div>
+    </div>
+</div>
+
 

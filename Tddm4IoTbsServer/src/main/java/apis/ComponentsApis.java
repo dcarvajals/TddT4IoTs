@@ -255,5 +255,37 @@ public class ComponentsApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
+    
+    
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/getInfoComponentfordeliverable")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getInfoComponent_list_for_deliverable(String data) {
+        String message;
+        System.out.println("getInfoComponent()");
+        System.out.println(data);
+        JsonObject Jso = Methods.stringToJSON(data);
+        if (Jso.size() > 0) {
+            int id_entregable = Methods.JsonToInteger(Jso, "id_entregable", 0);
+            System.out.println(id_entregable);
+            String [] res = cControl.get_list_component(id_entregable);
+            message = Methods.getJsonMessage(res[0], res[1], res[2]);
+          
+        } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    
+   
+    
+    
    
 }

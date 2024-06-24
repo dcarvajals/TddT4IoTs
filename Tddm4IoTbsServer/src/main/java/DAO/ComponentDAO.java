@@ -97,6 +97,24 @@ public class ComponentDAO {
             return new String[]{"4", ""};
         }
     }
+    
+    
+    
+    public String[] get_list_component(int num_entregables) {
+        String query = String.format("select * from projects_report(%s,'%s')", num_entregables,"C");
+        
+        
+        DefaultTableModel tab = conex.returnRecord(query);
+        if (tab.getRowCount() > 0) {
+            return new String[]{
+                tab.getValueAt(0, 0).toString(),
+                tab.getValueAt(0, 1).toString()};
+        } else {
+            return new String[]{"4", ""};
+        }
+    }
+    
+    
 
     /**
      * This methods is user fot save the component image

@@ -239,4 +239,27 @@ public class ComponentCtrl {
 
         return new String[]{status, message, data};
     }
+    
+    
+    public String[] get_list_component(int id_entregable) {
+        String status = "4", message = "Error returning data", data = "[]";
+        String[] resp = cdao.get_list_component(id_entregable);
+        System.out.println(resp[0].toString()+"dddd");
+        if (resp[0].equals("1")) 
+        {
+            status = "2";
+            message = "Components successfully loaded";
+            data = resp[1].toString();
+        } 
+        else {
+            status = "3";
+            message = "An error occurred while loading components";
+        }
+        return new String[]{status, message, data};
+    }
+    
+    
+    
+    
+    
 }

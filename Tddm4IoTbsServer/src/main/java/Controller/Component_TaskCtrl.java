@@ -126,4 +126,28 @@ public class Component_TaskCtrl {
     public void updateAllElements(String idPerson){
         taskDAO.updateAllElements(idPerson);
     }
+    
+    
+    
+    public String[] get_list_task(int id_component) {
+        String status = "4", message = "Error returning data", data = "[]";
+        String[] resp = taskDAO.get_list_task(id_component);
+        System.out.println(resp[0].toString()+"dddd");
+        if (resp[0].equals("1")) 
+        {
+            status = "2";
+            message = "Components successfully loaded";
+            data = resp[1].toString();
+        } 
+        else {
+            status = "3";
+            message = "An error occurred while loading components";
+        }
+        return new String[]{status, message, data};
+    }
+    
+    
+    
+    
+    
 }

@@ -81,6 +81,29 @@ public class Component_TaskDAO {
         }
     }
     
+    
+    
+    
+    public String[] get_list_task(int num_component) {
+        String query = String.format("select * from projects_report(%s,'%s')", num_component,"T");
+        
+        
+        DefaultTableModel tab = conexion.returnRecord(query);
+        if (tab.getRowCount() > 0) {
+            return new String[]{
+                tab.getValueAt(0, 0).toString(),
+                tab.getValueAt(0, 1).toString()};
+        } else {
+            return new String[]{"4", ""};
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
     public void updateAllElements(String idPerson){
         String query = String.format("Select * from update_all_elements_by_person(%s)", idPerson);
         
