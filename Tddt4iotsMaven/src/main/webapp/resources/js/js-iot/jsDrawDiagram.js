@@ -23,7 +23,7 @@ $(function () {
 function initDiagramProject() {
     // diagram.isReadOnly = true; // solo lectura
     goJs = go.GraphObject.make;
-    
+
     myDiagram = goJs(go.Diagram, "lienzo", {
         padding: 20,
         allowCopy: false,
@@ -83,18 +83,21 @@ function initDiagramProject() {
                                     if (result.isConfirmed) {
                                         e.diagram.commandHandler.deleteSelection();
                                         return true;
-                                    };
+                                    }
+                                    ;
                                 });
                             })
                     );
 
     var toolTipTemplate =
-        goJs(go.Adornment, "Auto",
-            goJs(go.Shape, { fill: "#FFFFCC" }),
-            goJs(go.TextBlock, { margin: 4 },
-                new go.Binding("text", "", function(data) { return "Port: " + getPortsInfo(data); })
-            )
-        );
+            goJs(go.Adornment, "Auto",
+                    goJs(go.Shape, {fill: "#FFFFCC"}),
+                    goJs(go.TextBlock, {margin: 4},
+                            new go.Binding("text", "", function (data) {
+                                return "Port: " + getPortsInfo(data);
+                            })
+                            )
+                    );
 
     myDiagram.nodeTemplate =
             goJs(go.Node, "Auto",
@@ -159,7 +162,7 @@ function initDiagramProject() {
                                     goJs(go.Picture,
                                             new go.Binding("source", "img"), {})
                                     )
-                )
+                            )
                     );
 
 
@@ -193,15 +196,15 @@ function initDiagramProject() {
              goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, toArrow: "Circle"}))*/;
 
     var tool = myDiagram.toolManager.relinkingTool;
-    
+
     //VALIDACION DE LA CONEXION A LOS PUERTOS
     tool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
         /*//console.log(fromport.jb.portId);
-        //console.log(toport.jb.portId);
-        alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
-        return fromport.jb.portId === "Gnd";*/
+         //console.log(toport.jb.portId);
+         alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
+         return fromport.jb.portId === "Gnd";*/
     };
-   
+
     goJs(go.Overview, "overView", {
         observed: myDiagram
     });
@@ -218,8 +221,8 @@ function initDiagramProject() {
         //console.log(myDiagram.model.nodeDataArray[myDiagram.model.nodeDataArray.length - 1]);
         //angular.element($('[ng-controller="controllerWork"]')).scope().sendModel();
     };
-    
-    myDiagram.addDiagramListener("LinkDrawn", function(e) {
+
+    myDiagram.addDiagramListener("LinkDrawn", function (e) {
         var link = e.subject; // El enlace que se acaba de dibujar.
         var fromNode = link.fromNode;
         var toNode = link.toNode;
@@ -232,41 +235,61 @@ function initDiagramProject() {
         //console.log("toNode", toNode.data.key);
         //console.log("fromnode", fromNode.wb);
         //console.log("tonode", toNode.wb);
-        
+
         validaciones = validarConexionCables(fromNode.wb, toNode.wb, link);
-        if(validaciones.showAlert) {
+        if (validaciones.showAlert) {
             alertAll(validaciones);
-            if(validaciones.status !== 1){
+            if (validaciones.status !== 1) {
                 myDiagram.model.removeLinkData(link.data);
             }
         }
     });
 }
 
- getPortsInfo = (port) => {
-     let description = port.name_port; // Comienza con el nombre del puerto
+getPortsInfo = (port) => {
+    let description = port.name_port; // Comienza con el nombre del puerto
 
-     // Lista de propiedades a verificar
-     const properties = ["digital", "analog", "energy", "digital_analog", "input", "output", "input_output"];
+    // Lista de propiedades a verificar
+    const properties = ["digital", "analog", "energy", "digital_analog", "input", "output", "input_output"];
 
-     // Recorre las propiedades y verifica cuál está en true
-     for (let prop of properties) {
-         if (port[prop] === true) {
-             description += ", " + prop; // Concatena el nombre de la propiedad si es true
-             break; // Sale del bucle después de encontrar el primer true
-         }
-     }
+    // Recorre las propiedades y verifica cuál está en true
+    for (let prop of properties) {
+        if (port[prop] === true) {
+            description += ", " + prop; // Concatena el nombre de la propiedad si es true
+            break; // Sale del bucle después de encontrar el primer true
+        }
+    }
 
-     return description; // Devuelve la descripción del puerto
+    return description; // Devuelve la descripción del puerto
 }
 
-validarConexionCables = (fromNode, toNode, link) => { 
+validarConexionCables = (fromNode, toNode, link) => {
     let ac = angular.element($('[ng-controller="controllerWorkIoT"]')).scope();
     let validationCable = {showAlert: true, status: 4, information: "The port is not configured correctly."};
-    if((fromNode.digital || fromNode.analog || fromNode.digital_analog) 
+
+    if ((fromNode.input ||
+            fromNode.output ||
+            fromNode.digital ||
+            fromNode.analog ||
+            fromNode.digital_analog ||
+            fromNode.input_output ||
+            fromNode.energy ||
+            fromNode.data ||
+            fromNode.gnd) &&
+            (!toNode.input ||
+                    !toNode.output ||
+                    !toNode.digital ||
+                    !toNode.analog ||
+                    !toNode.digital_analog ||
+                    !toNode.input_output)) {
+        validationCable.showAlert = false;
+        return validationCable;
+    }
+
+    if ((fromNode.digital || fromNode.analog || fromNode.digital_analog)
             && (!fromNode.input && !fromNode.output && !fromNode.input_output)) {
         // validar la conexion entre puertos digitales y analogicos
-        if((fromNode.digital && !fromNode.analog) && (toNode.digital && !toNode.analog) && !fromNode.digital_analog) {
+        if ((fromNode.digital && !fromNode.analog) && (toNode.digital && !toNode.analog) && !fromNode.digital_analog) {
             validationCable.showAlert = false;
             return validationCable;
         } else {
@@ -275,7 +298,7 @@ validarConexionCables = (fromNode, toNode, link) => {
             validationCable.information = "The starting port expects a digital port";
         }
 
-        if((!fromNode.digital && fromNode.analog) && (!toNode.digital && toNode.analog) && !fromNode.digital_analog) {
+        if ((!fromNode.digital && fromNode.analog) && (!toNode.digital && toNode.analog) && !fromNode.digital_analog) {
             validationCable.showAlert = false;
             return validationCable;
         } else {
@@ -283,8 +306,8 @@ validarConexionCables = (fromNode, toNode, link) => {
             validationCable.status = 3;
             validationCable.information = "The starting port expects an analog port";
         }
-        
-        if(!fromNode.digital && !fromNode.analog && fromNode.digital_analog) {
+
+        if (!fromNode.digital && !fromNode.analog && fromNode.digital_analog) {
             $("#modalValidationCable").modal();
             validationCable.showAlert = true;
             validationCable.status = 1;
@@ -294,20 +317,21 @@ validarConexionCables = (fromNode, toNode, link) => {
                 ac.typeFromPorts[0].value = "digital";
                 ac.typeFromPorts[1].info = "Analog";
                 ac.typeFromPorts[1].value = "analog";
-                ac.ip_portFrom_name = fromNode.name_port; 
+                ac.ip_portFrom_name = fromNode.name_port;
                 ac.fromNode = fromNode;
                 ac.toNode = toNode;
                 ac.cable = link;
                 ac.legendValidation = "Port connection usage verification be digital or analog.";
             });
         }
-        
+
     }
-    
-    if((fromNode.input || fromNode.output || fromNode.input_output) 
-            &&  (!fromNode.digital && !fromNode.analog && !fromNode.digital_analog)) {
+
+    if ((fromNode.input || fromNode.output || fromNode.input_output)
+            && (!fromNode.digital && !fromNode.analog && !fromNode.digital_analog)) {
+
         // validar la conexion entre los puertos de entrada y salida
-        if((fromNode.input && !fromNode.output) && (toNode.output && !toNode.input) && !fromNode.input_output) {
+        if ((fromNode.input && !fromNode.output) && (toNode.output && !toNode.input) && !fromNode.input_output) {
             validationCable.showAlert = false;
             return validationCable;
         } else {
@@ -316,7 +340,7 @@ validarConexionCables = (fromNode, toNode, link) => {
             validationCable.information = "The port of departure expects a port of departure, because it is a port of entry.";
         }
 
-        if((!fromNode.input && fromNode.output) && (!toNode.output && toNode.input) && !fromNode.input_output) {
+        if ((!fromNode.input && fromNode.output) && (!toNode.output && toNode.input) && !fromNode.input_output) {
             validationCable.showAlert = false;
             return validationCable;
         } else {
@@ -324,15 +348,15 @@ validarConexionCables = (fromNode, toNode, link) => {
             validationCable.status = 3;
             validationCable.information = "The port of departure expects a port of entry, because it is an exit port.";
         }
-        
-        if(!fromNode.input && !fromNode.output && fromNode.input_output) {
+
+        if (!fromNode.input && !fromNode.output && fromNode.input_output) {
             $("#modalValidationCable").modal();
             ac.$apply(function () {
                 ac.typeFromPorts[0].info = "Input";
                 ac.typeFromPorts[0].value = "input";
                 ac.typeFromPorts[1].info = "Output";
                 ac.typeFromPorts[1].value = "output";
-                ac.ip_portFrom_name = fromNode.name_port; 
+                ac.ip_portFrom_name = fromNode.name_port;
                 ac.fromNode = fromNode;
                 ac.toNode = toNode;
                 ac.cable = link;
@@ -341,11 +365,11 @@ validarConexionCables = (fromNode, toNode, link) => {
         }
     }
 
-    if((fromNode.gnd && toNode.gnd) || (fromNode.energy && toNode.energy)) {
+    if ((fromNode.gnd && toNode.gnd) || (fromNode.energy && toNode.energy)) {
         validationCable.showAlert = false;
         return validationCable;
     }
-    
+
     return validationCable;
 };
 
@@ -424,17 +448,17 @@ function initContextMenu() {
             );
 }
 
-function searchComponentPalette () {
+function searchComponentPalette() {
     var input = document.getElementById('searchBox').value.toLowerCase(); // obtener el texto del input
     var palette = myPalette; // asegura que 'myPalette' esté disponible en este contexto
-    
-    if(input === "" || input.length === 0) {
+
+    if (input === "" || input.length === 0) {
         palette.model.nodeDataArray = originalNodeDataArray;
         return;
     }
 
     if (palette.model.nodeDataArray) {
-        var filteredArray = palette.model.nodeDataArray.filter(function(item) {
+        var filteredArray = palette.model.nodeDataArray.filter(function (item) {
             // Asumiendo que 'name' es la propiedad que contiene el nombre del componente
             if (!item || typeof item.name !== 'string') {
                 return false; // Si no existe o no es string, excluye este item del resultado
@@ -448,10 +472,10 @@ function searchComponentPalette () {
         myDiagram.model.nodeGroupKeyProperty = "_g";
         modelPalet.nodeIsGroupProperty = "_isg";
         modelPalet.nodeGroupKeyProperty = "_g";
-        
+
         modelPalet.addNodeDataCollection(filteredArray);
         modelPalet.addNodeDataCollection(puertos);
-        
+
         palette.model = modelPalet;
 
         //palette.model.nodeDataArray = filteredArray;
@@ -601,38 +625,38 @@ function loadComponents(obj) {
     modelPalet.nodeIsGroupProperty = "_isg";
     modelPalet.nodeGroupKeyProperty = "_g";
 
-    let components = obj.data.map(   
-        dataItem => {
-        // Asegúrate de que la descripción no exceda los 100 caracteres
-        let description = dataItem.description_component;
-        if (description.length > 100) {
-            description = description.substring(0, 99);
-        }
-        
-        let puertoX = getPorts(dataItem);
-        if(puertoX.length > 0) {
-            puertos.push(...puertoX);
-        }
-        
+    let components = obj.data.map(
+            dataItem => {
+                // Asegúrate de que la descripción no exceda los 100 caracteres
+                let description = dataItem.description_component;
+                if (description.length > 100) {
+                    description = description.substring(0, 99);
+                }
 
-        // Estructura de datos para un componente, incluyendo sus puertos
-        return {
-            key: dataItem.id_component,
-            img: rutasStorage.components + dataItem.pathimg_component + "/component.png",
-            name: dataItem.name_component,
-            type: dataItem.type_component,
-            description: description,
-            loc: "0 0",
-            _isg: true,
-            ports: getPorts(dataItem),
-            code: dataItem.data_json.code
-        };
-    });
-    
-        modelPalet.addNodeDataCollection(components);
-        modelPalet.addNodeDataCollection(puertos);
-    
-    
+                let puertoX = getPorts(dataItem);
+                if (puertoX.length > 0) {
+                    puertos.push(...puertoX);
+                }
+
+
+                // Estructura de datos para un componente, incluyendo sus puertos
+                return {
+                    key: dataItem.id_component,
+                    img: rutasStorage.components + dataItem.pathimg_component + "/component.png",
+                    name: dataItem.name_component,
+                    type: dataItem.type_component,
+                    description: description,
+                    loc: "0 0",
+                    _isg: true,
+                    ports: getPorts(dataItem),
+                    code: dataItem.data_json.code
+                };
+            });
+
+    modelPalet.addNodeDataCollection(components);
+    modelPalet.addNodeDataCollection(puertos);
+
+
     //myDiagram.clear();
     myPalette.model = modelPalet;
     // Guardar una copia de los datos originales

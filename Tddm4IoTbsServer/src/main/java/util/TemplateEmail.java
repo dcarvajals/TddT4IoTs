@@ -47,7 +47,7 @@ public class TemplateEmail {
         respon = respon.replace("${hostname}", DataStatic.nameApplication);
         respon = respon.replace("${paramdetail}", "account confirmation");
         respon = respon.replace("${code}", code);
-        respon = respon.replace("To skip some steps in the process, click on the link below <a href=\"${hosthackurl}\" target=\"_blank\">link</a>.", "");
+        respon = respon.replace("To skip some steps in the process, click on the link below: <a href=\"${hosthackurl}\" target=\"_blank\">link</a>.", "");
 
         Email em = new Email();
         WeEncoder wEr = new WeEncoder();

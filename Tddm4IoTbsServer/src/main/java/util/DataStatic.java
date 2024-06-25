@@ -13,7 +13,7 @@ import javax.xml.crypto.Data;
  */
 public class DataStatic {
 
-    public static String nameApplication = "Tddm4IoTbs";
+    public static String nameApplication = "tddt4iots";
 
     /**
      * localhost
@@ -84,6 +84,7 @@ public class DataStatic {
 
     public static String folderTemplate = "tddm4iotbs_template/";
     public static String folderJson = "tddt4iots_json/";
+    public static String folderTraining = "tddt4iotsTrainingFile/";
     public static String folderMvn = "mvn_config/";
     public static String folferTempateJava = "template_java/";
     public static String folferTempateAngular = "template_angular/";

@@ -50,10 +50,13 @@ public class Email {
     private Address[] toPersons = new Address[0];
 
     public Email() {
-        props.setProperty("mail.smtp.host", "smtp.gmail.com"); //1
+        props.setProperty("mail.smtp.host", "smtp.hostinger.com"); //1
         props.setProperty("mail.smtp.starttls.enable", "true");//2
-        props.setProperty("mail.smtp.port", "587");//3
+        props.setProperty("mail.smtp.port", "465");//3
         props.setProperty("mail.smtp.auth", "true");
+        props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.setProperty("mail.smtp.socketFactory.fallback", "false");
+        props.setProperty("mail.smtp.socketFactory.port", "465");
         session = Session.getDefaultInstance(props, null);
     }
 
