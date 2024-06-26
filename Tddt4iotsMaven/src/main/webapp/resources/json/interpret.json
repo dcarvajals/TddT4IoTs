@@ -135,12 +135,12 @@
         "simbol": "><",
         "ascii": "",
         "description": "Association Relationship",
-        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]<</span>n ClassName2<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'>>[cardinalidate_text]<</span>n ClassName2<span class='badge badge-danger'>!</span>"
     },
     {
         "simbol": "<:>",
         "ascii": "",
         "description": "Composition Relationship",
-        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'><:[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>¡</span>"
+        "example": "<span class='badge badge-danger'>*¡</span>ClassName1 1<span class='badge badge-danger'><:[cardinalidate_text]></span>n ClassName2<span class='badge badge-danger'>!</span>"
     }
 ]

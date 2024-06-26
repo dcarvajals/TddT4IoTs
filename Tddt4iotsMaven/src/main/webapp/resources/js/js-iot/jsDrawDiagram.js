@@ -276,18 +276,21 @@ validarConexionCables = (fromNode, toNode, link) => {
             fromNode.energy ||
             fromNode.data ||
             fromNode.gnd) &&
-            (!toNode.input ||
-                    !toNode.output ||
-                    !toNode.digital ||
-                    !toNode.analog ||
-                    !toNode.digital_analog ||
-                    !toNode.input_output)) {
+            (!toNode.input &&
+                    !toNode.output &&
+                    !toNode.digital &&
+                    !toNode.analog &&
+                    !toNode.digital_analog &&
+                    !toNode.input_output &&
+                    !toNode.gnd &&
+                    !toNode.energy &&
+                    !toNode.data)) {
         validationCable.showAlert = false;
         return validationCable;
     }
 
     if ((fromNode.digital || fromNode.analog || fromNode.digital_analog)
-            && (!fromNode.input && !fromNode.output && !fromNode.input_output)) {
+            && (!fromNode.input || !fromNode.output || !fromNode.input_output)) {
         // validar la conexion entre puertos digitales y analogicos
         if ((fromNode.digital && !fromNode.analog) && (toNode.digital && !toNode.analog) && !fromNode.digital_analog) {
             validationCable.showAlert = false;
@@ -328,7 +331,7 @@ validarConexionCables = (fromNode, toNode, link) => {
     }
 
     if ((fromNode.input || fromNode.output || fromNode.input_output)
-            && (!fromNode.digital && !fromNode.analog && !fromNode.digital_analog)) {
+            && (!fromNode.digital || !fromNode.analog || !fromNode.digital_analog)) {
 
         // validar la conexion entre los puertos de entrada y salida
         if ((fromNode.input && !fromNode.output) && (toNode.output && !toNode.input) && !fromNode.input_output) {

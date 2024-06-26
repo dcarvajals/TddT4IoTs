@@ -95,7 +95,7 @@ controller = app.controller("workAreaController", function ($scope) {
         }
     });
 
-    $scope.showHideConsole = ()=> {
+    $scope.showHideConsole = () => {
         $scope.viewConsole = !$scope.viewConsole;
     }
 
@@ -1055,7 +1055,7 @@ controller = app.controller("workAreaController", function ($scope) {
         let minjson = getHackDiagram(scope_usecase.$modelValue);
         console.log(minjson);
         // leer todas las notificaciones que se ingresan en ese momento
-        for(let i = 0; i < minjson[1].notifications.length; i++) {
+        for (let i = 0; i < minjson[1].notifications.length; i++) {
             let notification = minjson[1].notifications[i];
             $scope.notifications.push(notification);
         }
@@ -1206,7 +1206,7 @@ controller = app.controller("workAreaController", function ($scope) {
         });
     };
 
-    
+
     /**
      * funcion para abrir el modal y editar la acciono
      * @param {obj} obj
@@ -1236,10 +1236,10 @@ controller = app.controller("workAreaController", function ($scope) {
             console.log($scope.update_action);
         }
     };
-    
+
     /**
      * funcion para editar las acciones del flujo normal de eventos
-     * */ 
+     * */
 
     //funcion para actualizar los datos de la accion editada
     $scope.updateActionMSFA = function (form) {
@@ -1247,22 +1247,22 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.update_action.action_interpret = form.action_interpret.$viewValue;
             $scope.update_action.action_original = form.action_original.$viewValue;
             $scope.update_action.actor = form.actor.$viewValue;
-            
-            let objectActual =  $scope.manager_maf.main_stage.splice($scope.positionActual - 1, 1)[0];
+
+            let objectActual = $scope.manager_maf.main_stage.splice($scope.positionActual - 1, 1)[0];
             $scope.manager_maf.main_stage.splice($scope.position, 0, objectActual);
-            
+
             // buscar la posicion a donde se va cambiar los datos
             /*let objetoCambiarPosicion =  $scope.manager_maf.main_stage[$scope.position];
-            let objectActual = $scope.update_action;*/
-            
+             let objectActual = $scope.update_action;*/
+
             /*objectActual.action_interpret = objetoCambiarPosicion.action_interpret;
-            objectActual.action_original = objetoCambiarPosicion.action_original;
-            objectActual.actor = objetoCambiarPosicion.actor;
-            
-            $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
-            $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
-            $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
-            */
+             objectActual.action_original = objetoCambiarPosicion.action_original;
+             objectActual.actor = objetoCambiarPosicion.actor;
+             
+             $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
+             $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
+             $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
+             */
             $("#modal_update_duc").modal('hide');
         }
     };
@@ -2652,24 +2652,64 @@ controller = app.controller("workAreaController", function ($scope) {
     };
 
     $scope.copyUseCase = function () {
-        selectElementContents(document.getElementById('viewUseCaseTable'));
+        selectElementContents("viewUseCaseTable");
     };
 
-    function selectElementContents(table) {
-        //ar table = document.getElementById(el);
+    function selectElementContents(elementId) {
+        const table = document.getElementById(elementId);
 
-        if (navigator.clipboard) {
-            var text = table.innerText.trim();
-
-            //var range = document.createRange();
-            //range.selectNode(table);
-
-            navigator.clipboard.writeText(text).catch(function () {
-            });
+        if (!table) {
+            console.error(`No se encontró el elemento con id ${elementId}`);
+            return;
         }
-        console.log("COPIADO !!");
-        alertAll({"status": 2, "information": "Content successfully copied."});
+
+        const htmlContent = `
+        <html>
+        <head>
+            <style>
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                table, th, td {
+                    border: 1px solid black;
+                }
+                th, td {
+                    padding: 8px;
+                    text-align: left;
+                }
+                .table-active {
+                    background-color: #f2f2f2;
+                }
+                .center-d {
+                    text-align: center;
+                }
+            </style>
+        </head>
+        <body>${table.outerHTML}</body>
+        </html>
+    `;
+
+        if (navigator.clipboard && navigator.clipboard.write) {
+            const blob = new Blob([htmlContent], {type: 'text/html'});
+            const clipboardItem = new ClipboardItem({'text/html': blob});
+
+            navigator.clipboard.write([clipboardItem]).then(() => {
+                console.log("Contenido copiado al portapapeles!");
+                alertAll({"status": 2, "information": "Content successfully copied."});
+            }).catch((error) => {
+                console.error("Error al copiar al portapapeles: ", error);
+                alertAll({"status": 4, "information": "Failed to copy content."});
+                // Usar el método alternativo en caso de error
+                copyFallback(htmlContent);
+            });
+        } else {
+            // Fallback para navegadores que no soportan navigator.clipboard
+            console.warn('navigator.clipboard no está disponible. Usando método alternativo.');
+            alertAll({"status": 4, "information": "navigator.clipboard no está disponible. Se necesita un certificado ssl. (https://)"});
+        }
     }
+
 
     /**
      * ##############################################################################################################
