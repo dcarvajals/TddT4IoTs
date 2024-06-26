@@ -16,7 +16,7 @@ import io.jsonwebtoken.Jwts;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import javax.swing.table.DefaultTableModel;
 
 /**

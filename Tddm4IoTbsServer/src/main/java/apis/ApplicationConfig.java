@@ -6,13 +6,13 @@
 package apis;
 
 import java.util.Set;
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 /**
  *
  * @author tonyp
  */
-@javax.ws.rs.ApplicationPath("webapis")
+@jakarta.ws.rs.ApplicationPath("webapis")
 public class ApplicationConfig extends Application {
 
     @Override

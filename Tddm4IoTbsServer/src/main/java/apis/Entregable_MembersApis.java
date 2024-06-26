@@ -8,12 +8,12 @@ import Controller.Entregable_MembersCtrl;
 import Controller.PersonaCtrl;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import util.Methods;
 import util.WeEncoder;
 
