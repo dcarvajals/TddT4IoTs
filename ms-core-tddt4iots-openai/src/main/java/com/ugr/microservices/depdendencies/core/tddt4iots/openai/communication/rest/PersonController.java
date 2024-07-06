@@ -4,6 +4,7 @@ import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.PersonBO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GenericTddt4iotsReqDTO;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.ValidateSecretKeyResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericBasicResponse;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.service.PersonService;
@@ -38,6 +39,20 @@ public class PersonController {
         log.info("Request received: createSecretKeyOpenAi");
         response.setData(personBO.saveSecretKeyOpenAi(genericTddt4iotsReqDTO));
         log.info("Request completed: createSecretKeyOpenAi");
+        return response;
+    }
+
+    @GetMapping(
+            path = "/validate-secret-key-openai",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<ValidateSecretKeyResDTO> validateSecretKeyOpenAi (
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<ValidateSecretKeyResDTO> response = new GenericBasicResponse<>();
+        log.info("Request received: validateSecretKeyOpenAi");
+        response.setData(personBO.validateSecretKey(userToken));
+        log.info("Request completed: validateSecretKeyOpenAi");
         return response;
     }
 

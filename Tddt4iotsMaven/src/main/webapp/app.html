@@ -44,6 +44,43 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     </head>
     <body  ng-controller="application">
+
+    <div class="modal fade" id="modalNewSecretKey" tabindex="-1" role="dialog" aria-labelledby="modalNewSecretKey"
+         aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered sha" role="document">
+            <div class="modal-content">
+                <form name="formSecretKey" ng-submit="addNewSecretKey(formSecretKey)">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Open Ai</h5>
+                        <span class="badge badge-info"> NEW </span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="ip_secretKey">Enter secret key openai:</label>
+                            <input type="text" id="ip_secretKey"
+                                   name="ip_secretKey"
+                                   ng-model="ip_secretKey"
+                                   autocomplete="false"
+                                   ng-disabled="responseHasSecretKey.hasSecretKey"
+                                   ng-class="(formSecretKey.ip_secretKey.$invalid &&
+                                                       formSecretKey.ip_secretKey.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required />
+                            <div class="invalid-feedback">
+                                Please enter the secret key
+                            </div>
+                        </div>
+                        <div style="text-align: center">
+                            <button type="button" class="btn button-dt btn-sm" ng-click="closeModalNewSecretKey()"> Cancel </button>
+                            <button type="submit" class="btn button-d btn-sm" ng-if="!responseHasSecretKey.hasSecretKey"
+                                    ng-disabled="formSecretKey.$invalid"> Add secrey key </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
         <div id="wrapper">
             <!-- Sidebar -->
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -86,6 +123,18 @@
                     <a class="nav-link" ng-click="redirect('shareprojects')">
                         <i class="oi oi-fork" ></i>
                         <span>Shared Projects</span></a>
+                </li>
+
+                <hr class="sidebar-divider">
+                <!-- Heading -->
+                <div class="sidebar-heading">
+                    Open AI
+                </div>
+
+                <li class="nav-item {{appPage.Select==='basemodels'?'active activeMenu':''}}">
+                    <a class="nav-link" ng-click="redirect('basemodels')">
+                        <i class="oi oi-box" ></i>
+                        <span>Base Models</span></a>
                 </li>
 
                 <!-- Divider -->
@@ -194,13 +243,19 @@
                                 </div>
                             </li>
 
+                            <li class="nav-item dropdown no-arrow" style="display: flex; align-items: center;">
+                                <span class="badge badge-warning mr-1 text-black-50" id="permitUser"></span>
+                            </li>
+
                             <div class="topbar-divider d-none d-sm-block"></div>
 
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" id="userDropdown" role="button"
                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="nameUser">
+                                    <span ng-class="(responseHasSecretKey.hasSecretKey) ? 'mr-2 d-none d-lg-inline text-gray-600 small openAi'
+                                    : 'mr-2 d-none d-lg-inline text-gray-600 small'"
+                                          id="nameUser">
                                     </span>
                                     <img class="img-profile rounded-circle" alt="..."
                                          src="resources/img/img-app/userMale.png">
@@ -208,9 +263,10 @@
                                 <!-- Dropdown - User Information -->
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                      aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="#">
-                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Profile
+                                    <a class="dropdown-item" ng-click="openModalNewSecretKey()">
+                                        <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Secret Key Open Ai
+                                        <span class="badge badge-info"> NEW </span>
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" ng-click="logOut()">
@@ -254,6 +310,7 @@
         <script src="resources/js/js-view/ctrl_diagramsuml.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_dispositiveIoT.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_settingsprotocol.js" type="text/javascript"></script>
+        <script src="resources/js/js-view/ctrl_basemodels.js" type="text/javascript"></script>
         <script src="resources/js/js-functions/ctrl_interprete.js" type="text/javascript"></script>
         <script src="resources/js/js-codeedit.js" type="text/javascript"></script>
         <script src="resources/js/js-view/js-drawcomponent.js" type="text/javascript"></script>

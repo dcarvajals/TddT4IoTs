@@ -127,3 +127,11 @@ div::-webkit-scrollbar-track:hover,
 div::-webkit-scrollbar-track:active {
     background: #d4d4d4;
 }
+
+.openAi {
+    border: 3px solid #006700;
+    padding: 5px;
+    border-radius: 10px;
+    color: black !important;
+    background: greenyellow;
+}

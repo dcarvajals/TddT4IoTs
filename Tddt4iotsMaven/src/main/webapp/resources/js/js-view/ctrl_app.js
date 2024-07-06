@@ -46,6 +46,10 @@ app.config(function ($routeProvider) {
                 templateUrl: "settingsprotocol.html",
                 controller: "settings_controller"
             })
+            .when("/basemodels", {
+                templateUrl: 'basemodels.html',
+                controller: "basemodels_controller"
+            })
             .otherwise({
                 redirectTo: 'notfound',
                 templateUrl: 'notfound.html',
@@ -57,7 +61,8 @@ app.config(function ($routeProvider) {
 app.controller("application", function ($scope, $http) {
 
     $scope.DatoUsuario = {};
-    $scope.rutaImgUser = location.origin + rutasStorage.imguser
+    $scope.rutaImgUser = location.origin + rutasStorage.imguser;
+    $scope.responseHasSecretKey = {secretKey: "", hasSecretKey: false};
 
     $scope.appPage = {
         tittle: "Home",
@@ -75,13 +80,7 @@ app.controller("application", function ($scope, $http) {
     };
 
     $(document).ready(function () {
-        $scope.DatoUsuario = getDataSession();
-        //let permitUser = document.getElementById("permitUser");
-        let nameUser = document.getElementById("nameUser");
-        //permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
-        nameUser.innerHTML = $scope.nameUser($scope.DatoUsuario);
-        // console.log($scope.DatoUsuario);
-        // console.log("tddm4iots iniciado correctamente");
+        $scope.validateSecretKey();
     });
 
     $scope.changeTittlePage = function (tittle, apply) {
@@ -104,6 +103,79 @@ app.controller("application", function ($scope, $http) {
     $scope.logOut = () => {
         cerrarSesion();
     };
+
+    $scope.openModalNewSecretKey = () => {
+        $("#modalNewSecretKey").modal();
+    }
+
+    $scope.closeModalNewSecretKey = () => {
+        $("#modalNewSecretKey").modal("hide");
+    }
+
+    $scope.addNewSecretKey = (form) => {
+        let request = {"classDTO": {"openaiSecretKey": ""}};
+        if(form.$valid) {
+            request.classDTO.openaiSecretKey = form.ip_secretKey.$viewValue;
+            $scope.saveNewSecretKey(request);
+        }
+    }
+
+
+    // api para guardar la secret key de openai
+    $scope.saveNewSecretKey = (parameter) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'person/create-secret-key-openai',
+            headers: {"userToken": dataUser.user_token},
+            data: JSON.stringify(parameter),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {
+                swal.close();
+                $scope.closeModalNewSecretKey();
+                $scope.validateSecretKey();
+                alertAll(data);
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    };
+
+    $scope.validateSecretKey = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'person/validate-secret-key-openai',
+            headers: {"userToken": dataUser.user_token},
+            beforeSend: function (xhr) { },
+            success: function (data) {
+                swal.close();
+                $scope.$apply(function() { // Asegura que AngularJS se entere de los cambios
+                    $scope.responseHasSecretKey.hasSecretKey = data.data.hasSecretKey;
+                    $scope.DatoUsuario = getDataSession();
+                    let permitUser = document.getElementById("permitUser");
+                    let nameUser = document.getElementById("nameUser");
+                    permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
+                    let iconoCheck = $scope.responseHasSecretKey.hasSecretKey ? "<i class=\"fas fa-check-circle text-success-400 mr-1\"></i>" : "";
+                    nameUser.innerHTML = iconoCheck + $scope.nameUser($scope.DatoUsuario);
+                    if($scope.responseHasSecretKey.hasSecretKey) {
+                        $scope.responseHasSecretKey.secretKey = data.data.secretKey;
+                        $scope.ip_secretKey = $scope.responseHasSecretKey.secretKey
+                    }
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
 
 });
 

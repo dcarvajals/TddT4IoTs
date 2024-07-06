@@ -1,5 +1,6 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.PersonBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGenericBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.PersonMapper;
@@ -7,6 +8,7 @@ import com.ugr.microservices.dependencies.core.tddt4iots.cons.Tddt4iotsCons;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GenericTddt4iotsReqDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.ValidateTokenReqDTO;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.ValidateSecretKeyResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.ValidateTokenResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.Tddt4iotsUtil;
@@ -34,5 +36,22 @@ public class PersonBOImpl implements PersonBO {
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
         personDTO.setOpenaiSecretKey(request.getClassDTO().getOpenaiSecretKey());
         return personMapper.personDTOTo(personService.save(personMapper.personTo(personDTO)));
+    }
+
+    @Override
+    public ValidateSecretKeyResDTO validateSecretKey(String request) throws GenericException, IOException, InterruptedException {
+        // validar la session de la herramienta
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request);
+
+        ValidateSecretKeyResDTO validateSecretKeyResDTO = new ValidateSecretKeyResDTO();
+        if(StringUtil.isNullOrEmpty(personDTO.getOpenaiSecretKey())) {
+            validateSecretKeyResDTO.setHasSecretKey(Boolean.FALSE);
+            return validateSecretKeyResDTO;
+        }
+
+        validateSecretKeyResDTO.setHasSecretKey(Boolean.TRUE);
+        validateSecretKeyResDTO.setSecretKey(personDTO.getOpenaiSecretKey());
+
+        return validateSecretKeyResDTO;
     }
 }

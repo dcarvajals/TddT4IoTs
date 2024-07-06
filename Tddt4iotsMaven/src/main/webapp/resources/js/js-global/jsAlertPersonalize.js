@@ -97,6 +97,11 @@ function warningTo(obj) {
  */
 alertAll = function(obj) {
     switch (obj.status) {
+        case "OK" :
+            successTo({
+                message: obj.message,
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
+            });
         case 2:
             successTo({
                 message: obj.information,
