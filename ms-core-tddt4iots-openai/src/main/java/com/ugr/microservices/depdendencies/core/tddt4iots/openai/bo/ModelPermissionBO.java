@@ -11,4 +11,5 @@ import java.io.IOException;
 public interface ModelPermissionBO {
     ModelPermissionDTO createTrain (GenericTddt4iotsReqDTO<ModelPermissionDTO> request) throws GenericException, IOException, InterruptedException;
     ModelPermissionDTO createUse (GenericTddt4iotsReqDTO<ModelPermissionDTO> request) throws GenericException, IOException, InterruptedException;
+    ModelPermissionDTO validatePermiss (String request) throws GenericException, IOException, InterruptedException;
 }

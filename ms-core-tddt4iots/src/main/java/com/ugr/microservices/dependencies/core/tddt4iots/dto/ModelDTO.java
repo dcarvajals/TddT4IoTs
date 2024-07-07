@@ -3,6 +3,7 @@ package com.ugr.microservices.dependencies.core.tddt4iots.dto;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Builder
 @Getter

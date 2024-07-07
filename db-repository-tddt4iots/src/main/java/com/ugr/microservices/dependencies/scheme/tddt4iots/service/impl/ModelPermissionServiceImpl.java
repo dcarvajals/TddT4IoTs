@@ -23,4 +23,9 @@ public class ModelPermissionServiceImpl implements ModelPermissionService {
     public ModelPermission save(ModelPermission request) throws GenericException {
         return modelPermissionRepository.save(request);
     }
+
+    @Override
+    public List<ModelPermission> getAllModelPermissionFromModel(Long idModel) throws GenericException {
+        return modelPermissionRepository.getAllModelPermissionFromModel(idModel);
+    }
 }

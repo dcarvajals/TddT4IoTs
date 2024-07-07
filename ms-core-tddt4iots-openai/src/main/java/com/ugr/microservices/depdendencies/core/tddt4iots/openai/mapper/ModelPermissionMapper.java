@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.NullValueCheckStrategy;
 
+import java.util.List;
+
 @Mapper(
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
@@ -16,4 +18,6 @@ public interface ModelPermissionMapper {
     ModelPermission modelPermissionTo (ModelPermissionDTO modelPermissionDTO);
 
     ModelPermissionDTO modelPermissionDTOTo (ModelPermission modelPermission);
+
+    List<ModelPermissionDTO> modelPermissionDTOListTo (List<ModelPermission> modelPermissionList);
 }

@@ -10,4 +10,5 @@ import java.util.List;
 public interface ModelPermissionService {
     List<ModelPermission> getAllModelPermission (Long idPerson) throws GenericException;
     ModelPermission save (ModelPermission request) throws GenericException;
+    List<ModelPermission> getAllModelPermissionFromModel (Long idModel) throws GenericException;
 }

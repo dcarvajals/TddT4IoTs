@@ -18,4 +18,10 @@ public interface ModelPermissionRepository extends JpaRepository<ModelPermission
             @Param("idPerson") Long idPerson
     ) throws GenericException;
 
+    @Query(value = "SELECT MP FROM ModelPermission MP JOIN MP.model " +
+            "WHERE MP.model.id = :idModel ORDER BY MP.id DESC")
+    List<ModelPermission> getAllModelPermissionFromModel (
+            @Param("idModel") Long idModel
+    ) throws GenericException;
+
 }

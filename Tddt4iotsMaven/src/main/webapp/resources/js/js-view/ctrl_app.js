@@ -63,6 +63,11 @@ app.controller("application", function ($scope, $http) {
     $scope.DatoUsuario = {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;
     $scope.responseHasSecretKey = {secretKey: "", hasSecretKey: false};
+    $scope.baseModels = [];
+    $scope.baseModelSelcted = {};
+    $scope.useOpenAiSelected = {};
+    $scope.useOpenAi = [{name: "TRAINING", description: "This option will allow you to train models based on the base model you selected in the previous option.", value: false, pathWs: "create-train"},
+                        {name: "USE", description: "This option will only allow you to consume already trained models based on the base model you selected.", value: false, pathWs: "create-use"}]
 
     $scope.appPage = {
         tittle: "Home",
@@ -81,6 +86,8 @@ app.controller("application", function ($scope, $http) {
 
     $(document).ready(function () {
         $scope.validateSecretKey();
+        $scope.loadBaseModels();
+        $scope.validatePermissoModel();
     });
 
     $scope.changeTittlePage = function (tittle, apply) {
@@ -112,6 +119,54 @@ app.controller("application", function ($scope, $http) {
         $("#modalNewSecretKey").modal("hide");
     }
 
+    $scope.openModalSettings = () => {
+        $("#modalSettings").modal();
+    };
+
+    $scope.closeModalSettings = () => {
+        $("#modalSettings").modal("hide");
+    }
+
+    $scope.selectedModelBase = (modelBase) => {
+        let backgroundNormal = "alert alert-light border-primary cursorPointer";
+        let backgroundSelected = "alert alert-primary border-primary";
+        $scope.baseModels.forEach(model => {
+            model.background = backgroundNormal;
+            model.selected = false;
+        });
+
+        modelBase.background = backgroundSelected;
+        modelBase.selected = true;
+        $scope.baseModelSelcted = modelBase;
+    };
+
+    $scope.selectedModeUseOpenAi = (mode) => {
+        $scope.useOpenAi.forEach(mode => {
+            mode.value = false;
+        });
+
+        mode.value = true;
+        $scope.useOpenAiSelected = mode;
+    };
+
+    $scope.saveSettingOpenAi = () => {
+        if(JSON.stringify($scope.baseModelSelcted) === '{}') {
+            alertAll({status: 3, information: "Select a base model."});
+            return;
+        }
+
+        if(JSON.stringify($scope.useOpenAiSelected) === '{}') {
+            alertAll({status: 3, information: "Select the mode to use the tool."});
+            return;
+        }
+
+        let saveModeOpenAiReq = {
+            request: {classDTO: {model: {id: $scope.baseModelSelcted.id}}},
+            path: $scope.useOpenAiSelected.pathWs
+        }
+        $scope.saveModeOpenAi(saveModeOpenAiReq);
+    };
+
     $scope.addNewSecretKey = (form) => {
         let request = {"classDTO": {"openaiSecretKey": ""}};
         if(form.$valid) {
@@ -141,7 +196,7 @@ app.controller("application", function ($scope, $http) {
                 alertAll(data);
             },
             error: function (objXMLHttpRequest) {
-                console.log("Error: ", objXMLHttpRequest.responseText);
+                console.log("Error: ", objXMLHttpRequest.responseText)
             }
         });
     };
@@ -169,6 +224,93 @@ app.controller("application", function ($scope, $http) {
                         $scope.responseHasSecretKey.secretKey = data.data.secretKey;
                         $scope.ip_secretKey = $scope.responseHasSecretKey.secretKey
                     }
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    $scope.loadBaseModels = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'model-open-ai/list',
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (response) {
+                swal.close();
+                $scope.$apply(function  () {
+                    $scope.baseModels = response.data;
+                    $scope.baseModels.forEach(model => {
+                       model["background"] = "alert alert-light border-primary cursorPointer";
+                       model["selected"] = false;
+                    });
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    // api para guardar la secret key de openai
+    $scope.saveModeOpenAi = (parameter) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'model-permission/' + parameter.path,
+            headers: {"userToken": dataUser.user_token},
+            data: JSON.stringify(parameter.request),
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (data) {
+                swal.close();
+                $scope.closeModalNewSecretKey();
+                $scope.validateSecretKey();
+                alertAll(data);
+            },
+            error: function (objXMLHttpRequest) {
+                swal.close();
+                console.log("Error: ", objXMLHttpRequest.responseText);
+                alertAll(JSON.parse(objXMLHttpRequest.responseText));
+            }
+        });
+    };
+
+    $scope.validatePermissoModel = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'model-permission/validate',
+            headers: {"userToken": dataUser.user_token},
+            beforeSend: function (xhr) {
+                loading();
+            },
+            success: function (response) {
+                swal.close();
+                data = response.data;
+                $scope.$apply(function  () {
+                   $scope.baseModels.forEach(model => {
+                      if(model.id === data.model.id) {
+                          model["selected"] = true;
+                          model["background"] = "alert alert-primary border-primary";
+                      }
+                   });
+                   if(data.canTrain) {
+                       $scope.useOpenAi[0].value = data.canTrain;
+                   } else if (data.canUse) {
+                       $scope.useOpenAi[1].value = data.canUse;
+                   }
                 });
             },
             error: function (objXMLHttpRequest) {

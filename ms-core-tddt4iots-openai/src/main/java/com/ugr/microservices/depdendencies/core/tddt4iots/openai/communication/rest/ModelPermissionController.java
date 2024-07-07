@@ -55,4 +55,18 @@ public class ModelPermissionController {
         return response;
     }
 
+    @GetMapping(
+            path = "/validate",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<ModelPermissionDTO> validate (
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<ModelPermissionDTO> response = new GenericBasicResponse<>();
+        log.info("Request received: validate");
+        response.setData(modelPermissionBO.validatePermiss(userToken));
+        log.info("Request completed: validate");
+        return response;
+    }
+
 }

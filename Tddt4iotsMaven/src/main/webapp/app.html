@@ -81,6 +81,81 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalSettings" tabindex="-1" role="dialog" aria-labelledby="modalSettings"
+         aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered sha" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Settings</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-2">
+                            OpenAi
+                        </div>
+                        <div class="col-10">
+                            
+                            <div class="card m-auto" id="settingsOpenAi">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-dark">
+                                        Open Ai </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form ng-submit="saveSettingOpenAi()">
+                                        <div class="form-group">
+                                            <label> Selected model base: </label>
+                                            <div class="row">
+                                                <div class="col-12" ng-repeat="dom_baseModels in baseModels">
+                                                    <div ng-class="dom_baseModels.background" role="alert" id="component_table" ng-click="selectedModelBase(dom_baseModels)">
+                                                        <div class="media mb-2">
+                                                            <img src="resources/img/img-app/017-brain.png" class="align-self-center mr-3" alt="..." width="40">
+                                                            <div class="media-body">
+                                                                <div>
+                                                                    <strong> Name: </strong> {{dom_baseModels.name}} <br>
+                                                                    <strong> Description: </strong> {{dom_baseModels.description}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label> Select how you will use OpenAI: </label>
+                                            <div class="row">
+                                                <div class="col-6" ng-repeat="dom_useOpenAi in useOpenAi">
+                                                    <div ng-class="dom_useOpenAi.value ? 'alert alert-success border-success' : 'alert alert-ligth border-success cursorPointer'" role="alert"
+                                                    ng-click="selectedModeUseOpenAi(dom_useOpenAi)">
+                                                        <div class="media mb-2">
+                                                            <img src="resources/img/img-app/trainig.png" class="align-self-center mr-3" alt="..." width="40">
+                                                            <div class="media-body">
+                                                                <div>
+                                                                    <strong> {{dom_useOpenAi.name}} </strong> <br>
+                                                                    <span> {{dom_useOpenAi.description}} </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="text-align: right">
+                                            <button type="submit" class="btn button-d btn-sm"> Save changes </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
         <div id="wrapper">
             <!-- Sidebar -->
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -267,6 +342,10 @@
                                         <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
                                         Secret Key Open Ai
                                         <span class="badge badge-info"> NEW </span>
+                                    </a>
+                                    <a class="dropdown-item" ng-click="openModalSettings()">
+                                        <i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Settings
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" ng-click="logOut()">

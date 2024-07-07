@@ -41,7 +41,7 @@ public class TrainingServiceImpl implements TrainingHistoryService {
     public TrainingHistory getLastestTraining(Long idModel) throws GenericException {
         Optional<TrainingHistory> trainingHistoryDTO = trainingHistoryRepository.getLastestTraining(idModel);
         if(trainingHistoryDTO.isEmpty()) {
-            throw new GenericException("The searched record does not exist");
+            throw new GenericException("The selected base model does not have prior training.");
         }
         return trainingHistoryDTO.get();
     }

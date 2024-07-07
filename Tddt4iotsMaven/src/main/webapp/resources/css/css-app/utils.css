@@ -135,3 +135,11 @@ div::-webkit-scrollbar-track:active {
     color: black !important;
     background: greenyellow;
 }
+
+.cursorPointer{
+    cursor: pointer;
+}
+
+.cursorPointer:hover {
+    background: #F8F9FC;
+}

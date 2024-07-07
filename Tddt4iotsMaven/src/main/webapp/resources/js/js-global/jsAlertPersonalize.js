@@ -102,6 +102,13 @@ alertAll = function(obj) {
                 message: obj.message,
                 nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
             });
+            break;
+        case "ERROR":
+            errorTo({
+                message: obj.message,
+                nameApplication: (obj.tittle === undefined) ? "TddT4IoTs" : obj.tittle
+            });
+            break;
         case 2:
             successTo({
                 message: obj.information,
