@@ -32,6 +32,11 @@
                     </button>
                 </div>
                 <div class="float-right mr-4">
+                    <button class="btn button-d btn-sm" ng-click="openModalOpinion()">
+                        <i class="fas fa-file-contract"></i> MODALLLLLL
+                    </button>
+                </div>
+                <div class="float-right mr-4">
                     <button class="btn button-d btn-sm" ng-click="getGanttObjectts()">
                         <i class="fas fa-file-contract"></i> Project Progress
                     </button>
@@ -2399,4 +2404,65 @@
     </div>
 </div>
 
+
+
+<!-- MODAL ALL TASKS WITH ONLY PERCENTAGES TO EDIT -->
+<div class="modal fade" id="ModalOpinion" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered sha">
+        <div class="modal-content">
+            <form name="form_opinion" ng-submit="CreateOpinion(form_opinion)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Feedback form</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="col-form-label col-form-label-sm text-center"> What is the opinion of the page? </div>
+                        <div class="container  text-center">
+                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estone" width="30" height="30"/>                        
+                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="esttwo" width="30" height="30"/>
+                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estthree" width="30" height="30"/>
+                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estfor" width="30" height="30"/>
+                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estfive" width="30" height="30"/>  
+                        </div>
+                    </div>
+                </div> 
+                
+                
+                <div class="form-group container">
+                    <label class="col-form-label col-form-label-sm">Suggestion:</label>
+                    <select class="form-control"  name="prioritylevel_entregable"  style="font-size: 15px"
+                            ng-model="prioritylevel_entregable"
+                            required ng-init="prioritylevel_entregable = '1'"
+                            >
+                        <option value="1">ONE</option>
+                        <option value="2">TWO</option>
+                        <option value="3">THREE</option>
+                    </select>
+                </div>
+                
+                
+                <div class="form-group container">
+                    <label class="col-form-label col-form-label-sm"> Description:</label>
+                    <textarea name="description_entregable"
+                              class="form-control"
+                              ng-model="description_entregable"
+                               maxlength="200" required>
+
+                    </textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="CloseModalOpinion()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-primary"  >
+                        Save changes
+                    </button>
+                </div>                
+            </form>
+        </div>
+    </div>
+</div>
 

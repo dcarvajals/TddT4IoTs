@@ -1953,7 +1953,129 @@ app.controller("projectentregable_controller", function ($scope, $http) {
             
         }
     };
+    
+    
+    $scope.openModalOpinion = () => 
+    {
+        $("#ModalOpinion").modal();
+    };
+    
+    
+    $scope.CloseModalOpinion = () => {
+        $("#ModalOpinion").modal('hide');
+    };
+
+
+    $scope.CreateOpinion = (form) => {
+        if (form.$valid) {
+            var dataUser = store.session.get("user_tddm4iotbs");
+            myArray = document.getElementsByName("base_percentage_task_edit_all");
+            for (let i = 0; i < $scope.project_entregable_components_tasks.length; i++) {
+                $.ajax({
+                    method: "POST",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    url: urlWebServicies + "componentTask/updateComponentTask",
+                    data: JSON.stringify({
+                        'id_task': $scope.project_entregable_components_tasks[i].id_task,
+                        'id_component': $scope.project_entregable_components_tasks[i].id_component,
+                        'name_task': $scope.project_entregable_components_tasks[i].name_task,
+                        'description_task': $scope.project_entregable_components_tasks[i].description_task,
+                        'status_task': $scope.project_entregable_components_tasks[i].status_task,
+                        'path_task': $scope.project_entregable_components_tasks[i].path_task,
+                        'base_percentage_task': myArray[i].value,
+                        'actual_percentage_task': $scope.project_entregable_components_tasks[i].actual_percentage_task,
+                        'stimateddate_task': $scope.project_entregable_components_tasks[i].stimateddate_task,
+                        'develop_status_task': $scope.project_entregable_components_tasks[i].develop_status_task,
+                        'startdate_task': $scope.project_entregable_components_tasks[i].startdate_task,
+                        "path_master_project": $scope.alldata_selected_project.path_mp,
+                        "path_project_entregable": $scope.selected_entregable.path_entregable,
+                        'path_component': $scope.project_entregable_component_selected.path_component,
+                        "emailperson":dataUser.email_person,
+                        "id_masterproject": $scope.selected_project
+                    }),
+                    beforeSend: function () {
+                        loading();
+                    },
+                    success: function (data) {                        
+                        $scope.loadComponentTasks();
+                        $scope.closeModalTaskBasePercentage();
+                        swal.close();                        
+                        
+                        $scope.loadComponentEntregableSelected($scope.project_entregable_component_selected.id_entregable_component);
+                        $('#progress_bar_component_task').load();
+                    },
+                    error: function (objXMLHttpRequest) {
+                        // console.log("error", objXMLHttpRequest);
+                    }
+                });
+            }
+        }
+    };
+
+
+
+    asignar_eventos();
 });
+
+
+
+
+let persistir=false;
+let cantidad_estrellas_seleccionadas=0;
+
+function cambiarColor(e,controls,indice)
+{
+    //alert(indice)
+    if(e.type=="mouseover")
+    {
+        if(!persistir)
+        {
+            if(indice===0)
+                e.currentTarget.src = 'resources/img/img-opinions/estrella_yellow.svg';
+            else
+            {
+                for(let x=0;x<indice;x++)
+                    controls[x].src = 'resources/img/img-opinions/estrella_yellow.svg';
+            }
+        }
+    }
+    else if(e.type=="mouseout")
+    {
+        if(!persistir){
+            for(let x=0;x<controls.length;x++)
+                controls[x].src = 'resources/img/img-opinions/estrella_black.svg';
+        }
+    }
+    else if(e.type=="click")
+    {
+        if(!persistir){
+            persistir=true;
+            cantidad_estrellas_seleccionadas=indice;
+            for(let x=0;x<indice;x++)
+                controls[x].src = 'resources/img/img-opinions/estrella_yellow.svg';
+        }
+        else{
+            persistir=false;
+            cantidad_estrellas_seleccionadas=0;
+        }
+    }
+       
+}
+
+
+function asignar_eventos()
+{
+    let imgsaux = document.querySelectorAll('.startimg');
+    let imgs=imgsaux;
+    imgs.forEach((value,index)=>{
+        value.addEventListener('mouseover', (e)=>cambiarColor(e,imgsaux,index+1));
+        value.addEventListener('mouseout', (e)=>cambiarColor(e,imgsaux,index+1));
+        value.addEventListener('click', (e)=>cambiarColor(e,imgsaux,index+1));
+    });
+}
+    
+
 
 
 function delete_forms_values()
