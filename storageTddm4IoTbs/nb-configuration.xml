@@ -15,5 +15,9 @@ Any value defined here will override the pom.xml file value but is only applicab
 -->
         <org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_j2eeVersion>8.0-web</org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_j2eeVersion>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>Tomcat</org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>
+<<<<<<< HEAD
+=======
+        <netbeans.hint.jdkPlatform>JDK_11.0.21</netbeans.hint.jdkPlatform>
+>>>>>>> 64b639bf1eb1a7f98379c4d82e669ee391aabb93
     </properties>
 </project-shared-configuration>
