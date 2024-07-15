@@ -127,3 +127,22 @@ div::-webkit-scrollbar-track:hover,
 div::-webkit-scrollbar-track:active {
     background: #d4d4d4;
 }
+
+.btn-suggestion{
+    position: fixed;
+    border: 3px solid #73AD21;
+    margin: 10px;
+    z-index: 100;
+    padding: 30px;
+    border-radius: 60px;
+    font-weight: bolder;
+    opacity: 0.70;
+    background-image: url('/tddt4iots/resources/img/img-app/opinion.svg');
+    background-size: 40px 40px;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.btn-suggestion:hover{
+    opacity: 1;
+}

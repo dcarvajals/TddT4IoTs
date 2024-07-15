@@ -36,7 +36,9 @@ public class ApplicationConfig extends Application {
         resources.add(apis.Master_projectApis.class);
         resources.add(apis.PersonApis.class);
         resources.add(apis.Project_EntregableApis.class);
-        resources.add(apis.ReporteApi.class);
+        resources.add(apis.ReporteApi.class);        
+        resources.add(apis.SuggestionApi.class);
+
     }
 
 }

@@ -44,6 +44,11 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     </head>
     <body  ng-controller="application">
+        
+        <button type="button" class="btn-suggestion" ng-click="openModalOpinion()">    
+            <!--<img src="resources/img/img-app/opinion.svg" width="30" height="30"/>   -->
+        </button>
+        
         <div id="wrapper">
             <!-- Sidebar -->
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -230,6 +235,67 @@
                     <div ng-view></div>
                     <!-- End Page Content -->
                 </div>
+
+
+                <!-- MODAL ALL TASKS WITH ONLY PERCENTAGES TO EDIT -->
+                <div class="modal fade" id="ModalOpinion" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+                     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+
+                    <div class="modal-dialog modal-dialog-centered sha">
+                        <div class="modal-content">
+                            <form name="form_opinion" ng-submit="CreateOpinion(form_opinion)">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Feedback form</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <div class="col-form-label col-form-label-sm text-center"> What is the opinion of the page? </div>
+                                        <div class="container  text-center">
+                                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estone" width="30" height="30"/>                        
+                                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="esttwo" width="30" height="30"/>
+                                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estthree" width="30" height="30"/>
+                                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estfor" width="30" height="30"/>
+                                            <img src="resources/img/img-opinions/estrella_black.svg" class="startimg" id="estfive" width="30" height="30"/>  
+                                        </div>
+                                    </div>
+                                </div> 
+
+
+                                <div class="form-group container">
+                                    <label class="col-form-label col-form-label-sm">Suggestion:</label>
+                                    <select class="form-control"  name="suggestion_type"  style="font-size: 15px"
+                                            ng-model="suggestion_type"
+                                            required
+                                            >
+                                        <option value="ERR">ERROR</option>
+                                        <option value="SGS">SUGGESTION</option>
+                                    </select>
+                                </div>
+
+
+                                <div class="form-group container">
+                                    <label class="col-form-label col-form-label-sm"> Description:</label>
+                                    <textarea name="observation"
+                                              class="form-control"
+                                              ng-model="observation"
+                                               maxlength="200" required>
+
+                                    </textarea>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-sm btn-danger" ng-click="CloseModalOpinion()">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-primary"  >
+                                        Save changes
+                                    </button>
+                                </div>                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white mt-4">
