@@ -53,13 +53,13 @@ public class SuggestionApi
         System.out.println("insertSuggestion...");
         JsonObject jso = Methods.stringToJSON(data);
         if (jso.size() > 0) {
-            String email_person = Methods.JsonToString(jso, "email_person", "");
+            String email_person = Methods.JsonToString(jso, "emailperson", "");
             String valoration = Methods.JsonToString(jso, "valoration", "");
             String suggestion_type = Methods.JsonToString(jso, "suggestion_type", "");
             String observation = Methods.JsonToString(jso, "observation", "");
             
             String id_person=personCTRL.emailgetid(email_person);
-            
+            System.out.println(id_person+" este es el id de persona");
             Suggestion suggestion=new Suggestion(Integer.parseInt(id_person),
                     Integer.parseInt(valoration),suggestion_type,observation);
           
