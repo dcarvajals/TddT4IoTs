@@ -143,3 +143,9 @@ div::-webkit-scrollbar-track:active {
 .cursorPointer:hover {
     background: #F8F9FC;
 }
+
+.optionsTrainModelMarco {
+    border: 3px solid #BD5334;
+    margin-top: 3.5px;
+    padding: 1rem;
+}

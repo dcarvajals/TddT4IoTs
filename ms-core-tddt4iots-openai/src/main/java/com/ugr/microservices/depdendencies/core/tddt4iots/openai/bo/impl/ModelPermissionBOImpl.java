@@ -8,7 +8,9 @@ import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelPermissionDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelUseToolDto;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GenericTddt4iotsReqDTO;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.ModelPermissionFromModelReqDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.Model;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.service.ModelPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,6 +96,16 @@ public class ModelPermissionBOImpl implements ModelPermissionBO {
         }
 
         return modelPermissionDTOList.getFirst();
+    }
+
+    @Override
+    public List<ModelPermissionDTO> getModelPermissionFromModel(GenericTddt4iotsReqDTO<ModelPermissionFromModelReqDTO> request) throws GenericException, IOException, InterruptedException {
+        tddt4iotsGenericBO.validateSession(request.getUserToken());
+
+        List<ModelPermissionDTO> response = modelPermissionMapper.modelPermissionDTOListTo(
+                modelPermissionService.getModelPermissionFromModel(request.getClassDTO().getIdModel()));
+
+        return response;
     }
 
 

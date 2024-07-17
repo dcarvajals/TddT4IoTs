@@ -12,4 +12,5 @@ import java.io.IOException;
 @Service
 public interface ModelUseToolBO {
     ModelUseToolDto save (ModelUseToolDto modelUseToolDto) throws GenericException, IOException, InterruptedException;
+    ModelUseToolDto validate (String request) throws GenericException, IOException, InterruptedException;
 }

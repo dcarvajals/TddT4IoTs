@@ -20,4 +20,5 @@ public interface TrainingHistoryMapper {
     TrainingHistoryDTO trainingHistoryDtoTo (TrainingHistory trainingHistory);
 
     List<TrainingHistoryDTO> trainingHistoryDTOListTo (List<TrainingHistory> trainingHistory);
+
 }

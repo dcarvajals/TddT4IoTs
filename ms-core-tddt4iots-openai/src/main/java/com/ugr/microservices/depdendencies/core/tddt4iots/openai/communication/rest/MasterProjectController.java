@@ -87,16 +87,31 @@ public class MasterProjectController {
             path = "/useModelTraining",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public GenericBasicResponse<UseModelOpenaiRedDTO> useModelTraining (
+    public GenericBasicResponse<String> useModelTraining (
             @RequestBody GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO,
             @RequestHeader String userToken
     ) throws GenericException, IOException, InterruptedException {
-        GenericBasicResponse<UseModelOpenaiRedDTO> response = new GenericBasicResponse<>();
+        GenericBasicResponse<String> response = new GenericBasicResponse<>();
         log.info("Request received: listProjectFromToDate");
         genericTddt4iotsReqDTO.setUserToken(userToken);
-        //response.setData();
-        masterProjectBO.useModelOpenAi(genericTddt4iotsReqDTO);
+        response.setData(masterProjectBO.useModelOpenAi(genericTddt4iotsReqDTO));
         log.info("Request completed: listProjectFromToDate");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/deleteTraining",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<String> deleteTraining (
+            @RequestBody GenericTddt4iotsReqDTO<Long> genericTddt4iotsReqDTO,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<String> response = new GenericBasicResponse<>();
+        log.info("Request received: deleteTraining");
+        genericTddt4iotsReqDTO.setUserToken(userToken);
+        response.setData(masterProjectBO.deleteTrainingHistory(genericTddt4iotsReqDTO));
+        log.info("Request completed: deleteTraining");
         return response;
     }
 

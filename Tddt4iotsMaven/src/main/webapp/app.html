@@ -11,12 +11,14 @@
         <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/toastr.min.css" type="text/css">
+        <link rel="stylesheet" href="resources/css/bootstrap-icons-1.11.3/bootstrap-icons.css" type="text/css">
         <link rel="stylesheet" href="resources/codemirror/codemirror.css" type="text/css">
         <link rel="stylesheet" href="resources/codemirror/eclipse.min.css" type="text/css">
         <link href="resources/css/css-app/utils.css" rel="stylesheet" type="text/css"/>
         <link href="resources/css/css-viewcode/view-code_default.min.css" rel="stylesheet" type="text/css"/>
         <link href="resources/css/css-viewcode/view-code_atom-one-light.css" rel="stylesheet" type="text/css"/>
         <link href="resources/css/css-viewcode/view_code_we.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-library/UDStyle.css" type="text/css"/>
 
         <script src="resources/js/js-library/jquery.min.js"></script>
         <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
@@ -42,6 +44,10 @@
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.0.1/chartjs-plugin-zoom.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+
+        <script src="resources/js/js-library/UDCore.js"></script>
+        <script src="resources/js/js-library/UDModules.js"></script>
+
     </head>
     <body  ng-controller="application">
 
@@ -91,11 +97,22 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-2">
-                            OpenAi
+
+                            <div class="dropdown-menu" style="display: block !important; top: 0%; width: 100%; position:unset !important;">
+
+                                <a ng-repeat="dom_menuSettings in menuSettings"
+                                   ng-class="dom_menuSettings.active ? 'dropdown-item active' : 'dropdown-item'"
+                                   ng-click="changeMenu(dom_menuSettings)">
+                                    <i ng-class="dom_menuSettings.icon"></i>
+                                    {{dom_menuSettings.label}} </a>
+
+                                <a class="dropdown-item" ng-click="closeModalSettings()"> <i class="fas fa-times"></i> Close</a>
+                            </div>
+
                         </div>
                         <div class="col-10">
-                            
-                            <div class="card m-auto" id="settingsOpenAi">
+
+                            <div class="card m-auto" id="settingsOpenAi" ng-if="menuSettings[0].active">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     <h6 class="m-0 font-weight-bold text-dark">
                                         Open Ai </h6>
@@ -126,7 +143,7 @@
                                             <div class="row">
                                                 <div class="col-6" ng-repeat="dom_useOpenAi in useOpenAi">
                                                     <div ng-class="dom_useOpenAi.value ? 'alert alert-success border-success' : 'alert alert-ligth border-success cursorPointer'" role="alert"
-                                                    ng-click="selectedModeUseOpenAi(dom_useOpenAi)">
+                                                         ng-click="selectedModeUseOpenAi(dom_useOpenAi)">
                                                         <div class="media mb-2">
                                                             <img src="resources/img/img-app/trainig.png" class="align-self-center mr-3" alt="..." width="40">
                                                             <div class="media-body">
@@ -146,6 +163,73 @@
                                         </div>
 
                                     </form>
+                                </div>
+                            </div>
+                            <div class="card m-auto" id="trainingOpenAi" ng-if="menuSettings[1].active">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-dark">
+                                        Training </h6>
+                                </div>
+                                <div class="card-body">
+                                    <label> Users who previously trained the selected base model. </label>
+                                    <table class="table table-bordered table-hover table-sm">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Trainer</th>
+                                                <th>Model</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="dom_modelPermissions in modelPermissions"  ng-class="dom_modelPermissions.selected ? 'bg-primary text-white' : ''">
+                                                <td class="text-white">
+                                                    <span> <strong>Name:</strong> </span>
+                                                    {{dom_modelPermissions.person.namePerson}} {{dom_modelPermissions.person.lastnamePerson}} <br>
+                                                    <span class="badge badge-info"> {{dom_modelPermissions.person.emailPerson}} </span>
+                                                    <br>
+                                                    <span ng-if="dom_modelPermissions.selected" class="badge badge-success"> IN USE </span>
+                                                </td>
+                                                <td>
+                                                    <span> <strong>Name:</strong> </span>
+                                                    {{dom_modelPermissions.model.name}} <br>
+                                                    <span> <strong>Description:</strong> </span>
+                                                    {{dom_modelPermissions.model.description}}
+                                                </td>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <label> Trainings conducted based on the previously selected base model. </label>
+                                    <table class="table table-bordered table-hover table-sm">
+                                        <thead class="thead-light">
+                                        <tr>
+                                            <th>Commit</th>
+                                            <th>Create date</th>
+                                            <th>Start/End Trining date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="dom_trainingHistoryFromBaseModel in trainingHistoryFromBaseModel"  ng-class="dom_trainingHistoryFromBaseModel.selected ? 'bg-primary text-white' : ''">
+                                            <td class="col-5"> {{dom_trainingHistoryFromBaseModel.commit}} <br>
+                                            <span ng-if="dom_trainingHistoryFromBaseModel.selected" class="badge badge-success"> IN USE </span> </td>
+                                            <td class="col-2"> {{dom_trainingHistoryFromBaseModel.dateCreation}} </td>
+                                            <td class="col-3">
+                                                <span> <strong> FROM:  </strong> </span>
+                                                {{dom_trainingHistoryFromBaseModel.dateStartTrining}} <br>
+                                                <span> <strong> TO: </strong> </span>
+                                                {{dom_trainingHistoryFromBaseModel.dateEndTrining}}
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div style="text-align: right">
+                                        <button type="submit" class="btn button-d btn-sm"> Save changes </button>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -208,8 +292,20 @@
 
                 <li class="nav-item {{appPage.Select==='basemodels'?'active activeMenu':''}}">
                     <a class="nav-link" ng-click="redirect('basemodels')">
-                        <i class="oi oi-box" ></i>
+                        <i class="bi bi-box-fill"></i>
                         <span>Base Models</span></a>
+                </li>
+
+                <li class="nav-item {{appPage.Select==='trainmodels'?'active activeMenu':''}}">
+                    <a class="nav-link" ng-click="redirect('trainmodels')">
+                        <i class="bi bi-gear-wide-connected"></i>
+                        <span>Train Models</span></a>
+                </li>
+
+                <li class="nav-item {{appPage.Select==='testmodels'?'active activeMenu':''}}">
+                    <a class="nav-link" ng-click="redirect('testmodels')">
+                        <i class="bi bi-boxes"></i>
+                        <span>Test Models</span></a>
                 </li>
 
                 <!-- Divider -->
@@ -390,7 +486,11 @@
         <script src="resources/js/js-view/ctrl_dispositiveIoT.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_settingsprotocol.js" type="text/javascript"></script>
         <script src="resources/js/js-view/ctrl_basemodels.js" type="text/javascript"></script>
+        <script src="resources/js/js-view/ctrl_trainmodels.js" type="text/javascript"></script>
+        <script src="resources/js/js-view/ctrl_testmodels.js" type="text/javascript"></script>
         <script src="resources/js/js-functions/ctrl_interprete.js" type="text/javascript"></script>
+        <script src="resources/js/js-uml/js_tools_uml.js" type="text/javascript"></script>
+        <script src="resources/js/js-uml/js_class_diagram.js" type="text/javascript"></script>
         <script src="resources/js/js-codeedit.js" type="text/javascript"></script>
         <script src="resources/js/js-view/js-drawcomponent.js" type="text/javascript"></script>
         <script src="resources/js/js-functions/view-code_highlight.min.js" type="text/javascript"></script>

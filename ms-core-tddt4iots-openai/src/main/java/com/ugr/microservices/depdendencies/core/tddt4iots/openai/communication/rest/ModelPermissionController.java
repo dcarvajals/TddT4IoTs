@@ -4,6 +4,7 @@ import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.ModelPermiss
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelPermissionDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.GenericTddt4iotsReqDTO;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.ModelPermissionFromModelReqDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericBasicResponse;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -66,6 +68,22 @@ public class ModelPermissionController {
         log.info("Request received: validate");
         response.setData(modelPermissionBO.validatePermiss(userToken));
         log.info("Request completed: validate");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/permission-models",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<List<ModelPermissionDTO>> permissionModels (
+            @RequestBody GenericTddt4iotsReqDTO<ModelPermissionFromModelReqDTO> genericTddt4iotsReqDTO,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<List<ModelPermissionDTO>> response = new GenericBasicResponse<>();
+        genericTddt4iotsReqDTO.setUserToken(userToken);
+        log.info("Request received: permissionModels");
+        response.setData(modelPermissionBO.getModelPermissionFromModel(genericTddt4iotsReqDTO));
+        log.info("Request completed: permissionModels");
         return response;
     }
 

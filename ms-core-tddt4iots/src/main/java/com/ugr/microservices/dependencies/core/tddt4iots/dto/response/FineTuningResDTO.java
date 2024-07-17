@@ -1,5 +1,6 @@
 package com.ugr.microservices.dependencies.core.tddt4iots.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FineTuningResDTO {
     @JsonProperty("id")
     private String id;
@@ -26,9 +28,6 @@ public class FineTuningResDTO {
 
     @JsonProperty("finished_at")
     private String finishedAt;
-
-    @JsonProperty("hyperparameters")
-    private Hyperparameters hyperparameters;
 
     @JsonProperty("model")
     private String model;

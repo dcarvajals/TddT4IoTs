@@ -50,6 +50,14 @@ app.config(function ($routeProvider) {
                 templateUrl: 'basemodels.html',
                 controller: "basemodels_controller"
             })
+            .when("/trainmodels", {
+                templateUrl: 'trainmodels.html',
+                controller: "trainmodels_controller"
+            })
+            .when("/testmodels", {
+                templateUrl: 'testmodels.html',
+                controller: "testmodels_controller"
+            })
             .otherwise({
                 redirectTo: 'notfound',
                 templateUrl: 'notfound.html',
@@ -68,6 +76,11 @@ app.controller("application", function ($scope, $http) {
     $scope.useOpenAiSelected = {};
     $scope.useOpenAi = [{name: "TRAINING", description: "This option will allow you to train models based on the base model you selected in the previous option.", value: false, pathWs: "create-train"},
                         {name: "USE", description: "This option will only allow you to consume already trained models based on the base model you selected.", value: false, pathWs: "create-use"}]
+    $scope.menuSettings = [{label: "Open Ai", icon: "fas fa-gem", active: true, visible:true},
+                           {label: "Training", icon: "fas fa-splotch", active: false, visible:true}];
+    $scope.modelPermissions = [];
+    $scope.trainingHistoryValidate = {};
+    $scope.trainingHistoryFromBaseModel = [];
 
     $scope.appPage = {
         tittle: "Home",
@@ -127,6 +140,14 @@ app.controller("application", function ($scope, $http) {
         $("#modalSettings").modal("hide");
     }
 
+    $scope.changeMenu = (option) => {
+        $scope.menuSettings.forEach(menu => {
+            menu.active = false;
+        });
+
+        option.active = true;
+    };
+
     $scope.selectedModelBase = (modelBase) => {
         let backgroundNormal = "alert alert-light border-primary cursorPointer";
         let backgroundSelected = "alert alert-primary border-primary";
@@ -141,7 +162,7 @@ app.controller("application", function ($scope, $http) {
     };
 
     $scope.selectedModeUseOpenAi = (mode) => {
-        $scope.useOpenAi.forEach(mode => {
+        $scope.useOpenAi.forEach(mode => { 
             mode.value = false;
         });
 
@@ -211,7 +232,6 @@ app.controller("application", function ($scope, $http) {
             headers: {"userToken": dataUser.user_token},
             beforeSend: function (xhr) { },
             success: function (data) {
-                swal.close();
                 $scope.$apply(function() { // Asegura que AngularJS se entere de los cambios
                     $scope.responseHasSecretKey.hasSecretKey = data.data.hasSecretKey;
                     $scope.DatoUsuario = getDataSession();
@@ -243,7 +263,6 @@ app.controller("application", function ($scope, $http) {
                 loading();
             },
             success: function (response) {
-                swal.close();
                 $scope.$apply(function  () {
                     $scope.baseModels = response.data;
                     $scope.baseModels.forEach(model => {
@@ -297,8 +316,8 @@ app.controller("application", function ($scope, $http) {
                 loading();
             },
             success: function (response) {
-                swal.close();
                 data = response.data;
+                console.log("validatePermissoModel: ", data)
                 $scope.$apply(function  () {
                    $scope.baseModels.forEach(model => {
                       if(model.id === data.model.id) {
@@ -308,9 +327,20 @@ app.controller("application", function ($scope, $http) {
                    });
                    if(data.canTrain) {
                        $scope.useOpenAi[0].value = data.canTrain;
+                       swal.close();
                    } else if (data.canUse) {
                        $scope.useOpenAi[1].value = data.canUse;
+
+                       var request = {
+                           classDTO:
+                               {
+                                   idModel: data.model.id
+                               }
+                       };
+                       console.log("apiPermissionModels: ", request);
+                       $scope.apiPermissionModels(request);
                    }
+
                 });
             },
             error: function (objXMLHttpRequest) {
@@ -318,6 +348,96 @@ app.controller("application", function ($scope, $http) {
             }
         });
     }
+
+    $scope.apiPermissionModels = (request) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'model-permission/permission-models',
+            headers: {"userToken": dataUser.user_token},
+            data: JSON.stringify(request),
+            beforeSend: function (xhr) {
+            },
+            success: function (response) {
+                console.log(response);
+                $scope.modelPermissions = response.data;
+                $scope.modelPermissions.forEach(model => {
+                    model["selected"] = false;
+                });
+                $scope.apiTrainingHistoryValidate();
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    $scope.apitrainingFromBaseModels = (request) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'training-history/training-from-base-models',
+            headers: {"userToken": dataUser.user_token},
+            data: JSON.stringify(request),
+            beforeSend: function (xhr) {
+            },
+            success: function (response) {
+                swal.close();
+                console.log("apitrainingFromBaseModels: ", response);
+                $scope.trainingHistoryFromBaseModel = response.data;
+                $scope.trainingHistoryFromBaseModel.forEach(item => {
+                    item["selected"] = false;
+                });
+                $scope.trainingHistoryFromBaseModel.forEach(item => {
+                    if(item.id === $scope.trainingHistoryValidate.id) {
+                        item["selected"] = true;
+                    }
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    $scope.apiTrainingHistoryValidate = () => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'training-history/validate',
+            headers: {"userToken": dataUser.user_token},
+            beforeSend: function (xhr) {
+            },
+            success: function (response) {
+                console.log(response);
+                $scope.trainingHistoryValidate = response.data;
+                $scope.modelPermissions.forEach(modelPermission => {
+                    if($scope.trainingHistoryValidate.model.id === modelPermission.id) {
+                        modelPermission["selected"] = true;
+                        let request = {
+                            classDTO:
+                                {
+                                    idModelPermission: modelPermission.id,
+                                    idPersonModelTraining: modelPermission.person.id
+                                }
+                        }
+                        $scope.apitrainingFromBaseModels(request);
+                    }
+                });
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
 
 });
 

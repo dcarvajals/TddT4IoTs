@@ -20,5 +20,6 @@ public class TrainingHistoryDTO {
     private String pathFileJson;
     private String pathFileCsv;
     private String resultTrining;
+    private Character status;
     private ModelPermissionDTO model;
 }

@@ -10,4 +10,5 @@ import lombok.*;
 public class CreateFileTrainingResDTO {
     private String pathCsvFile;
     private String pathJsonFile;
+    private Long idTrainingHistory;
 }

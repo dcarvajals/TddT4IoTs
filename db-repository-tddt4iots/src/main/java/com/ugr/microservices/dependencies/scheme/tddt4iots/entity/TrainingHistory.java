@@ -56,6 +56,9 @@ public class TrainingHistory {
     @Column(name = "result_trining", length = Integer.MAX_VALUE)
     private String resultTrining;
 
+    @Column(name = "status")
+    private Character status;
+
     @OneToMany(mappedBy = "modelTraining")
     private List<ModelUseTool> modelUseTools = new ArrayList<>();
 

@@ -2,6 +2,7 @@ package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.MasterProjectBO;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.ModelPermissionBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGenericBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.grpc.GrpcTrainingModelOpenAi;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.config.ApplicationConfig;
@@ -12,6 +13,7 @@ import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.Tddt4iotsUtil;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingHistory;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -46,6 +50,9 @@ public class MasterProjectBOImpl implements MasterProjectBO {
 
     @Autowired
     ModelUseToolService modelUseToolService;
+
+    @Autowired
+    ModelPermissionBO modelPermissionBO;
 
     @Autowired
     MasterProjectMapper masterProjectMapper;
@@ -190,9 +197,11 @@ public class MasterProjectBOImpl implements MasterProjectBO {
 
             // Escribir en el archivo .jsonl
             StringBuilder jsonlContent = new StringBuilder();
+            Integer rowCount = 0;
             for (TrainingDataDTO trainingDataDTO : trainingDataDTOList) {
                 String json = JSON_MAPPER.writeValueAsString(trainingDataDTO);
                 jsonlContent.append(json).append("\n");
+                rowCount += rowCount;
             }
 
             // URL del servicio web
@@ -225,9 +234,11 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 trainingHistoryDTO.setDateStartTrining(request.getStartDate());
                 trainingHistoryDTO.setDateEndTrining(request.getEndDate());
                 trainingHistoryDTO.setPathFileJson(pathFileJson);
-                trainingHistoryDTO.setCountRowDataTrining(Long.parseLong(String.valueOf(masterProjectDTOList.size())));
-                trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
-                createFileTrainingResDTO.setPathCsvFile(pathFileJson);
+                trainingHistoryDTO.setCountRowDataTrining(Long.parseLong(rowCount.toString()));
+                trainingHistoryDTO.setModel(modelPermissionBO.validatePermiss(request.getUserToken()));
+                trainingHistoryDTO = trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO)));
+                createFileTrainingResDTO.setPathJsonFile(pathFileJson);
+                createFileTrainingResDTO.setIdTrainingHistory(trainingHistoryDTO.getId());
             } else {
                 log.error("Error en la solicitud POST. Código de respuesta: " + tddt4iotsServerResDTO.getInformation());
             }
@@ -243,43 +254,73 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .build();
-        List<TrainingHistoryDTO> trainingHistoryDTOList = trainingHistoryMapper.trainingHistoryDTOListTo(
-                trainingHistoryService.getTrainingFromToDate(getProjectFromDateReq));
-        for(TrainingHistoryDTO trainingHistoryDTO : trainingHistoryDTOList) {
-            if(trainingHistoryDTO.getResultTrining() != null) {
-                GrpcTrainModelResDTO grpcTrainModelResDTO =
-                        Tddt4iotsUtil.fetchDataFromJsonString(trainingHistoryDTO.getResultTrining(), GrpcTrainModelResDTO.class);
-                GrpcTrainModelReqDTO grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
-                        .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
-                        .model(grpcTrainModelResDTO.getData().getFineTunedModel())
-                        .pathFileTrain(trainingHistoryDTO.getPathFileJson())
-                        .build();
-                if(trainingHistoryDTO.getModel().getPrimaryTrain()) {
-                    grpcTrainModelReqDTO.setModel(trainingHistoryDTO.getModel().getModel().getName());
-                    trainingHistoryDTO.getModel().setPrimaryTrain(Boolean.FALSE);
-                    modelPermissionService.save(modelPermissionMapper.modelPermissionTo(
-                            trainingHistoryDTO.getModel()));
-                }
-                String requestGrpcTrainModel = Tddt4iotsUtil.convertObjectToJsonString(grpcTrainModelReqDTO);
-                log.info(requestGrpcTrainModel);
-                // entrenamos todos los archivos que se han encontrado con la fecha indicada
-                String response = grpcTrainingModelOpenAi.trainModel(requestGrpcTrainModel);
-                // actualizar los resultados del entrenamiento
-                trainingHistoryDTO.setResultTrining(response);
-                trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
-                TrainingModelOpenAiRes trainingModelOpenAiRes = TrainingModelOpenAiRes.builder()
-                        .result(response)
-                        .pathFileJson(trainingHistoryDTO.getPathFileJson())
-                        .build();
-                trainingModelOpenAiResList.add(trainingModelOpenAiRes);
-            }
+
+        TrainingHistoryDTO trainingHistoryDTO = trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.findIdByModelPermission(request.getIdTrainingHistory()));
+        GrpcTrainModelReqDTO grpcTrainModelReqDTO;
+
+        if(trainingHistoryDTO.getModel().getPrimaryTrain()) {
+            log.info("******* PRIMER ENTRENAMIENTO ********");
+             grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
+                    .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
+                    .model((trainingHistoryDTO.getModel().getModel().getName()))
+                    .pathFileTrain(trainingHistoryDTO.getPathFileJson())
+                    .build();
+        } else {
+            log.info("******* NO ES SU PRIMER ENTRENAMIENTO ********");
+            // buscamos el ultimo entrenamiento realizado por ese modelo base y los permisos asignados
+            TrainingHistoryDTO trainingHistoryLastestDTO = trainingHistoryMapper
+                    .trainingHistoryDtoTo(trainingHistoryService.getLastestTrainingByNotId(trainingHistoryDTO.getModel().getId(), request.getIdTrainingHistory()));
+
+            GrpcTrainModelResDTO grpcTrainModelResDTO =
+                    Tddt4iotsUtil.fetchDataFromJsonString(trainingHistoryLastestDTO.getResultTrining(), GrpcTrainModelResDTO.class);
+
+            grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
+                    .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
+                    .model(grpcTrainModelResDTO.getData().getFineTunedModel())
+                    .pathFileTrain(trainingHistoryDTO.getPathFileJson())
+                    .build();
         }
+
+        String requestGrpcTrainModel = Tddt4iotsUtil.convertObjectToJsonString(grpcTrainModelReqDTO);
+        log.info(requestGrpcTrainModel);
+        // entrenamos todos los archivos que se han encontrado con la fecha indicada
+        String response = grpcTrainingModelOpenAi.trainModel(requestGrpcTrainModel);
+
+        // Define the regex pattern to capture the JSON part of the string
+        Pattern pattern = Pattern.compile("Processing result: (\\{.*\\})");
+        Matcher matcher = pattern.matcher(response);
+
+        if (matcher.find()) {
+            // Extract the JSON part
+            String json = matcher.group(1);
+
+            GrpcTrainModelResDTO grpcTrainModelResDTO =
+                    Tddt4iotsUtil.fetchDataFromJsonString(json, GrpcTrainModelResDTO.class);
+
+            if(grpcTrainModelResDTO.getStatus().equals("ERROR")) {
+                trainingHistoryDTO.setStatus('E');
+            }
+
+            // actualizar los resultados del entrenamiento
+            trainingHistoryDTO.setResultTrining(json);
+            trainingHistoryDTO.setStatus('S');
+            trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
+            TrainingModelOpenAiRes trainingModelOpenAiRes = TrainingModelOpenAiRes.builder()
+                    .result(response)
+                    .pathFileJson(trainingHistoryDTO.getPathFileJson())
+                    .build();
+            trainingModelOpenAiResList.add(trainingModelOpenAiRes);
+        } else {
+            throw new GenericException("No JSON found in the response grpc training model.");
+        }
+
+
 
         return trainingModelOpenAiResList;
     }
 
     @Override
-    public void useModelOpenAi(GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException {
+    public String useModelOpenAi(GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException {
         // validar la session de la herramienta
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(genericTddt4iotsReqDTO.getUserToken());
         // buscamos los datos del modelo a utilizar por la persona
@@ -289,7 +330,83 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         List<MessageDTO> messages = new ArrayList<>();
         MessageDTO messageDTOSystem = MessageDTO.builder()
                 .role(Tddt4iotsCons.SYSTEM)
-                .content("You are a wizard to interpret natural text describing requirements of a computer system, and you must generate everything needed for a class diagram and return the JSON as I have instructed you in the training.")
+                .content("You are a wizard at interpreting natural text that describes the requirements of a computer system, and you must generate everything needed for a " +
+                        "class diagram and return the JSON as I have instructed you in the training. Make sure to return the complete JSON as a response, because I will parse " +
+                        "it from string to JSON to use it in a web application. The JSON must be exactly like the one I provided you in the training; do not change the structure." +
+                        "It must be a structure like this; if you are not adding data to an array, it should have at least 0 elements." +
+                        "{\n" +
+                        "  \"diagram\": [\n" +
+                        "    {\n" +
+                        "      \"packName\": \"string\",\n" +
+                        "      \"class\": [\n" +
+                        "        {\n" +
+                        "          \"action\": \"string\",\n" +
+                        "          \"derivative\": \"array\",\n" +
+                        "          \"className\": \"string\",\n" +
+                        "          \"visibility\": \"string\",\n" +
+                        "          \"modifiers\": \"string\",\n" +
+                        "          \"attributes\": [\n" +
+                        "            {\n" +
+                        "              \"visibility\": \"string\",\n" +
+                        "              \"name\": \"string\",\n" +
+                        "              \"type\": \"string\",\n" +
+                        "              \"cardinalidate\": \"string\",\n" +
+                        "              \"idToOrFrom\": \"string\"\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"methods\": [\n" +
+                        "            {\n" +
+                        "              \"visibility\": \"string\",\n" +
+                        "              \"name\": \"string\",\n" +
+                        "              \"type\": \"string\",\n" +
+                        "              \"parameters\": [\n" +
+                        "                {\n" +
+                        "                  \"name\": \"string\",\n" +
+                        "                  \"type\": \"string\",\n" +
+                        "                  \"$$hashKey\": \"string\"\n" +
+                        "                }\n" +
+                        "              ],\n" +
+                        "              \"$$hashKey\": \"string\"\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"constructors\": \"array\",\n" +
+                        "          \"$$hashKey\": \"string\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"enums\": [\n" +
+                        "        {\n" +
+                        "          \"name\": \"string\",\n" +
+                        "          \"visibility\": \"string\",\n" +
+                        "          \"elements\": \"array\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"$$hashKey\": \"string\"\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"xmldiagram\": \"string\",\n" +
+                        "  \"relationships\": [\n" +
+                        "    {\n" +
+                        "      \"from\": \"string\",\n" +
+                        "      \"to\": \"string\",\n" +
+                        "      \"typeRelatioship\": \"string\",\n" +
+                        "      \"value\": \"string\",\n" +
+                        "      \"cardinalidate\": \"string\",\n" +
+                        "      \"from_fk\": \"string\",\n" +
+                        "      \"to_fk\": \"string\",\n" +
+                        "      \"simbol\": \"string\"\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"action\": \"array\",\n" +
+                        "  \"notifications\": [\n" +
+                        "    {\n" +
+                        "      \"status\": \"number\",\n" +
+                        "      \"information\": \"string\",\n" +
+                        "      \"type\": \"string\",\n" +
+                        "      \"data\": \"array\"\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"edition\": \"boolean\"\n" +
+                        "}\n")
                 .build();
         MessageDTO messageDTOUser = MessageDTO.builder()
                 .role(Tddt4iotsCons.USER)
@@ -299,7 +416,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         messages.add(messageDTOUser);
         GrpcUseModelReqDTO grpcUseModelReqDTO = GrpcUseModelReqDTO.builder()
                 .openAiSecretKey(personDTO.getOpenaiSecretKey())
-                .model(grpcTrainModelResDTO.getData().getFineTunedModel())
+                .model(grpcTrainModelResDTO.getData().getFineTunedModel() == null ? grpcTrainModelResDTO.getData().getModel() : grpcTrainModelResDTO.getData().getFineTunedModel())
                 .messages(messages)
                 .build();
         String grpcUseModelString = Tddt4iotsUtil.convertObjectToJsonString(grpcUseModelReqDTO);
@@ -307,6 +424,30 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         log.info(grpcUseModelString);
         String response = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
         log.info(response);
+
+        // Define the regex pattern to capture the JSON part of the string
+        Pattern pattern = Pattern.compile("Processing result: (\\{.*\\})");
+        Matcher matcher = pattern.matcher(response);
+
+        if (matcher.find()) {
+            // Extract the JSON part
+            response = matcher.group(1);
+        }
+
+        return response;
+    }
+
+    @Override
+    public String deleteTrainingHistory(GenericTddt4iotsReqDTO<Long> request) throws GenericException {
+        String response = "Record successfully deleted.";
+        TrainingHistoryDTO trainingHistoryDTO = trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.findId(request.getClassDTO()));
+
+        if(trainingHistoryDTO == null) {
+            throw new GenericException("The record to be deleted does not exist in the database.");
+        }
+
+        trainingHistoryService.deleteTraining(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
+        return response;
     }
 
     private List<ArmadilloApiResDTO> postMultipleRequests(String... names) {

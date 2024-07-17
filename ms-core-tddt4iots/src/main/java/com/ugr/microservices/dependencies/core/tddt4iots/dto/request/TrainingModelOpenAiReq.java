@@ -16,6 +16,5 @@ public class TrainingModelOpenAiReq {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date endDate;
-
-    private String pathJson;
+    private Long idTrainingHistory;
 }

@@ -1,0 +1,186 @@
+<div class="modal fade" id="modalNewTrainModel" tabindex="-1" role="dialog" aria-labelledby="modalNewTrainModel"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered sha" role="document">
+        <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Train Model</h5>
+                </div>
+
+                <div class="modal-body">
+
+                    <button ng-repeat="dom_optionsTrainModel in optionsTrainModel"
+                            ng-class="dom_optionsTrainModel.classActive"> {{dom_optionsTrainModel.name}}
+                    </button>
+
+                    <div class="optionsTrainModelMarco" ng-if="optionsTrainModel[0].showPanel">
+                        <form name="formCreateFile" ng-submit="createFileModel(formCreateFile)">
+                            <strong> Select the date range from which existing project data will be extracted to create the training file. </strong>
+                            <div class="form-group">
+                                <label for="ip_startDate">Start date:</label>
+                                <input class="" id="ip_startDate" type="date"
+                                       name="ip_startDate"
+                                       ng-model="ip_startDate"
+                                       autocomplete="false"
+                                       ng-class="(formTrainModel.ip_startDate.$invalid &&
+                                                           formTrainModel.ip_startDate.$dirty) ?
+                                                           'form-control form-control-sm is-invalid'
+                                                           : 'form-control form-control-sm'" required />
+                                <div class="invalid-feedback">
+                                    Please enter the start date.
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ip_endDate">End date:</label>
+                                <input class="" id="ip_endDate" type="date"
+                                       name="ip_endDate"
+                                       ng-model="ip_endDate"
+                                       autocomplete="false"
+                                       ng-class="(formTrainModel.ip_endDate.$invalid &&
+                                                           formTrainModel.ip_endDate.$dirty) ?
+                                                           'form-control form-control-sm is-invalid'
+                                                           : 'form-control form-control-sm'" required />
+                                <div class="invalid-feedback">
+                                    Please enter the end date.
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ip_commit"> Commit: </label>
+                                <textarea id="ip_commit" cols="30" rows="5"
+                                          name="ip_commit"
+                                          ng-model="ip_commit"
+                                          autocomplete="false"
+                                          required
+                                          ng-class="(formTrainModel.ip_commit.$invalid &&
+                                                           formTrainModel.ip_commit.$dirty) ?
+                                                           'form-control form-control-sm is-invalid'
+                                                           : 'form-control form-control-sm'"></textarea>
+                                <div class="invalid-feedback">
+                                    Please enter commit.
+                                </div>
+                            </div>
+
+                            <div style="text-align: right">
+                                <button class="btn button-ds btn-sm"  type="button" ng-click="closeModalTrainModel()">
+                                    Cancel
+                                </button>
+                                <button class="btn button-d btn-sm"  type="submit">
+                                    Save changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="optionsTrainModelMarco" ng-if="optionsTrainModel[1].showPanel">
+                        <div class="alert alert-success" role="alert">
+                            <i class="bi bi-patch-check-fill"></i>
+                            The JSONL file containing the data for the respective model training has been successfully created.
+                        </div>
+
+                        <span> To download the file, click <a ng-ref="requestTrainingModel.pathJson" >here</a> </span>
+
+                        <strong> The date range of the extracted projects is: from: {{requestTrainingModel.startDate}} to: {{requestTrainingModel.endDate}}. </strong>
+
+                        <div style="text-align: right">
+                            <button class="btn button-ds btn-sm"  type="button" ng-click="deleteTraining()">
+                                Cancel
+                            </button>
+                            <button class="btn button-d btn-sm" type="button" ng-click="trainModel()">
+                                Train Model
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalMoreInformationTrain" tabindex="-1" role="dialog" aria-labelledby="modalMoreInformationTrain"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document">
+        <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">More information</h5>
+                </div>
+                <div class="modal-body">
+                    <div id="resultJson" class="code-editor" style="height: 300px"></div>
+                </div>
+                <div class="modal-footer">
+                    <button ng-click="closeModalMoreInformation()" type="button" class="btn btn-sm btn-danger">Close</button>
+                </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
+        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Train Models</h5>
+        <ul class="breadcrumb fw-bold fs-7 small">
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/trainmodels" class="text-muted text-hover-primary">Train Models</a>
+            </li>
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
+
+    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
+
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-dark">
+                Train Models </h6>
+            <button class="btn button-d btn-sm"
+                    type="button" id="newProtocol"
+                    ng-click="openModalTrainModel()">
+                New Train
+            </button>
+        </div>
+
+        <div class="card-body" style="height: auto; overflow: auto">
+            <div class="alert alert-primary" role="alert" id="component_table"
+                 ng-repeat="dom_listTrainingHistory in listTrainingHistory" ng-show="baseModels.length > 0">
+                <div class="media mb-2">
+                    <img src="resources/img/img-app/017-brain.png" class="align-self-center mr-3" alt="..." width="70">
+                    <div class="media-body">
+                        <div>
+                            <strong> STATUS: </strong>
+                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="badge badge-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Succeeded
+                            </span>
+                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'ERROR'" class="badge badge-danger">
+                                <i class="bi bi-exclamation-octagon-fill"></i>
+                                Error
+                            </span>
+                            <br>
+                            <strong ng-if="dom_listTrainingHistory.resultJson.status === 'OK'"> MODEL: </strong>
+                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="badge badge-primary">
+                                {{dom_listTrainingHistory.resultJson.data.fine_tuned_model === null ?
+                                    dom_listTrainingHistory.resultJson.data.model : dom_listTrainingHistory.resultJson.data.fine_tuned_model}} </span> <br ng-if="dom_listTrainingHistory.resultJson.status === 'OK'">
+                            <strong> Commit: </strong> {{dom_listTrainingHistory.commit}} <br>
+                            <strong> Date creation: </strong> {{dom_listTrainingHistory.dateCreation}} <br>
+                            <strong> Date start training: </strong> {{dom_listTrainingHistory.dateStartTrining}} <br>
+                            <strong> Date end training: </strong> {{dom_listTrainingHistory.dateEndTrining}} <br>
+                        </div>
+                        <div class="row">
+                            <button class="btn button-dt btn-sm ml-2"
+                                    ng-click="openModalMoreInformation(dom_listTrainingHistory)">
+                                <i class="bi bi-braces"></i>
+                                More information
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

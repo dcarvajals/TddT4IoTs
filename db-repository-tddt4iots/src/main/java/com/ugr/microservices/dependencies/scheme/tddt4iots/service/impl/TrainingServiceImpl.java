@@ -28,8 +28,25 @@ public class TrainingServiceImpl implements TrainingHistoryService {
     }
 
     @Override
-    public Optional<TrainingHistory> findId(Long id) throws GenericException {
-        return trainingHistoryRepository.findById(id.intValue());
+    public TrainingHistory findId(Long id) throws GenericException {
+        Optional<TrainingHistory> trainingHistory = trainingHistoryRepository.findById(id.intValue());
+
+        if(!trainingHistory.isPresent()) {
+            throw new GenericException("There is no record with the filtered ID.");
+        }
+
+        return trainingHistory.get();
+    }
+
+    @Override
+    public TrainingHistory findIdByModelPermission(Long id) throws GenericException {
+        Optional<TrainingHistory> trainingHistory = trainingHistoryRepository.findIdByModelPermission(id);
+
+        if(!trainingHistory.isPresent()) {
+            throw new GenericException("There is no record with the filtered ID.");
+        }
+
+        return trainingHistory.get();
     }
 
     @Override
@@ -44,6 +61,35 @@ public class TrainingServiceImpl implements TrainingHistoryService {
             throw new GenericException("The selected base model does not have prior training.");
         }
         return trainingHistoryDTO.get();
+    }
+
+    @Override
+    public TrainingHistory getLastestTrainingByNotId(Long idModel, Long idTrainingHistory) throws GenericException {
+        Optional<TrainingHistory> trainingHistoryDTO = trainingHistoryRepository.getLastestTrainingByNotId(idModel, idTrainingHistory);
+        if(trainingHistoryDTO.isEmpty()) {
+            throw new GenericException("The selected base model does not have prior training.");
+        }
+        return trainingHistoryDTO.get();
+    }
+
+    @Override
+    public List<TrainingHistory> getModelTrainingByPersonModelUseTool(Long idModelPermission, Long idPersonModelTraining) throws GenericException {
+        List<TrainingHistory> response = trainingHistoryRepository.getModelTrainingByPersonModelUseTool(idModelPermission, idPersonModelTraining);
+        if(response.isEmpty()) {
+            throw new GenericException("The base model trained does not have prior training to be used in the tool.");
+        }
+
+        return response;
+    }
+
+    @Override
+    public void deleteTraining(TrainingHistory request) throws GenericException {
+        trainingHistoryRepository.delete(request);
+    }
+
+    @Override
+    public List<TrainingHistory> findIdByPerson(Long idPerson) throws GenericException {
+        return trainingHistoryRepository.findIdByPerson(idPerson);
     }
 
 

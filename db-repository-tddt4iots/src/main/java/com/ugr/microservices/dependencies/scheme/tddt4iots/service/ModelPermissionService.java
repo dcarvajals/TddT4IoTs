@@ -11,4 +11,5 @@ public interface ModelPermissionService {
     List<ModelPermission> getAllModelPermission (Long idPerson) throws GenericException;
     ModelPermission save (ModelPermission request) throws GenericException;
     List<ModelPermission> getAllModelPermissionFromModel (Long idModel) throws GenericException;
+    List<ModelPermission> getModelPermissionFromModel (Long idModel) throws GenericException;
 }

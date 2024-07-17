@@ -16,6 +16,6 @@ public interface MasterProjectBO {
     List<MasterProjectDTO> getProjectFromToDate (GetProjectFromDateReq request) throws GenericException;
     CreateFileTrainingResDTO createFileTraining (CreateFileTrainingReq request) throws GenericException, IOException, InterruptedException;
     List<TrainingModelOpenAiRes> trainingModelOpenAi (TrainingModelOpenAiReq request) throws GenericException;
-    void useModelOpenAi (GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException;
-
+    String useModelOpenAi (GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException;
+    String deleteTrainingHistory (GenericTddt4iotsReqDTO<Long> idTrainingHistory) throws GenericException;
 }

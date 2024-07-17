@@ -7,6 +7,7 @@ import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.ModelUse
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.TrainingHistoryMapper;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelPermissionDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.ModelUseToolDto;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.TrainingHistoryDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.service.ModelPermissionService;
@@ -48,6 +49,13 @@ public class ModelUseToolBOImpl implements ModelUseToolBO {
         List<ModelPermissionDTO> modelPermissionDTO = modelPermissionMapper.modelPermissionDTOListTo(
                 modelPermissionService.getAllModelPermissionFromModel(modelUseToolDto.getModel().getId()));
 
+        // verificar si no existe ya un registro con el usuario logeado, para solo modificar este registro
+        List<ModelUseToolDto> modelUseToolDtoList = modelUseToolMapper.modelPermissionDTOListTo(modelUseToolService.getAllModelUseTool(modelUseToolDto.getPerson().getId()));
+
+        if(!modelUseToolDtoList.isEmpty()){
+            modelUseToolDto.setId(modelUseToolDtoList.getFirst().getId());
+        }
+
         // buscar el ultimo modelo de acuerdo al modelo base seleccionado por el usuario
         TrainingHistoryDTO trainingHistoryDTO =  trainingHistoryMapper
                 .trainingHistoryDtoTo(trainingHistoryService.getLastestTraining(modelPermissionDTO.getFirst().getModel().getId()));
@@ -56,5 +64,12 @@ public class ModelUseToolBOImpl implements ModelUseToolBO {
         modelUseToolDto.setActive(Boolean.TRUE);
         return modelUseToolMapper.modelUseToolDtoTo(
                 modelUseToolService.save(modelUseToolMapper.modelUseToolTo(modelUseToolDto)));
+    }
+
+    @Override
+    public ModelUseToolDto validate(String request) throws GenericException, IOException, InterruptedException {
+        // validar la session de la herramienta
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request);
+        return modelUseToolMapper.modelUseToolDtoTo(modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
     }
 }

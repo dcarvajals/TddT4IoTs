@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from openai import OpenAI
@@ -38,8 +39,11 @@ def train_model(json_string):
     MODEL_ENGINE = model  # Ejemplo con GPT-3.5
 
     # Obtener el nombre del archivo local a partir de la URL
-    local_filename = "/tmpFileTrain/" + pathFileTrain.split('/')[-1]
+    local_filename = "tmpFileTrain/" + pathFileTrain.split('/')[-1]
     print(f"Nombre del archivo local: {local_filename}")
+
+    # Crear el directorio si no existe
+    os.makedirs(os.path.dirname(local_filename), exist_ok=True)
 
     # Descargar el archivo desde la URL proporcionada
     response = requests.get(pathFileTrain)
@@ -155,8 +159,8 @@ def use_model (json_string):
             model=MODEL_ENGINE,
             response_format={"type": "json_object"},
             messages=messages,
-            max_tokens=150,
-            temperature=0.7
+            max_tokens=2000,
+            temperature=0.2
         )
 
         # Procesar la respuesta para asegurar que sea JSON

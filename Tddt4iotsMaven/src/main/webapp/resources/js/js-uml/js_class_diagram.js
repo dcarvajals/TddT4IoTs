@@ -34,6 +34,78 @@ const relationsGlobalname = {
     "composition": "composition"
 };
 
+function updateClassDiagramOpenAi(jsonInterprete, action) {
+    try {
+
+        for (let ipackage = 0; ipackage < jsonInterprete.diagram.length; ipackage++) {
+            package = jsonInterprete.diagram[ipackage];
+            //let newpackage = cretaePackcage({name: package.packName, x: 50, y: 70});
+            //elementsClass.push({"element": newpackage});
+            for (let iclass = 0; iclass < package.class.length; iclass++) {
+                clas = package.class[iclass];
+                if (clas.modifiers === "interface") {
+                    newclass = createInterface({
+                        name: visibilityGlobal[clas.visibility] + " " + clas.className,
+                        x: (Math.floor(Math.random() * 10) * 100),
+                        y: (Math.floor(Math.random() * 15) * 30)
+                    });
+                } else {
+                    newclass = createClass({
+                        name: visibilityGlobal[clas.visibility] + " " + clas.className,
+                        x: (Math.floor(Math.random() * 10) * 100),
+                        y: (Math.floor(Math.random() * 15) * 30)
+                    });
+                }
+                //newpackage.addChild(newclass);
+                elementsClass.push({"element": newclass});
+                for (let iattributes = 0; iattributes < clas.attributes.length; iattributes++) {
+                    attributes = clas.attributes[iattributes];
+                    if (attributes.name.toString().trim() !== "") {
+                        if (attributes.type === "fk" || attributes.type === "enumeration")
+                            newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name.toString().trim() + " fk");
+                        else
+                            newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name + ":" + attributes.type);
+                    }
+
+                }
+                for (let imethods = 0; imethods < clas.methods.length; imethods++) {
+                    methods = clas.methods[imethods];
+                    newclass.addOperation(visibilityGlobal[methods.visibility] + " " + methods.name + "(" + getParamethers(methods.parameters) + "):" + methods.type);
+                }
+
+                for (let imethods = 0; imethods < clas.constructors.length; imethods++) {
+                    constructor = clas.constructors[imethods];
+                    newclass.addOperation(visibilityGlobal[constructor.visibility] + " new " + clas.className + "(" + getParamethers(constructor.parameters) + ")");
+                }
+            }
+
+            for (let ienum = 0; ienum < package.enums.length; ienum++) {
+                enumsx = package.enums[ienum];
+                newenum = createEnum({
+                    name: enumsx.name,
+                    x: (Math.floor(Math.random() * 10) * 100),
+                    y: (Math.floor(Math.random() * 15) * 30)
+                });
+                elementsClass.push({"element": newenum, "name": newenum.getName()});
+                for (let iattributes = 0; iattributes < enumsx.elements.length; iattributes++) {
+                    elementsE = enumsx.elements[iattributes];
+                    newenum.addAttribute(elementsE);
+                }
+            }
+        }
+        relationsClass(jsonInterprete.relationships);
+        setClassPosition();
+        alertAll({"status": 2, "information": "Class diagram successfully updated."});
+        diagramClass.draw();
+    } catch (ErrorMessage) {
+        console.log(ErrorMessage);
+        alertAll({
+            "status": 4,
+            "information": "[updateClassDiagram]: " + ErrorMessage.message
+        });
+    }
+}
+
 function updateClassDiagram(jsonInterprete, action) {
     try {
         let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
@@ -237,17 +309,17 @@ function relationsClass(relations) {
                         }
 
                         if (relations[irelation].value === undefined) {
-                            relations[irelation]["value"] = relations[irelation].typeRelatioship;
+                            relations[irelation]["value"] = relations[irelation].typeRelatioship.toLowerCase();
                         }
 
                         let relation = createRelationClass({
-                            type: relationsGlobal[relations[irelation].typeRelatioship],
+                            type: relationsGlobal[relations[irelation].typeRelatioship.toLowerCase()],
                             a: from,
                             b: to,
                             card_A: relations[irelation].cardinalidate.split("..")[0],
                             card_B: relations[irelation].cardinalidate.split("..")[1],
                             value: relations[irelation].value,
-                            typeRelatioship: relations[irelation].typeRelatioship
+                            typeRelatioship: relations[irelation].typeRelatioship.toLowerCase()
                         });
                         elementsClass.push({"element": relation});
                     }
