@@ -57,16 +57,17 @@
             <div class="modal-content">
                 <form name="formSecretKey" ng-submit="addNewSecretKey(formSecretKey)">
                     <div class="modal-header">
-                        <h5 class="modal-title">Open Ai</h5>
+                        <h5 class="modal-title">OpenAI</h5>
                         <span class="badge badge-info"> NEW </span>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="ip_secretKey">Enter secret key openai:</label>
+                            <label for="ip_secretKey">Enter secret key OpenAI: </label>
                             <input type="text" id="ip_secretKey"
                                    name="ip_secretKey"
                                    ng-model="ip_secretKey"
                                    autocomplete="false"
+                                   style="filter: blur(3px);"
                                    ng-disabled="responseHasSecretKey.hasSecretKey"
                                    ng-class="(formSecretKey.ip_secretKey.$invalid &&
                                                        formSecretKey.ip_secretKey.$dirty) ?
@@ -115,7 +116,7 @@
                             <div class="card m-auto" id="settingsOpenAi" ng-if="menuSettings[0].active">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     <h6 class="m-0 font-weight-bold text-dark">
-                                        Open Ai </h6>
+                                        OpenAI </h6>
                                 </div>
                                 <div class="card-body">
                                     <form ng-submit="saveSettingOpenAi()">
@@ -287,7 +288,7 @@
                 <hr class="sidebar-divider">
                 <!-- Heading -->
                 <div class="sidebar-heading">
-                    Open AI
+                    OpenAI
                 </div>
 
                 <li class="nav-item {{appPage.Select==='basemodels'?'active activeMenu':''}}">
@@ -436,7 +437,7 @@
                                      aria-labelledby="userDropdown">
                                     <a class="dropdown-item" ng-click="openModalNewSecretKey()">
                                         <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Secret Key Open Ai
+                                        Secret Key OpenAI
                                         <span class="badge badge-info"> NEW </span>
                                     </a>
                                     <a class="dropdown-item" ng-click="openModalSettings()">

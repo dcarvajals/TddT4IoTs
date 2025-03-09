@@ -3,6 +3,7 @@ package com.ugr.microservices.dependencies.core.tddt4iots.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
@@ -31,6 +32,29 @@ public class Tddt4iotsUtil {
         }
         return data;
     }
+
+    public static String fetchTextFromUrl(String urlString) throws GenericException {
+        StringBuilder content = new StringBuilder();
+        try {
+            // Crear un objeto URL a partir de la cadena urlString
+            URL url = new URL(urlString);
+
+            // Abrir una conexión de entrada a la URL y crear un BufferedReader para leer el contenido
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append(System.lineSeparator());
+                }
+            }
+        } catch (Exception e) {
+            // Manejar cualquier excepción y lanzar una GenericException con el mensaje de error
+            throw new GenericException(e.getMessage());
+        }
+
+        // Devolver el contenido leído como un string
+        return content.toString().trim();
+    }
+
 
     public static <T> T fetchDataFromJsonString(String jsonString, Class<T> valueType) throws GenericException {
         T data = null;

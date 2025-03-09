@@ -282,7 +282,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         }
 
         String requestGrpcTrainModel = Tddt4iotsUtil.convertObjectToJsonString(grpcTrainModelReqDTO);
-        log.info(requestGrpcTrainModel);
+        //log.info(requestGrpcTrainModel);
         // entrenamos todos los archivos que se han encontrado con la fecha indicada
         String response = grpcTrainingModelOpenAi.trainModel(requestGrpcTrainModel);
 
@@ -328,85 +328,11 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         GrpcTrainModelResDTO grpcTrainModelResDTO =
                 Tddt4iotsUtil.fetchDataFromJsonString(modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
         List<MessageDTO> messages = new ArrayList<>();
+        // leer el promp por defecto para cada peticion
+        String contentDefault = Tddt4iotsUtil.fetchTextFromUrl(applicationConfig.getTddt4iotsNfs() + Tddt4iotsCons.PATH_TEMPLATE + "prompt.txt");
         MessageDTO messageDTOSystem = MessageDTO.builder()
                 .role(Tddt4iotsCons.SYSTEM)
-                .content("You are a wizard at interpreting natural text that describes the requirements of a computer system, and you must generate everything needed for a " +
-                        "class diagram and return the JSON as I have instructed you in the training. Make sure to return the complete JSON as a response, because I will parse " +
-                        "it from string to JSON to use it in a web application. The JSON must be exactly like the one I provided you in the training; do not change the structure." +
-                        "It must be a structure like this; if you are not adding data to an array, it should have at least 0 elements." +
-                        "{\n" +
-                        "  \"diagram\": [\n" +
-                        "    {\n" +
-                        "      \"packName\": \"string\",\n" +
-                        "      \"class\": [\n" +
-                        "        {\n" +
-                        "          \"action\": \"string\",\n" +
-                        "          \"derivative\": \"array\",\n" +
-                        "          \"className\": \"string\",\n" +
-                        "          \"visibility\": \"string\",\n" +
-                        "          \"modifiers\": \"string\",\n" +
-                        "          \"attributes\": [\n" +
-                        "            {\n" +
-                        "              \"visibility\": \"string\",\n" +
-                        "              \"name\": \"string\",\n" +
-                        "              \"type\": \"string\",\n" +
-                        "              \"cardinalidate\": \"string\",\n" +
-                        "              \"idToOrFrom\": \"string\"\n" +
-                        "            }\n" +
-                        "          ],\n" +
-                        "          \"methods\": [\n" +
-                        "            {\n" +
-                        "              \"visibility\": \"string\",\n" +
-                        "              \"name\": \"string\",\n" +
-                        "              \"type\": \"string\",\n" +
-                        "              \"parameters\": [\n" +
-                        "                {\n" +
-                        "                  \"name\": \"string\",\n" +
-                        "                  \"type\": \"string\",\n" +
-                        "                  \"$$hashKey\": \"string\"\n" +
-                        "                }\n" +
-                        "              ],\n" +
-                        "              \"$$hashKey\": \"string\"\n" +
-                        "            }\n" +
-                        "          ],\n" +
-                        "          \"constructors\": \"array\",\n" +
-                        "          \"$$hashKey\": \"string\"\n" +
-                        "        }\n" +
-                        "      ],\n" +
-                        "      \"enums\": [\n" +
-                        "        {\n" +
-                        "          \"name\": \"string\",\n" +
-                        "          \"visibility\": \"string\",\n" +
-                        "          \"elements\": \"array\"\n" +
-                        "        }\n" +
-                        "      ],\n" +
-                        "      \"$$hashKey\": \"string\"\n" +
-                        "    }\n" +
-                        "  ],\n" +
-                        "  \"xmldiagram\": \"string\",\n" +
-                        "  \"relationships\": [\n" +
-                        "    {\n" +
-                        "      \"from\": \"string\",\n" +
-                        "      \"to\": \"string\",\n" +
-                        "      \"typeRelatioship\": \"string\",\n" +
-                        "      \"value\": \"string\",\n" +
-                        "      \"cardinalidate\": \"string\",\n" +
-                        "      \"from_fk\": \"string\",\n" +
-                        "      \"to_fk\": \"string\",\n" +
-                        "      \"simbol\": \"string\"\n" +
-                        "    }\n" +
-                        "  ],\n" +
-                        "  \"action\": \"array\",\n" +
-                        "  \"notifications\": [\n" +
-                        "    {\n" +
-                        "      \"status\": \"number\",\n" +
-                        "      \"information\": \"string\",\n" +
-                        "      \"type\": \"string\",\n" +
-                        "      \"data\": \"array\"\n" +
-                        "    }\n" +
-                        "  ],\n" +
-                        "  \"edition\": \"boolean\"\n" +
-                        "}\n")
+                .content(contentDefault)
                 .build();
         MessageDTO messageDTOUser = MessageDTO.builder()
                 .role(Tddt4iotsCons.USER)
@@ -420,7 +346,6 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 .messages(messages)
                 .build();
         String grpcUseModelString = Tddt4iotsUtil.convertObjectToJsonString(grpcUseModelReqDTO);
-        // usamos el modelo entrenado
         log.info(grpcUseModelString);
         String response = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
         log.info(response);

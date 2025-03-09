@@ -15,6 +15,7 @@ public abstract class Tddt4iotsCons {
     // FOLDERS NFS
     public static final String URL_TDDT4IOTS_SERVER = "http://tddt4iots.com/Tddm4IoTbsServer/webapis/";
     public static final String PATH_PROJECTS = "tddm4iotbs_projects/";
+    public static final String PATH_TEMPLATE = "tddm4iotbs_template/";
     public static final String UML_DIAGRAM = "/UmlDiagram/";
     public static final String PATH_TRAINING_DATA = "tddt4iotsTrainingFile/";
     public static final String URL_SAVE_FILE_TRAINING = "fileManagerApi/saveFileTraining";

@@ -11,7 +11,7 @@ package ws.daemon;
  *
  * @author tonyp
  */
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 public class ArdSession {
 

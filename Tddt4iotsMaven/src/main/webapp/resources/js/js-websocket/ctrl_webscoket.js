@@ -36,7 +36,7 @@ app.expandControllerSocket = function ($scope) {
      * Funcion para ir agregando los usuarios a la lista de usuarios conectados al proyecto
      * */
     function onOpen() {
-        console.log("conectado...");
+        //console.log("conectado...");
         let objmsg = {
             "config": "init",
             "groupId": SessionParams.groupid,
@@ -51,8 +51,8 @@ app.expandControllerSocket = function ($scope) {
         $scope.messageSend(objmsg);
     }
     function onClose(evt) {
-        console.log("Desconectado...");
-        console.log(evt);
+        //console.log("Desconectado...");
+        //console.log(evt);
     }
 
     function onError(event) {
@@ -61,13 +61,13 @@ app.expandControllerSocket = function ($scope) {
     }
 
      $scope.messageSend = function(obj) {
-        console.log("enviando...");
+        //console.log("enviando...");
         let objmsg = JSON.stringify(obj);
         if (objmsg.length <= 10000450)
         {
             webSocketTdd.send(objmsg);
-            console.log("enviand mensaje:sock");
-            console.log(objmsg);
+            //console.log("enviand mensaje:sock");
+            //console.log(objmsg);
         } else {
             alertAll({status: 4, information: "The message exceeds the limit."});
         }
@@ -75,7 +75,7 @@ app.expandControllerSocket = function ($scope) {
 
     function onMessage(evt) {
         var obj = JSON.parse(evt.data);
-        console.log(obj);
+        //console.log(obj);
         let form;
         //header-config-content
         //groupId
@@ -83,7 +83,7 @@ app.expandControllerSocket = function ($scope) {
             case "host":
             {
                 //llamar a toast AlertAll (status = 1)
-                console.log("HOST ASIGNADO A UN NUEVO USUARIO");
+                //console.log("HOST ASIGNADO A UN NUEVO USUARIO");
             }
                 break;
             case "save":
@@ -97,7 +97,7 @@ app.expandControllerSocket = function ($scope) {
             case "connect":
             {
                 // llamar a toast de: Tal usuario se ha conectado
-                console.log("NUEVO USUARIO CONECTADO", obj);
+                //console.log("NUEVO USUARIO CONECTADO", obj);
                 alertAll({status: 1, information: "El usuario " + obj.content["name"] + " se ha conectado."});
             }
                 break;
@@ -109,10 +109,10 @@ app.expandControllerSocket = function ($scope) {
             case "list":
             {
                 //esta es la lista de usuarios que tienen en línea :D
-                console.log("LISTA DE USUARIOS");
+                //console.log("LISTA DE USUARIOS");
                 $scope.$apply(() => {
                     $scope.usersConected =  obj.content;
-                    console.log($scope.usersConected);
+                    //console.log($scope.usersConected);
                 })
                 //window.alert("lista");
             }
@@ -203,7 +203,7 @@ app.expandControllerSocket = function ($scope) {
             "groupId": SessionParams.groupid,
             "content": { ...data}
         };
-        console.log("ENVIANDO SOCKET", objmsg);
+        //console.log("ENVIANDO SOCKET", objmsg);
         $scope.messageSend(objmsg);
     }
 

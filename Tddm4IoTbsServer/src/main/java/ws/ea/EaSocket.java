@@ -1,28 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ws.ea;
 
-/*
- * @author tonyp
- */
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.JsonObject;
-import javax.websocket.EncodeException;
-import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.websocket.EncodeException;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
 import ws.*;
 
 /**
- * The socket in glassfish doesn't give problems without encoders and decoders,
- * but in tomcat it does, or it doesn't work. The serverEndpoint is the socket
+ * The socket in GlassFish doesn't give problems without encoders and decoders,
+ * but in Tomcat it does, or it doesn't work. The ServerEndpoint is the socket
  * link, followed by the encoder and decoder.
  */
 @ServerEndpoint(
@@ -39,36 +31,36 @@ public class EaSocket {
     private static final List<Groups> connected = new ArrayList<>();//sesiones
 
     /**
-     * This method is executed when a connection is made to the web scoket, then
-     * it receives as the session, which is added to the list with the other
+     * This method is executed when a connection is made to the web socket, then
+     * it receives the session, which is added to the list with the other
      * sessions.
      *
-     * @param sesion is given by default.
+     * @param session is given by default.
      */
     @OnOpen
-    public void open(Session sesion) {
+    public void open(Session session) {
         /**
          * adds the session to the list when it is created
          */
-        System.out.println("opnex");
-        sesion.setMaxTextMessageBufferSize(10000500);
+        System.out.println("open");
+        session.setMaxTextMessageBufferSize(10000500);
     }
 
     /**
-     * This method is executed when the connection with the web scoket is
+     * This method is executed when the connection with the web socket is
      * interrupted and receives the session of the person who cut off the
      * communication. This method removes the inactive session from the session
      * list.
      *
-     * @param sesion is given by default.
+     * @param session is given by default.
      * @throws EncodeException by the encoder.
      * @throws IOException for possible exceptions.
      */
     @OnClose
-    public void exit(Session sesion) throws IOException, EncodeException {
-        int row = searchSession(sesion);//se busca la sesión en la lista
+    public void exit(Session session) throws IOException, EncodeException {
+        int row = searchSession(session);//se busca la sesión en la lista
         if (row > -1 && row < connected.size()) {
-            connected.get(row).removeUser(sesion);
+            connected.get(row).removeUser(session);
             if (connected.get(row).usersCount() <= 0) {
                 connected.remove(row);//quita el grupo de la lista
             }
@@ -80,13 +72,13 @@ public class EaSocket {
      * message is sent and it is the one that redirects the information to the
      * other sessions.
      *
-     * @param ses is the session and is given by default.
+     * @param session is the session and is given by default.
      * @param message is the object with the information.
      * @throws EncodeException by the encoder.
      * @throws IOException for possible exceptions.
      */
     @OnMessage
-    public void message(Session ses, JsonObject message) throws IOException, EncodeException {
+    public void message(Session session, JsonObject message) throws IOException, EncodeException {
         System.out.println("CONFIG: " + JsonMessageUtils.getString(message, "config", ""));
         System.out.println("GROUP ID: " + JsonMessageUtils.getString(message, "groupId", ""));
         switch (JsonMessageUtils.getString(message, "config", "")) {
@@ -95,23 +87,22 @@ public class EaSocket {
                 if (row != -1 && row < connected.size()) {
                     boolean newhost = JsonMessageUtils.getBoolean(message, "host");
                     JsonObject dataUser = JsonMessageUtils.getJsonObject(message, "user");
-                    MeSession me = createMeSession(ses, newhost, dataUser);
+                    MeSession me = createMeSession(session, newhost, dataUser);
                     if (me != null) {
                         connected.get(row).setUsers(me);
                     } else {
-                        SendError(ses, "Missing parameters.");
+                        SendError(session, "Missing parameters.");
                     }
                 } else {
                     Groups gp = new Groups(JsonMessageUtils.getString(message, "groupId", ""));
-                    //primero en unirse, es host
-                    boolean newhost = true;//JsonMessageUtils.getBoolean(message, "host");
+                    boolean newhost = true;
                     JsonObject dataUser = JsonMessageUtils.getJsonObject(message, "user");
-                    MeSession me = createMeSession(ses, newhost, dataUser);
+                    MeSession me = createMeSession(session, newhost, dataUser);
                     if (me != null) {
                         gp.setUsers(me);
                         connected.add(gp);
                     } else {
-                        SendError(ses, "Missing parameters.");
+                        SendError(session, "Missing parameters.");
                     }
                 }
             }
@@ -119,18 +110,18 @@ public class EaSocket {
             case "save": {
                 int row = getGroup(JsonMessageUtils.getString(message, "groupId", ""));
                 if (row != -1 && row < connected.size()) {
-                    connected.get(row).shareHost(ses, message);
+                    connected.get(row).shareHost(session, message);
                 } else {
-                    SendError(ses, "Group not found.");
+                    SendError(session, "Group not found.");
                 }
             }
             break;
             default: {
                 int row = getGroup(JsonMessageUtils.getString(message, "groupId", ""));
                 if (row != -1 && row < connected.size()) {
-                    connected.get(row).shareNoMi(ses, message);
+                    connected.get(row).shareNoMi(session, message);
                 } else {
-                    SendError(ses, "Group not found.");
+                    SendError(session, "Group not found.");
                 }
             }
             break;
@@ -143,19 +134,19 @@ public class EaSocket {
      * @param session failed session.
      * @param throwable for the exception.
      */
-    public final void onError(Session session, java.lang.Throwable throwable) {
+    public final void onError(Session session, Throwable throwable) {
         System.out.println("wsError:" + throwable.getMessage());
     }
 
     /**
      * You get the index of where the session you are looking for is located.
      *
-     * @param mysession the session for which you want to know your position.
+     * @param session the session for which you want to know your position.
      */
-    private int searchSession(Session mysession) {
+    private int searchSession(Session session) {
         int resultRow = -1;
         for (int row = 0; row < connected.size(); row++) {
-            int index = connected.get(row).returnIndex(mysession);
+            int index = connected.get(row).returnIndex(session);
             if (index != -1) {
                 resultRow = row;
             }
@@ -173,7 +164,6 @@ public class EaSocket {
         int resultRow = -1;
         for (int row = 0; row < connected.size(); row++) {
             System.out.println("ID GUARDADO: " + connected.get(row).getGroupID());
-            //System.out.println("ID GUARDADO: " + connected.get(row + 1).getGroupID());
             if (connected.get(row).getGroupID().equals(identifier)) {
                 resultRow = row;
             }
@@ -184,24 +174,25 @@ public class EaSocket {
     /**
      * Method for sending the error.
      *
-     * @param ses is given by default.
-     * @param erroDetail Detail of the error.
+     * @param session is given by default.
+     * @param errorDetail Detail of the error.
      */
-    private void SendError(Session ses, String erroDetail) {
-        Groups.SendError(ses, erroDetail);
+    private void SendError(Session session, String errorDetail) {
+        Groups.SendError(session, errorDetail);
     }
 
     /**
      * Method for creating the session.
      *
-     * @param ses is given by default.
-     * @param content It contains the context.
+     * @param session is given by default.
+     * @param host defines if the user is the host.
+     * @param user contains user data.
      * @return Return the session.
      */
-    private MeSession createMeSession(Session ses, boolean host, JsonObject user) {
+    private MeSession createMeSession(Session session, boolean host, JsonObject user) {
         MeSession me = null;
         if (user.size() > 0) {
-            me = new MeSession(ses, host);
+            me = new MeSession(session, host);
             me.setUserObject(user);
         }
         return me;

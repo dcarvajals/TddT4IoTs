@@ -8,7 +8,7 @@ package ws.notify;
 import java.util.ArrayList;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 /**
  *

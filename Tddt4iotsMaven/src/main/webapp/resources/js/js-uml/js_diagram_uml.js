@@ -1,4 +1,4 @@
-/* global angular, Swal, rutasStorage, UMLUseCaseDiagram, UMLClassDiagram, UMLSequenceDiagram, UMLCommunication, UMLGeneralization, UMLExtend, UMLInclude, XMLSerializer, urlWebServicies, swal, JSONE, elementsClass */
+/* global angular, Swal, rutasStorage, UMLUseCaseDiagram, UMLClassDiagram, UMLSequenceDiagram, UMLCommunication, UMLGeneralization, UMLExtend, UMLInclude, XMLSerializer, urlWebServicies, swal, JSONE, elementsClass, store */
 
 app = angular.module('app', []);
 controller = app.controller("workAreaController", function ($scope) {
@@ -18,6 +18,16 @@ controller = app.controller("workAreaController", function ($scope) {
     $scope.DatoUsuario = {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;
     $scope.notifications = [];
+    $scope.activateOpenAi = false;
+    $scope.showMessageOpenAi = false;
+    $scope.jsonDiagramClassIA = {
+        diagram: [],
+        xmldiagram: "",
+        relationships: [],
+        action: [],
+        notifications: []
+    };
+    $scope.natural_text = [];
 
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
@@ -91,11 +101,91 @@ controller = app.controller("workAreaController", function ($scope) {
                 $scope.DatoUsuario = getDataSession();
                 $scope.showLS = false;
             });
+            $scope.natural_text = [];
+            store.session.set("natural_text", $scope.natural_text);
+            store.session.set("jsonClass", []);
             $scope.loadDataProject(id_project, $scope.DatoUsuario.user_token);
+            $scope.natural_text = store.session.get("natural_text");
         }
     });
 
-    $scope.showHideConsole = ()=> {
+    $scope.actualizarNaturalText = (jsonClass) => {
+        store.session.set("natural_text", []);
+        let descriptionUseCase = "";
+        let useCase = $scope.jsonUseCase.useCase;
+        for (let x = 0; x < useCase.length; x++) {
+            let usecase_name = useCase[x].name;
+            let description_interpret = useCase[x].description_interpret;
+            let usecase_postcondition_i = useCase[x].post_condition;
+            let usecase_precondition_i = useCase[x].pre_condition;
+            let usecase_porpuse_i = useCase[x].porpuse;
+
+            descriptionUseCase += usecase_name === undefined ? "" : usecase_name + ", ";
+            descriptionUseCase += usecase_porpuse_i === undefined ? "" : usecase_porpuse_i + ", ";
+            descriptionUseCase += usecase_precondition_i === undefined ? "" : usecase_precondition_i + ", ";
+            descriptionUseCase += usecase_postcondition_i === undefined ? "" : usecase_postcondition_i + ", ";
+            descriptionUseCase += description_interpret === undefined ? "" : description_interpret + ", ";
+
+            for (let y = 0; y < useCase[x].main_stage.length; y++) {
+                // action_original
+                let action_original = useCase[x].main_stage[y].action_original;
+                descriptionUseCase += action_original + ", ";
+            }
+
+            for (let z = 0; z < useCase[x].alternative_flow.length; z++) {
+                // action_original
+                let action_original = useCase[x].alternative_flow[z].action_original;
+                descriptionUseCase += action_original + ", ";
+            }
+        }
+        $scope.natural_text.push({ 
+            text: descriptionUseCase,
+            classDiagram: Object.assign({}, jsonClass)
+        });
+        console.log("diagrama class", $scope.natural_text);
+        store.session.set("natural_text", $scope.natural_text);
+        // obtener el diagrama de clases guardado en la ultima modificacion
+        store.session.set("jsonClass", Object.assign({}, jsonClass));
+    };
+
+    $scope.activateOpenAiApi = () => {
+        console.log("activateOpenAi()");
+        let dataUser = store.session.get("user_tddm4iotbs");
+        $scope.activateOpenAi = !$scope.activateOpenAi;
+        let api_param = {
+            idmasterproject: $scope.dataProject.id_masterproject,
+            status_openai: !$scope.activateOpenAi ? "T" : "F"
+        };
+        if (dataUser !== undefined && dataUser !== null) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                url: urlWebServicies + 'projects/activateOpenAi',
+                data: JSON.stringify({
+                    ...api_param
+                }),
+                beforeSend: function (xhr) {
+                    loading();
+                },
+                success: function (data) {
+                    swal.close();
+                    console.log(data);
+                    $scope.$apply(() => {
+
+                    });
+                    alertAll(data);
+                },
+                error: function (objXMLHttpRequest) {
+                    console.log("error: ", objXMLHttpRequest);
+                }
+            });
+        } else {
+            location.href = "index.html";
+        }
+    };
+
+    $scope.showHideConsole = () => {
         $scope.viewConsole = !$scope.viewConsole;
     }
 
@@ -133,6 +223,7 @@ controller = app.controller("workAreaController", function ($scope) {
                     $scope.$apply(() => {
                         $scope.dataProject = data.data[0];
                         $scope.nameProject = $scope.dataProject.name_mp;
+                        $scope.activateOpenAi = $scope.dataProject.status_openai === 'T';
 
                         initDiagramUml();
                         $scope.loadUseCase();
@@ -275,7 +366,6 @@ controller = app.controller("workAreaController", function ($scope) {
         }
 
         statusDropEnd = "actor";
-        console.log(statusDropEnd);
     });
 
     let usecase = document.getElementById("btnusecase");
@@ -290,7 +380,6 @@ controller = app.controller("workAreaController", function ($scope) {
         }
 
         statusDropEnd = "usecase";
-        console.log(statusDropEnd);
     });
 
     let newclass = document.getElementById("btnclass");
@@ -302,7 +391,6 @@ controller = app.controller("workAreaController", function ($scope) {
         }
 
         statusDropEnd = "newclass";
-        console.log(statusDropEnd);
     });
 
     //cerrar actor
@@ -631,7 +719,6 @@ controller = app.controller("workAreaController", function ($scope) {
              **/
             for (let index = 0; index < $scope.actorsUseCase.length; index++) {
                 let actorUC = $scope.actorsUseCase[index].obj_actor;
-                console.log("ACTOR USE CASE", actorUC);
                 let relation = {};
                 relation = createRelation({
                     "a": actorUC,
@@ -728,7 +815,6 @@ controller = app.controller("workAreaController", function ($scope) {
             diagramUseCase.draw();
             //cerramos el modal del caso de uso
             $("#modal_usecase").modal('hide');
-            console.log($scope.jsonUseCase);
 
         } catch (ErrorMessage) {
             console.log(ErrorMessage);
@@ -752,48 +838,57 @@ controller = app.controller("workAreaController", function ($scope) {
         try {
             $scope.jsonClass.diagram.length = 0; // siempre reiniciar el json de las clases al momento de editar
             $scope.jsonClass.relationships.length = 0; // siempre reiniciar el json de las clases al momento de editar
+            let descriptionUseCase = "";
             let useCase = $scope.jsonUseCase.useCase;
             let minjson = [];
             for (let x = 0; x < useCase.length; x++) {
                 let usecase_name = useCase[x].name;
                 let description_interpret = useCase[x].description_interpret;
-                let usecase_postcondition_i = useCase[x].postcondition;
-                let usecase_precondition_i = useCase[x].precondition;
+                let usecase_postcondition_i = useCase[x].post_condition;
+                let usecase_precondition_i = useCase[x].pre_condition;
                 let usecase_porpuse_i = useCase[x].porpuse;
-                minjson = getHackDiagram(usecase_name === undefined ? "" : usecase_name);
-                //$scope.notifications.push(minjson)
-                console.log("NOTIFICACIONES !! - " + minjson);
+                minjson = $scope.interpretUseCase(usecase_name === undefined ? "" : usecase_name, false);
+                descriptionUseCase += usecase_name === undefined ? "" : usecase_name + ", ";
 
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
-                minjson = getHackDiagram(usecase_porpuse_i === undefined ? "" : usecase_porpuse_i);
+                minjson = $scope.interpretUseCase(usecase_porpuse_i === undefined ? "" : usecase_porpuse_i, false);
+                descriptionUseCase += usecase_porpuse_i === undefined ? "" : usecase_porpuse_i + ", ";
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
-                minjson = getHackDiagram(usecase_precondition_i === undefined ? "" : usecase_precondition_i);
+                minjson = $scope.interpretUseCase(usecase_precondition_i === undefined ? "" : usecase_precondition_i, false);
+                descriptionUseCase += usecase_precondition_i === undefined ? "" : usecase_precondition_i + ", ";
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
-                minjson = getHackDiagram(usecase_postcondition_i === undefined ? "" : usecase_postcondition_i);
+                minjson = $scope.interpretUseCase(usecase_postcondition_i === undefined ? "" : usecase_postcondition_i, false);
+                descriptionUseCase += usecase_postcondition_i === undefined ? "" : usecase_postcondition_i + ", ";
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
-                minjson = getHackDiagram(description_interpret == undefined ? "" : description_interpret);
+                minjson = $scope.interpretUseCase(description_interpret === undefined ? "" : description_interpret, false);
+                descriptionUseCase += description_interpret === undefined ? "" : description_interpret + ", ";
                 mergeClassDiagram($scope.jsonClass, minjson[1]);
                 for (let y = 0; y < useCase[x].main_stage.length; y++) {
                     // action_original
                     let action_original = useCase[x].main_stage[y].action_original;
-                    minjson = getHackDiagram(action_original);
+                    minjson = $scope.interpretUseCase(action_original, false);
+                    descriptionUseCase += action_original + ", ";
                     mergeClassDiagram($scope.jsonClass, minjson[1]);
                 }
 
                 for (let z = 0; z < useCase[x].alternative_flow.length; z++) {
                     // action_original
                     let action_original = useCase[x].alternative_flow[z].action_original;
-                    minjson = getHackDiagram(action_original);
+                    minjson = $scope.interpretUseCase(action_original, false);
+                    descriptionUseCase += action_original + ", ";
                     mergeClassDiagram($scope.jsonClass, minjson[1]);
                 }
+            }
+
+            // interpretar toda la descripcion del caso de uso con OpenAi 
+            if ($scope.activateOpenAi) {
+                $scope.interpretUseCase(descriptionUseCase, true);
             }
 
             if ($scope.jsonClass.diagram.length > 0) {
                 // agregar ls fk a las tablas relacionadas
                 $scope.addForeingKey($scope.jsonClass.diagram[0].class, $scope.jsonClass.relationships);
             }
-
-            console.log($scope.jsonClass);
 
         } catch (ErrorMessage) {
             console.log(ErrorMessage);
@@ -905,7 +1000,6 @@ controller = app.controller("workAreaController", function ($scope) {
             //preguntaremos si se agregaron nuevos actores dentro del caso de uso
             let relations_usecase = $scope.object_update.getRelations(); // sacamos las relaciones del caso de uso
             let index_Y = 0, index_actor_relation = 0;
-            console.log(relations_usecase);
             if (relations_usecase.length > 0) {
                 for (let index_X = 0; index_X < $scope.actorsUseCase.length;
                         index_Y === relations_usecase.length ? index_X++ : index_X) {
@@ -1052,10 +1146,10 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para interpretar la descripcion general del caso de uso
     $scope.interpretUseCaseDescription = function (flag, scope_usecase, scope_original) {
-        let minjson = getHackDiagram(scope_usecase.$modelValue);
-        console.log(minjson);
+        let minjson = $scope.interpretUseCase(scope_usecase.$modelValue, false);
+
         // leer todas las notificaciones que se ingresan en ese momento
-        for(let i = 0; i < minjson[1].notifications.length; i++) {
+        for (let i = 0; i < minjson[1].notifications.length; i++) {
             let notification = minjson[1].notifications[i];
             $scope.notifications.push(notification);
         }
@@ -1076,12 +1170,13 @@ controller = app.controller("workAreaController", function ($scope) {
                 $scope.usecase_name_i = minjson[0];
                 break;
         }
-        //scope_original.$modelValue = minjson[0];
+
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
+
         if (flag)
             $scope.utilWebSocket("interpretUseCaseDescription", {"form": scope_usecase.$modelValue});
-        console.log($scope.jsonClass);
+
         alertAll({
             "status": 2,
             "information": "Text interpreted successfully."
@@ -1090,8 +1185,7 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para interpretar la accion a editar
     $scope.interpretUseCaseAction = function () {
-        let minjson = getHackDiagram($scope.action_original);
-        console.log(minjson);
+        let minjson = $scope.interpretUseCase($scope.action_original, false);
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
         $scope.action_interpret = minjson[0];
@@ -1103,8 +1197,8 @@ controller = app.controller("workAreaController", function ($scope) {
 
     //funcion para agregar el escenario principal del caso de uso
     $scope.mainStage = function (form) {
-        let minjson = getHackDiagram(form.action_ms.$viewValue);
-        console.log(minjson);
+        let minjson = $scope.interpretUseCase(form.action_ms.$viewValue, false);
+
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
         $scope.manager_maf.main_stage.push({
@@ -1123,9 +1217,6 @@ controller = app.controller("workAreaController", function ($scope) {
         $scope.check_final_step = false;
         form.$setPristine();
         form.$setUntouched();
-
-        console.log(form.check_final_step.$viewValue);
-        console.log($scope.jsonClass);
     };
 
     //funcion para eliminar una accion del escenario principal
@@ -1168,7 +1259,6 @@ controller = app.controller("workAreaController", function ($scope) {
                 let elem = diagramUseCase.getElementByPoint(obj.obj_actor.getX(), obj.obj_actor.getY());
                 diagramUseCase.delElement(elem);
                 diagramUseCase.draw();
-                console.log(positionActor);
                 let lengthMainStage = $scope.manager_maf.main_stage.length;
                 if (lengthMainStage > 0) {
                     for (let indexX = (lengthMainStage - 1); indexX > -1; indexX--) {
@@ -1206,7 +1296,7 @@ controller = app.controller("workAreaController", function ($scope) {
         });
     };
 
-    
+
     /**
      * funcion para abrir el modal y editar la acciono
      * @param {obj} obj
@@ -1236,10 +1326,10 @@ controller = app.controller("workAreaController", function ($scope) {
             console.log($scope.update_action);
         }
     };
-    
+
     /**
      * funcion para editar las acciones del flujo normal de eventos
-     * */ 
+     * */
 
     //funcion para actualizar los datos de la accion editada
     $scope.updateActionMSFA = function (form) {
@@ -1247,29 +1337,29 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.update_action.action_interpret = form.action_interpret.$viewValue;
             $scope.update_action.action_original = form.action_original.$viewValue;
             $scope.update_action.actor = form.actor.$viewValue;
-            
-            let objectActual =  $scope.manager_maf.main_stage.splice($scope.positionActual - 1, 1)[0];
+
+            let objectActual = $scope.manager_maf.main_stage.splice($scope.positionActual - 1, 1)[0];
             $scope.manager_maf.main_stage.splice($scope.position, 0, objectActual);
-            
+
             // buscar la posicion a donde se va cambiar los datos
             /*let objetoCambiarPosicion =  $scope.manager_maf.main_stage[$scope.position];
-            let objectActual = $scope.update_action;*/
-            
+             let objectActual = $scope.update_action;*/
+
             /*objectActual.action_interpret = objetoCambiarPosicion.action_interpret;
-            objectActual.action_original = objetoCambiarPosicion.action_original;
-            objectActual.actor = objetoCambiarPosicion.actor;
-            
-            $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
-            $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
-            $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
-            */
+             objectActual.action_original = objetoCambiarPosicion.action_original;
+             objectActual.actor = objetoCambiarPosicion.actor;
+             
+             $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
+             $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
+             $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
+             */
             $("#modal_update_duc").modal('hide');
         }
     };
 
     //funcion para agregar el flujo alternativo del caso de uso
     $scope.flowAlternate = function (form) {
-        let minjson = getHackDiagram(form.action_fa.$viewValue);
+        let minjson = $scope.interpretUseCase(form.action_fa.$viewValue, false);
         console.log(minjson);
         mergeClassDiagram($scope.jsonClass, minjson[1]);
         $scope.updateSecuence($scope.jsonClass);
@@ -1764,6 +1854,7 @@ controller = app.controller("workAreaController", function ($scope) {
                                 // actualizar la grafica de las lineas de las relaciones
                                 relationsClass($scope.jsonClass.relationships);
                                 $scope.editionClasDiagram = $scope.jsonClass.edition;
+                                $scope.actualizarNaturalText(jsonresponse);
                             }
                             diagramUseCase.draw();
                             $scope.loadSecuence();
@@ -2690,19 +2781,19 @@ controller = app.controller("workAreaController", function ($scope) {
         document.body.appendChild(tempDiv);
 
         var clipboard = new ClipboardJS('#copyButton', {
-            text: function() {
+            text: function () {
                 return tempDiv.innerHTML;
             }
         });
 
-        clipboard.on('success', function(e) {
+        clipboard.on('success', function (e) {
             console.log('Contenido copiado al portapapeles!');
             alert("Content successfully copied.");
             e.clearSelection();
             document.body.removeChild(tempDiv); // Eliminar el elemento temporal
         });
 
-        clipboard.on('error', function(e) {
+        clipboard.on('error', function (e) {
             console.error('Error al copiar al portapapeles.');
             alert("Failed to copy content.");
             document.body.removeChild(tempDiv); // Eliminar el elemento temporal
@@ -2723,19 +2814,19 @@ controller = app.controller("workAreaController", function ($scope) {
         document.body.appendChild(container);
 
         /*const range = document.createRange();
-        range.selectNodeContents(container);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);*/
+         range.selectNodeContents(container);
+         const selection = window.getSelection();
+         selection.removeAllRanges();
+         selection.addRange(range);*/
 
         try {
             const successful = document.execCommand('copy');
             const msg = successful ? "Content successfully copied." : "Failed to copy content.";
             console.log(msg);
-            alertAll({ "status": successful ? 2 : 0, "information": msg });
+            alertAll({"status": successful ? 2 : 0, "information": msg});
         } catch (err) {
             console.error('Error al copiar al portapapeles: ', err);
-            alertAll({ "status": 0, "information": "Failed to copy content." });
+            alertAll({"status": 0, "information": "Failed to copy content."});
         }
 
         selection.removeAllRanges();
@@ -2745,6 +2836,137 @@ controller = app.controller("workAreaController", function ($scope) {
     /**
      * ##############################################################################################################
      * FIN FUNCIONES DIAGRAMA DE CLASES
+     * ##############################################################################################################
+     * */
+
+    /**
+     * ##############################################################################################################
+     * INICIO API PARA CONSUMIR EL MODELO DE INTELIGENCIA ARTIFICIAL
+     * ##############################################################################################################
+     * */
+
+    $scope.validarExistenciaTextoNatural = (naturalText, propiedad) => {
+        $scope.natural_text = store.session.get("natural_text");
+        // Verificamos si ya existe un objeto con el mismo valor en la propiedad especificada
+        const existe = $scope.natural_text.some(item => item[propiedad] === naturalText);
+        const item = $scope.natural_text.find(item => item[propiedad] === naturalText);
+
+        if (existe) {
+            console.log(`El valor ${naturalText} ya existe en la propiedad ${propiedad}, no se agrega.`);
+        } else {
+            return {interpret: {}, flag: false};
+        }
+
+        return {interpret: item, flag: true};
+    };
+
+    $scope.interpretUseCase = (textNatural, seInterpreta) => {
+        let minjson = [];
+        if ($scope.activateOpenAi) {
+
+            minjson = seInterpreta ? $scope.interpretTextIA(textNatural) :
+                    [textNatural,
+                        {
+                            diagram: [],
+                            xmldiagram: "",
+                            relationships: [],
+                            action: [],
+                            notifications: []
+                        }];
+        } else {
+            minjson = getHackDiagram(textNatural);
+            mergeClassDiagram($scope.jsonClass, minjson[1]);
+        }
+        return minjson;
+    };
+
+    $scope.interpretTextIA = (textNatural) => {
+
+        if (textNatural === "") {
+            return [
+                textNatural,
+                $scope.jsonDiagramClassIA
+            ];
+        }
+
+        // validar si el texto ya ha sido analizado anteriormente
+        let existeTexto = $scope.validarExistenciaTextoNatural(textNatural, "text");
+        if (existeTexto.flag) {
+            $scope.showMessageOpenAi = false;
+            updateClassDiagram(existeTexto.interpret.classDiagram, "U");
+            diagramUseCase.draw();
+            return [
+                textNatural,
+                existeTexto.interpret.classDiagram
+            ];
+        }
+
+        let request = {
+            classDTO: {
+                descriptionUseCase: textNatural
+            }
+        };
+        $scope.apiUseModel(request);
+        $scope.jsonDiagramClassIA["notifications"].length = 0;
+        return [
+            textNatural,
+            $scope.jsonDiagramClassIA
+        ];
+    };
+
+    $scope.apiUseModel = (request) => {
+        var dataUser = store.session.get("user_tddm4iotbs");
+        $.ajax({
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            url: urlWsOpenAi + 'master-project/useModelTraining',
+            headers: {"userToken": dataUser.user_token},
+            data: JSON.stringify(request),
+            beforeSend: function (xhr) {
+                $scope.showMessageOpenAi = true;
+            },
+            success: function (response) {
+                let dataDiagramClass = JSON.parse(response.data);
+                response.data = JSON.parse(dataDiagramClass.data);
+                /*$scope.initDiagramClass();
+                 updateClassDiagramOpenAi(response.data, "C");*/
+                $scope.$apply(function () {
+                    
+                    // obtener el diagrama de clases almacenado en cache:
+                    $scope.jsonClass = store.session.get("jsonClass");
+                    let minJson = {};
+                    
+                    if($scope.jsonClass.length === 0) {
+                        $scope.jsonClass = response.data;
+                    } else {
+                        minJson = response.data;
+                        mergeClassDiagram($scope.jsonClass, minJson);
+                    }
+                    
+                    
+                    updateClassDiagram($scope.jsonClass, "U");
+                    diagramUseCase.draw();
+                    $scope.showMessageOpenAi = false;
+                    $scope.natural_text.push({
+                        text: request.classDTO.descriptionUseCase,
+                        classDiagram: response.data
+                    });
+                    store.session.set("natural_text", $scope.natural_text);
+                    store.session.set("jsonClass", $scope.jsonClass);
+                });
+                console.log(response);
+                //alertAll(response);
+            },
+            error: function (objXMLHttpRequest) {
+                console.log("Error: ", objXMLHttpRequest.responseText);
+            }
+        });
+    };
+
+    /**
+     * ##############################################################################################################
+     * FIN API PARA CONSUMIR EL MODELO DE INTELIGENCIA ARTIFICIAL
      * ##############################################################################################################
      * */
 });

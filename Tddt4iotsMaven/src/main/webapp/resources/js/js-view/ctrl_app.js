@@ -76,7 +76,7 @@ app.controller("application", function ($scope, $http) {
     $scope.useOpenAiSelected = {};
     $scope.useOpenAi = [{name: "TRAINING", description: "This option will allow you to train models based on the base model you selected in the previous option.", value: false, pathWs: "create-train"},
                         {name: "USE", description: "This option will only allow you to consume already trained models based on the base model you selected.", value: false, pathWs: "create-use"}]
-    $scope.menuSettings = [{label: "Open Ai", icon: "fas fa-gem", active: true, visible:true},
+    $scope.menuSettings = [{label: "OpenAI", icon: "fas fa-gem", active: true, visible:true},
                            {label: "Training", icon: "fas fa-splotch", active: false, visible:true}];
     $scope.modelPermissions = [];
     $scope.trainingHistoryValidate = {};

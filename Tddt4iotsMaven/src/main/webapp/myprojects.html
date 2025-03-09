@@ -14,7 +14,7 @@
                                ng-class="(form_new_project.name_np.$invalid &&
                                                        form_new_project.name_np.$dirty) ?
                                                        'form-control form-control-sm is-invalid'
-                                                       : 'form-control form-control-sm'" maxlength="30" required/>
+                                                       : 'form-control form-control-sm'" required/>
                         <div class="invalid-feedback">
                             Please enter the name project
                         </div>
@@ -199,54 +199,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-danger" ng-click="closeSeeMembersInProject()">Close</button>                  
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-
-<div class="modal fade" id="modalCreateProject" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-     aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered sha" role="document">
-        <div class="modal-content">
-            <form name="form_new_project" ng-submit="newProject(form_new_project)">
-                <div class="modal-header">
-                    <h5 class="modal-title">Deliverables</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="col-form-label col-form-label-sm"> Name project:</label>
-                        <input name="name_np"
-                               ng-model="name_np"
-                               ng-class="(form_new_project.name_np.$invalid &&
-                                                       form_new_project.name_np.$dirty) ?
-                                                       'form-control form-control-sm is-invalid'
-                                                       : 'form-control form-control-sm'" maxlength="30" required/>
-                        <div class="invalid-feedback">
-                            Please enter the name project
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-form-label col-form-label-sm"> Description project:</label>
-                        <textarea name="description_np"
-                                  ng-model="description_np"
-                                  ng-class="(form_new_project.description_np.$invalid &&
-                                                          form_new_project.description_np.$dirty) ?
-                                                          'form-control form-control-sm is-invalid'
-                                                          : 'form-control form-control-sm'" maxlength="200" required
-                                  cols="30">
-                        </textarea>
-                        <div class="invalid-feedback">
-                            Please enter the description project
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-danger" ng-click="cancelProject()">Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-primary" ng-disabled="form_new_project.$invalid">
-                        Save changes
-                    </button>
                 </div>
             </form>
         </div>

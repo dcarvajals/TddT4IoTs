@@ -13,7 +13,7 @@ package ws;
 import javax.json.Json;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 public class MeSession {
     

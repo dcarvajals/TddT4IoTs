@@ -387,7 +387,9 @@ app.controller("myprojects_controller", function ($scope, $http) {
                         alertAll(data);
                         $scope.name_np = "";
                         $scope.description_np = "";
-                        $("#modalCreateProject").modal('hide');
+                        $scope.$apply(function () {
+                           $("#modalCreateProject").modal('hide'); 
+                        });
                     },
                     error: function (objXMLHttpRequest) {
                         // console.log("error: ", objXMLHttpRequest);
@@ -1057,7 +1059,7 @@ app.controller("myprojects_controller", function ($scope, $http) {
     $scope.cancelProject = () => {
         $scope.name_np = "";
         $scope.description_np = "";
-        $("#modalCreateProject").modal('hide');
+        $("#modalCreateProject").modal("hide");
     };
 
     $scope.cancelShareProject = () => {

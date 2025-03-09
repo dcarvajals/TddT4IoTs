@@ -23,6 +23,7 @@ const relationsGlobal = {
     "dependency": UMLDependency,
     "generalization": UMLGeneralization,
     "asociation": UMLAssociation,
+    "association": UMLAssociation,
     "composition": UMLComposition
 };
 
@@ -31,6 +32,7 @@ const relationsGlobalname = {
     "dependency": "dependency",
     "generalization": "generalization",
     "asociation": "asociation",
+    "association": "asociation",
     "composition": "composition"
 };
 
@@ -97,8 +99,9 @@ function updateClassDiagramOpenAi(jsonInterprete, action) {
         setClassPosition();
         alertAll({"status": 2, "information": "Class diagram successfully updated."});
         diagramClass.draw();
+        diagramClass.interaction(true);
     } catch (ErrorMessage) {
-        console.log(ErrorMessage);
+        //consolo.log(ErrorMessage);
         alertAll({
             "status": 4,
             "information": "[updateClassDiagram]: " + ErrorMessage.message
@@ -109,6 +112,7 @@ function updateClassDiagramOpenAi(jsonInterprete, action) {
 function updateClassDiagram(jsonInterprete, action) {
     try {
         let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
+        ac.showMessageOpenAi = true;
         if (elementsClass.length > 0) {
             getClassPosition(diagramClass._nodes);
             for (ielement = 0; ielement < elementsClass.length; ielement++) {
@@ -182,8 +186,9 @@ function updateClassDiagram(jsonInterprete, action) {
         relationsClass(jsonInterprete.relationships);
         setClassPosition();
         alertAll({"status": 2, "information": "Class diagram successfully updated."});
+        //ac.showMessageOpenAi = false;
     } catch (ErrorMessage) {
-        console.log(ErrorMessage);
+        //consolo.log(ErrorMessage);
         alertAll({
             "status": 4,
             "information": "[updateClassDiagram]: " + ErrorMessage.message
@@ -197,7 +202,7 @@ function getClassPosition(elementsClass) {
             "posx": elementsClass[i]._x, "posy": elementsClass[i]._y, "name": elementsClass[i].getName()
         });
     }
-    console.log("POSITION CLASS ", positionsClass);
+    //consolo.log("POSITION CLASS ", positionsClass);
 }
 
 function setClassPosition() {
@@ -209,7 +214,7 @@ function setClassPosition() {
             break;
 
         if (diagramClass._nodes[class_num] !== undefined) {
-            console.log(diagramClass._nodes[class_num].getName());
+            //consolo.log(diagramClass._nodes[class_num].getName());
             if (diagramClass._nodes[class_num].getName() === positionsClass[i].name) {
                 found = true;
                 position_aux = i;
@@ -240,14 +245,15 @@ function deleteRelationsRedundant(relations) {
         for (let positionRelation = 0; positionRelation < relations.length; positionRelation++) {
             let rel_origi = relations[positionRelation];
 
-            if (rel_origi !== undefined) {
+            if (rel_origi !== undefined && rel_origi !== null) {
 
                 let from = rel_origi.from;
                 let to = rel_origi.to;
                 for (let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++) {
                     let rela = relations[positionRelationAux];
 
-                    if (rela !== undefined) {
+                    if (rela !== undefined && rela !== null) {
+
                         let fromx = rela.from;
                         let tox = rela.to;
 
@@ -260,7 +266,7 @@ function deleteRelationsRedundant(relations) {
                 }
             }
         }
-        console.log("cantidad de relaciones redundantes: ", relationsSuccess.length);
+        //consolo.log("cantidad de relaciones redundantes: ", relationsSuccess.length);
         let unique_data = [];
         unique_data = relationsSuccess.filter(onlyUnique);
         // agregar las relaciones que no se repitieron
@@ -289,7 +295,7 @@ function relationsClass(relations) {
                     let to = getFromToRelation(relations[irelation].to);
 
                     if (from === undefined || to === undefined) {
-                        console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
+                        //consolo.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
                     } else {
 
                         if (relations[irelation].cardinalidate === undefined) {

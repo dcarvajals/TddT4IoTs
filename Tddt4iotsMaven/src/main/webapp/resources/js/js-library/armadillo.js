@@ -5,7 +5,7 @@
 
 // Global variables
 var DataPrimitive_Armadillo = ["String", "string", "byte", "short", "int",
-     "long", "Long", "float", "Float", "double", "Double", "boolean",
+    "long", "Long", "float", "Float", "double", "Double", "boolean",
     "Boolean", "date", "Date", "list", "List", "array", "Array", "arrayList",
     "ArrayList", "json", "JSON"];
 var DataTypeVisibility = [
@@ -42,7 +42,7 @@ function setNotifications(status, information, data) {
     };
     var timestamp = new Date().toLocaleString();
     notification.status = status;
-    notification.information = "["+ timestamp + "] "+ information;
+    notification.information = "[" + timestamp + "] " + information;
     notification.data = data;
     notification.type = status === 0 ? "information" : status === 1 ? "success"
             : status === 2 ? "warning" : "error";
@@ -977,6 +977,11 @@ function joinPackages(bigPackage, minPackage) {
 }
 
 function joinConstructors(bigPackage, minPackage) {
+    
+    if(minPackage === null || minPackage === undefined) {
+        return;
+    }
+    
     for (var ind2 = 0; ind2 < minPackage.length; ind2++) {
         let find = false;
         for (var ind = 0; ind < bigPackage.length; ind++) {
@@ -1044,33 +1049,19 @@ function joinAttributes(bigAttr, minAttr) {
         let find = false;
         for (var ind2 = 0; ind2 < bigAttr.length; ind2++) {
             if (minAttr[ind].name === bigAttr[ind2].name) {
-                if (minAttr[ind].type !== bigAttr[ind2].type) {
-                    let countm = 0;
-                    for (var ind3 = 0; ind3 < minAttr.length; ind3++) {
-                        if (minAttr[ind3].name === bigAttr[ind2].name && ind !== ind2) {
-                            countm = countm + 1;
-                            ind3 = minAttr.length;
-                        }
-                    }
-                    minAttr[ind].name = minAttr[ind].name + (countm > 0 ? countm : "");
-                    //console.log("lista de las clases", bigAttr);
-                    minAttr[ind].visibility = classVisibilityPriority(minAttr[ind].visibility, bigAttr[ind2].visibility);
-                    bigAttr.push({...minAttr[ind]});
-                } else {
-                    find = true;
-                    bigAttr[ind2].visibility = classVisibilityPriority(minAttr[ind].visibility, bigAttr[ind2].visibility);
-                }
+                // Si encontramos un atributo con el mismo nombre, no necesitamos agregarlo a bigAttr
+                // Aquí podrías agregar lógica adicional si necesitas manejar atributos con el mismo nombre pero diferente tipo, etc.
+                find = true;
+                break; // Salimos del bucle ya que encontramos el atributo
             }
         }
-        if (find === false) {
+        // Si no se encontró el atributo en bigAttr, lo agregamos
+        if (!find) {
             bigAttr.push({...minAttr[ind]});
         }
     }
-
-//    visibility
-//    name
-//    type
 }
+
 
 function joinMethods(bigAttr, minAttr) {
     for (var ind2 = 0; ind2 < minAttr.length; ind2++) {
@@ -1170,16 +1161,34 @@ function mergeRelationships(bigRel, minRel) {
             let ind;
             for (let ind2 = 0; ind2 < minRel.length; ind2++) {
                 for (ind = 0; ind < cant; ind++) {
-                    if (bigRel[ind] !== undefined && minRel[ind2] !== undefined) {
-                        resp = relationshipsIsExists(bigRel[ind].from, bigRel[ind].to, bigRel[ind].typeRelatioship,
-                                minRel[ind2].from, minRel[ind2].to, minRel[ind2].typeRelatioship);
-                        if (resp[0] === false) {
-                            noExisteRelacion = true;
-                            relationEncontrada = ind2;
-                        } else {
-                            // dejar de buscar poq si existe la relaion en alguna posicion de las relaciones totales
-                            ind = cant;
-                            noExisteRelacion = false;
+                    if (bigRel[ind] !== undefined && bigRel[ind] !== null &&
+                            minRel[ind2] !== undefined && minRel[ind2] !== null) {
+
+                        // Verificar que las propiedades necesarias no sean undefined o null
+                        if (bigRel[ind].from !== undefined && bigRel[ind].from !== null &&
+                                bigRel[ind].to !== undefined && bigRel[ind].to !== null &&
+                                bigRel[ind].typeRelatioship !== undefined && bigRel[ind].typeRelatioship !== null &&
+                                minRel[ind2].from !== undefined && minRel[ind2].from !== null &&
+                                minRel[ind2].to !== undefined && minRel[ind2].to !== null &&
+                                minRel[ind2].typeRelatioship !== undefined && minRel[ind2].typeRelatioship !== null) {
+
+                            resp = relationshipsIsExists(
+                                    bigRel[ind].from,
+                                    bigRel[ind].to,
+                                    bigRel[ind].typeRelatioship,
+                                    minRel[ind2].from,
+                                    minRel[ind2].to,
+                                    minRel[ind2].typeRelatioship
+                                    );
+
+                            if (resp[0] === false) {
+                                noExisteRelacion = true;
+                                relationEncontrada = ind2;
+                            } else {
+                                // Detener la búsqueda porque ya existe la relación en alguna posición de las relaciones totales
+                                ind = cant; // Forzar la salida del bucle
+                                noExisteRelacion = false;
+                            }
                         }
                     }
                 }

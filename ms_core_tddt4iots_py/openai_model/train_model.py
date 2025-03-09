@@ -14,7 +14,7 @@ def train_model(json_string):
         str: JSON string indicando el estado del entrenamiento.
     """
 
-    print(f"URL del archivo JSONL: {json_string}")
+    #print(f"URL del archivo JSONL: {json_string}")
 
     result = {
         "code": 1,
@@ -127,7 +127,7 @@ def train_model(json_string):
     return json.dumps(result)
 
 def use_model (json_string):
-    print(f"URL del archivo JSONL: {json_string}")
+    print(f"Inicia proceso para usar el modelo.");
 
     result = {
         "code": 1,
@@ -143,7 +143,7 @@ def use_model (json_string):
     model = json_object.get('model')
     messages = json_object.get('messages');
 
-    print(messages)
+    print(f"Texto para analizar: {messages[1]}")
 
     # Configuración del cliente de OpenAI con la clave API
     try:
@@ -167,14 +167,14 @@ def use_model (json_string):
         json_response = openai_response.choices[0].message.content
 
         # Imprimir los detalles para verificar
-        print(f"Fine-tuning details: {json_response}")
+        print(f"Respuesta del modelo: {json_response}")
 
         result["code"] = 0
         result["status"] = "OK"
         result["message"] = "Transaction successfully completed"
         result["data"] = json_response
 
-        print(f"Fine-tuning iniciado: {json_response}")
+        print(f"Finaliza proceso para usar el modelo.");
 
     except Exception as e:
         result["message"] = f"Error al crear el chat: {e}"

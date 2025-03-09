@@ -15,8 +15,8 @@ app.controller("testmodels_controller", function ($scope, $http) {
             "name": "Class Diagram",
             "interaction": true,
             "draw": true
-        })
-    }
+        });
+    };
 
     $scope.analizeUseCaseDescription = (form) => {
         console.log(form.ip_descriptionUseCase.$viewValue);
@@ -54,6 +54,6 @@ app.controller("testmodels_controller", function ($scope, $http) {
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
-    }
+    };
 
 });

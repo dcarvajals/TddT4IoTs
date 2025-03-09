@@ -10,9 +10,9 @@ import java.io.Reader;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.stream.JsonParser;
-import javax.websocket.DecodeException;
-import javax.websocket.Decoder;
-import javax.websocket.EndpointConfig;
+import jakarta.websocket.DecodeException;
+import jakarta.websocket.Decoder;
+import jakarta.websocket.EndpointConfig;
 
 /**
  *

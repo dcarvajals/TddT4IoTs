@@ -9,7 +9,7 @@ from openai_model.train_model import use_model
 class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
     def TrainModel(self, request, context):
         try:
-            print(request);
+            #print(request);
             # Procesar la cadena JSON recibida
             data = request.json_data;
             # Lógica de procesamiento del modelo usando los datos JSON
@@ -30,12 +30,10 @@ class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
 
     def UseModel(self, request, context):
         try:
-            print(request);
             # Procesar la cadena JSON recibida
             data = request.json_data;
             # Lógica de procesamiento del modelo usando los datos JSON
             response_message = use_model(data)
-            print(response_message);
             # Crear y devolver la respuesta
             response = openai_pb2.TrainResponse()
             response.message = f"Processing result: {response_message}"

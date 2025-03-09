@@ -90,7 +90,7 @@
                                         {{keyinterpret.ascii.trim()}} 
                                     </span -->
                                         <span style="font-size: 75%">
-                                             {{keyinterpret.description}}
+                                            {{keyinterpret.description}}
                                         </span>
                                     </td>
                                 </tr>
@@ -1165,8 +1165,8 @@
                         <div class="h-25 bg-gray-200 p-2 overflow-auto" style="max-height: 400px" ng-show="viewConsole">
                             <!-- notification.component.html -->
                             <div ng-repeat="notification in notifications" class="notification" ng-class="notification.type">
-                                <strong class="notification-title">{{ notification.type }}</strong>
-                                <p class="notification-message">{{ notification.information }}</p>
+                                <strong class="notification-title">{{ notification.type}}</strong>
+                                <p class="notification-message">{{ notification.information}}</p>
                             </div>
                         </div>
 
@@ -2529,6 +2529,13 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                             </div>
                         </li>
 
+                        <li class="nav-item dropdown no-arrow mx-1" style="align-items: center;display: grid;">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="activateOpenAi" ng-model="activateOpenAi" ng-click="activateOpenAiApi()"/>
+                                <label class="custom-control-label" for="activateOpenAi">Activate OpenAi</label>
+                            </div>
+                         </li>
+                        
                         <!-- Nav Item - Alerts -->
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
@@ -2561,8 +2568,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                                 <a class="dropdown-item text-center small text-gray-500" href="#">🔃</a>
                             </div>
                         </li>
-
-
+                        
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
@@ -2735,6 +2741,10 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                                    ng-click="changeDiagramA(buttonUml)" ng-show="buttonUml.type === 'UMLSequenceDiagram'">{{buttonUml.name}}</a>
                             </div>
                         </div>
+                        <span style="position: absolute; right: 18px; margin-top: -28px;" ng-if="showMessageOpenAi"> 
+                            <img src="resources/img/img-app/cargandoia.gif" width="20" height="20" />
+                            <strong> Analyzing use case </strong> 
+                        </span>
                         <!-- End of Sidebar -->
                         <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true"
                              style="max-width: 2000px; max-height: 2000px ;margin-top: 4px; height: 94%">

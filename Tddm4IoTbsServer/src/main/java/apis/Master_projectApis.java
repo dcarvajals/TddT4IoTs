@@ -8,16 +8,17 @@ package apis;
 import Controller.Master_projectCtrl;
 import Controller.PersonaCtrl;
 import com.google.gson.JsonObject;
+import dto.GenericResponseDTO;
 import java.io.UnsupportedEncodingException;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import util.DataStatic;
 import util.Methods;
 import util.WeEncoder;
@@ -847,6 +848,30 @@ public class Master_projectApis {
            
             String [] res = mpControl.getGanttObjects(id_master_project);
             message = Methods.getJsonMessage(res[0], res[1], res[2]);
+       } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/activateOpenAi")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response activateOpenAi (String data) {
+        String message;
+        JsonObject Jso = Methods.stringToJSON(data);
+        System.out.println("activateOpenAi()");
+        if (Jso.size() > 0) {                
+            String id_master_project = Methods.JsonToString(Jso, "idmasterproject", "");
+            String status_openai = Methods.JsonToString(Jso, "status_openai", "");
+           
+            GenericResponseDTO res = mpControl.activateOpenAi(id_master_project, status_openai);
+            message = Methods.getJsonMessage(res.getStatus(), res.getMessage(), res.getData());
        } else {
             message = Methods.getJsonMessage("4", "Missing data.", "[]");
         }
