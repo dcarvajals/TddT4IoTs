@@ -37,21 +37,21 @@
         },
         {
             "titulo": "Profesor del Colegio AUGUSTO MENDOZA MOREIRA",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1996 – 1998",
             "descripcion": "Como tal plantié la modificación de los programas de estudio de las asignaturas del Área de Informática. Además de dar asesoramiento en la adquisición de equipos, adiestramiento del personal administrativo en el uso de las herramientas informáticas para sus labores.",
             "logros": []
         },
         {
             "titulo": "Desarrollador de Aplicaciones SURATEL",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1995 – 1996",
             "descripcion": "Encargado del desarrollo de aplicaciones para la depuración de la información bajada de los sistemas satelitales para la facturación de los servicios de telefonía que brindaba la empresa.",
             "logros": []
         },
         {
             "titulo": "Ayudante de Cátedra de la Escuela Superior Politécnica del Litoral",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1992 – 1997",
             "descripcion": "Ayudante de cátedra de: Estadística, Fundamentos de Computación, Matemáticas (pre-politécnico), y de Actividades Varias. Como ayudante de Actividades varias era el encargado del recogimiento de las evaluaciones a los docentes por parte de los estudiantes, de su procesamiento y la entrega a las respectivas autoridades.",
             "logros": []
@@ -151,9 +151,19 @@
     ],
     "participacion_proyectos": [
         {
-            "titulo": "MIoT-Health: Microservice-oriented design of IoT systems for a holistic and ecological assessment in eHealth - A case study of active and healthy ageing (2020)",
+            "titulo": "MIoT-Health: Microservice-oriented design of IoT systems for a holistic and ecological assessment in eHealth - A case study of active and healthy ageing (2020 - 2024)",
             "url": "https://www.researchgate.net/project/MIoT-Health-Microservice-oriented-design-of-IoT-systems-for-a-holistic-and-ecological-assessment-in-eHealth-A-case-study-of-active-and-healthy-ageing",
             "resumen": "The general objective of this project is to create a design proposal for building comprehensive microservice-oriented IoT systems. This methodology will ensure relevant technical quality properties to support holistic and ecological user assessments in the eHealth domain, particularly to promote healthy and active ageing."
+        },
+        {
+            "titulo": "Uso de “Internet of Things” para proporcionar recordatorios a adultos mayores (2018 - 2019)", 
+            "url": "#",
+            "resumen": "Investigador"
+        },
+        {
+            "titulo": "Tele educación para el fortalecimiento de los saberes ancestrales, valores y educación en las familias de los sectores rurales y urbano marginales de la zona norte de la provincia de los ríos (2017 - 2019) - Director", 
+            "url": "https://www.uteq.edu.ec/es/vinculacion/proyectos/pvsuteq-fci-02-64",
+            "resumen": "Impulsar las prácticas de los valores humanos utilizando herramientas multimedia. Diseñar herramientas de aprendizaje como apoyo para la educación de las familias en aspectos básicos y actuales."
         }
     ],
     "habilidades": {
@@ -174,7 +184,7 @@
     },
     "educacion": [
         {
-            "titulo": "Doctorado Internacional dentro del Programa de Doctorado en Tecnologías de la Información y la Comunicación",
+            "titulo": "Doctor en Tecnologías de la Información y Comunicación con Mensión Internacional",
             "institucion": "Universidad de Granada",
             "fecha": "2018 - 2024"
         },
@@ -220,15 +230,16 @@
         "Desarrollo de Software"
     ],
     "lineas_investigacion": [
-        "Internet of Things",
-        "Systems Modeling",
-        "Smart Environments",
-        "Development of Systems and Software"
+        "Internet de las cosas",
+        "Modelado de sistemas",
+        "Entornos inteligentes",
+        "Desarrollo de Sistemas y Software",
+        "Aplicaciones de Inteligencia Artificial"
     ],
     "secciones": {
         "experiencia": "Experiencias de Trabajo",
         "publicaciones": "Publicaciones",
-        "participacion_proyectos": "Participación en proyectos de investigación",
+        "participacion_proyectos": "Participación en proyectos de investigación y vinculación",
         "habilidades": "Habilidades",
         "habilidades_tecnicas": "Técnicas",
         "habilidades_interpersonales": "Interpersonales",

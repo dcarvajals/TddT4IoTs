@@ -37,21 +37,21 @@
         },
         {
             "titulo": "Teacher at AUGUSTO MENDOZA MOREIRA High School",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1996 – 1998",
             "descripcion": "Proposed modifications to study programs for Informatics courses. Also provided advice on equipment acquisition and trained administrative staff in the use of IT tools for their work tasks.",
             "logros": []
         },
         {
             "titulo": "Application Developer at SURATEL",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1995 – 1996",
             "descripcion": "Responsible for developing applications to process information downloaded from satellite systems for billing telephone services provided by the company.",
             "logros": []
         },
         {
             "titulo": "Teaching Assistant at Escuela Superior Politécnica del Litoral",
-            "ubicacion": "N/A",
+            "ubicacion": "Guayaquil",
             "fecha": "1992 – 1997",
             "descripcion": "Teaching assistant in courses including Statistics, Fundamentals of Computing, Mathematics (pre-polytechnic), and Various Activities. As an assistant in Various Activities, was responsible for collecting student evaluations of faculty, processing them, and delivering results to relevant authorities.",
             "logros": []
@@ -151,9 +151,19 @@
     ],
     "participacion_proyectos": [
         {
-            "titulo": "MIoT-Health: Microservice-oriented design of IoT systems for a holistic and ecological assessment in eHealth - A case study of active and healthy ageing (2020)",
+            "titulo": "MIoT-Health: Microservice-oriented design of IoT systems for a holistic and ecological assessment in eHealth - A case study of active and healthy ageing (2020 - 2024)",
             "url": "https://www.researchgate.net/project/MIoT-Health-Microservice-oriented-design-of-IoT-systems-for-a-holistic-and-ecological-assessment-in-eHealth-A-case-study-of-active-and-healthy-ageing",
             "resumen": "The general objective of this project is to create a design proposal for building comprehensive microservice-oriented IoT systems. This methodology ensures relevant technical quality properties that support holistic and ecological user assessments in eHealth, particularly to promote healthy and active aging."
+        },
+        {
+            "titulo": "Use of 'Internet of Things' to Provide Reminders to Elderly Adults (2018 - 2019)", 
+            "url": "#",
+            "resumen": "Researcher"
+        },
+        {
+            "titulo": "Tele-education for Strengthening Ancestral Knowledge, Values, and Education in Families from Rural and Urban Marginalized Sectors of the Northern Zone of Los Ríos Province (2017 - 2019) - Director", 
+            "url": "https://www.uteq.edu.ec/es/vinculacion/proyectos/pvsuteq-fci-02-64",
+            "resumen": "Promote the practice of human values using multimedia tools. Design learning tools as support for family education in basic and current aspects."
         }
     ],
     "habilidades": {
@@ -174,7 +184,7 @@
     },
     "educacion": [
         {
-            "titulo": "International Doctorate in Information and Communication Technologies",
+            "titulo": "PhD in Information and Communication Technologies with International Distinction",
             "institucion": "University of Granada",
             "fecha": "2018 - 2024"
         },
@@ -223,12 +233,13 @@
         "Internet of Things",
         "Systems Modeling",
         "Smart Environments",
-        "Development of Systems and Software"
+        "Development of Systems and Software",
+        "Artificial Intelligence Applications"
     ],
     "secciones": {
         "experiencia": "Work Experience",
         "publicaciones": "Publications",
-        "participacion_proyectos": "Research Project Participation",
+        "participacion_proyectos": "Participation in research and outreach projects",
         "habilidades": "Skills",
         "habilidades_tecnicas": "Technical Skills",
         "habilidades_interpersonales": "Interpersonal Skills",
