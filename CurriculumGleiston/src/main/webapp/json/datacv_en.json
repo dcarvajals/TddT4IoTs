@@ -12,6 +12,13 @@
     },
     "experiencia": [
         {
+            "titulo": "Master's Program Lecturer in Data Science – Module: Cloud Processing",
+            "ubicacion": "Quevedo",
+            "fecha": "2025",
+            "descripcion": "Trained human talent in areas related to Data Science through a formative process that promotes theoretical and practical learning of a set of techniques and theories including data retrieval, security, analysis, processing and management, predictive models, programming, statistical learning, pattern recognition, and data mining, aimed at generating knowledge to support timely strategic business decision-making in public and private organizations.",
+            "logros": []
+        },
+        {
             "titulo": "Professor at Technical State University of Quevedo",
             "ubicacion": "Quevedo",
             "fecha": "2000 - Present",

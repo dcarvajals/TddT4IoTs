@@ -12,6 +12,13 @@
     },
     "experiencia": [
         {
+            "titulo": "Docente del Master en Ciencia de Datos - Modulo: Procesamiento en la nube",
+            "ubicacion": "Quevedo",
+            "fecha": "2025",
+            "descripcion": "Formar talento humano en los ámbitos relacionados con la Ciencia de Datos, mediante un proceso formativo que favorece el aprendizaje teórico-práctico de un conjunto de técnicas y teorías de recuperación, seguridad, análisis, procesamiento y gestión de datos, modelos predictivos, programación, aprendizaje estadístico, reconocimientos de patrones, minería de datos, para la generación de conocimiento que contribuya a la toma oportuna de decisiones estratégicas de negocios en las empresas públicas y privadas.",
+            "logros": []
+        },
+        {
             "titulo": "Docente Universidad Técnica Estatal de Quevedo",
             "ubicacion": "Quevedo",
             "fecha": "2000 - Actualidad",
