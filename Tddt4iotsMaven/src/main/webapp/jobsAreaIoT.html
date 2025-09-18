@@ -150,7 +150,7 @@
                                 <button ng-click="exportPng()" class="btn badge badge-light"> <i class="fas fa-file-image"></i> Export file.png</button>
                                 <button class="btn badge badge-light"> <i class="fas fa-code"></i> View Code</button>
                                 <button class="btn badge badge-light" ng-click="downloadCode()"> <i class="fas fa-download"></i> Download Code</button>
-                                <button class="btn badge badge-success text-white" ng-click="openModalLoadCode()"> <i class="fas fa-arrow-circle-up"></i> Load Code Board</button>
+                                <button class="btn badge badge-success text-white" ng-click="openModalLoadCode()"> <i class="fas fa-arrow-circle-up"></i> Upload Code to Board</button>
                                 <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i class="fas fa-sign-out-alt"></i> Exit</a>
                             </div>
                         </div>
@@ -259,7 +259,7 @@
                             <div class="container" style="height: 46%;overflow: auto;">
                                 <br>
                                 <button ng-class="cofigParam === 0 ? 'btn btn-sm btn-success' : 'btn btn-sm btn-outline-success'" ng-click="cofigParam = 0"> Configuration </button>
-                                <button ng-class="cofigParam === 1 ? 'btn btn-sm btn-success' : 'btn btn-sm btn-outline-success'" ng-click="cofigParam = 1"> Parameters Code </button>
+                                <button ng-class="cofigParam === 1 ? 'btn btn-sm btn-success' : 'btn btn-sm btn-outline-success'" ng-click="cofigParam = 1"> Component code template </button>
                                 <br>
                                 <div ng-show="cofigParam === 1">
                                     <!--SECCION PARA PARAMETRIZAR CODIGO DE CADA COMPONENTE-->

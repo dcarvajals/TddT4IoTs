@@ -307,7 +307,7 @@
                                 <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact"
                                    role="tab" aria-controls="nav-contact" aria-selected="false">Alternating flow</a>
                                 <a class="nav-item nav-link" id="nav-secuence-tab" data-toggle="tab" href="#nav-secuence"
-                                   role="tab" aria-controls="nav-secuence" aria-selected="false">Secuence</a>
+                                   role="tab" aria-controls="nav-secuence" aria-selected="false">Sequence diagram</a>
                             </div>
                         </nav>
                         <div class="tab-content" id="nav-tabContent">
@@ -315,7 +315,7 @@
                                  aria-labelledby="nav-home-tab">
                                 <div class="custom-control custom-checkbox mt-1 mb-1">
                                     <input type="checkbox" class="custom-control-input" id="customCheck1" checked>
-                                    <label class="custom-control-label" for="customCheck1">Show input not symbol language</label>
+                                    <label class="custom-control-label" for="customCheck1">Show input without SymLan symbols</label>
                                 </div>
                                 <form id="form_usecase" name="form_usecase" ng-submit="createUseCaseUC(form_usecase, true)">
                                     <div class="row">
@@ -1204,7 +1204,7 @@
                         <button class="btn btn-primary btn-sm" ng-click="copyUseCase()"> Copy to Clipboard </button>
                         <div class="custom-control custom-checkbox mt-1 mb-1">
                             <input type="checkbox" class="custom-control-input" id="showSymbol" checked ng-model="showLS">
-                            <label class="custom-control-label" for="showSymbol">Show symbol language</label>
+                            <label class="custom-control-label" for="showSymbol">Show input without SymLan symbols</label>
                         </div>
 
                         <table class="table table-sm table-bordered mt-2" id="viewUseCaseTable">
@@ -2469,7 +2469,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                                     <button class="dropdown-item" type="button" ng-click="packagePrjAll()"
                                             ng-show="dataProject.download_ang === 'T' && dataProject.download === 'T'">
                                         <i class="fa fa-file-archive"></i> 
-                                        Zip the project all</button>
+                                        ZIP all project files</button>
                                 </div>
                             </div>
                             <div class="btn-group">
@@ -2726,7 +2726,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                                     ng-class="buttonUml.btnactive" ng-click="changeDiagramA(buttonUml)"> {{buttonUml.name}}
                             </button>
                             <button class="btn btn-sm button-dt mr-2 mt-1" id="dropdownMenuButton"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Secuences Diagrams
+                                Sequence diagrams
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item" ng-repeat="buttonUml in btnDiagramUml" href="#"
