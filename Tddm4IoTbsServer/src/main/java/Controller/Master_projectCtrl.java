@@ -331,6 +331,7 @@ public class Master_projectCtrl {
 
         if (stateUml.matches("[AIS]") && stateIot.matches("[AIS]")) {
             String modulePath = path + DataStatic.folderProyect + filePath + "/";
+            System.out.println("Path: " + modulePath);
             FileAccess fac = new FileAccess();
 
             String aux1 = "No data available.", aux2 = "No data available.", infoUml = "[]", infoIoT = "[]";
