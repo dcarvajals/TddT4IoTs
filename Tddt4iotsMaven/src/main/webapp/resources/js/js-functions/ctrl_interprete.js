@@ -12,6 +12,7 @@ app.controller("interpret_controller", function ($scope, $http) {
     $scope.interprete = {
         newstring: "",
         transform: function () {
+            console.log($scope.interprete.newstring);
             if ($scope.interprete.newstring)
             {
                 let minjson = getHackDiagram($scope.interprete.newstring);

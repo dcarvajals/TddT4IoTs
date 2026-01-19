@@ -69,7 +69,7 @@ app.expandControllerSocket = function ($scope) {
             console.log("enviand mensaje:sock");
             console.log(objmsg);
         } else {
-            alertAll({status: 4, information: "The message exceeds the limit."});
+            alertAll({status: 4, information: "[WebSocket] - The message exceeds the limit."});
         }
     }
 

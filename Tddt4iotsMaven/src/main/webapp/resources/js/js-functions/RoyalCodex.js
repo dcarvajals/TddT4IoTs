@@ -799,7 +799,7 @@ function getDataTypes(obj) {
     return types;
 }
 
-function getHackDiagram(text) {
+function _getHackDiagram(text) {
     text = text.replace(/[\r\n]/g, '');
     var packs = packages(text);
 //    var rel = getRelationship(packs[1]);

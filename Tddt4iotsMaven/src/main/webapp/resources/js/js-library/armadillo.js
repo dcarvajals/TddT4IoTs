@@ -7,7 +7,7 @@
 var DataPrimitive_Armadillo = ["String", "string", "byte", "short", "int",
      "long", "Long", "float", "Float", "double", "Double", "boolean",
     "Boolean", "date", "Date", "list", "List", "array", "Array", "arrayList",
-    "ArrayList", "json", "JSON"];
+    "ArrayList", "json", "JSON", "empty", "Empty"];
 var DataTypeVisibility = [
     {simbol: "+", text: "public"},
     {simbol: "-", text: "private"},
@@ -513,17 +513,38 @@ function getClassDerivate(text) {
 }
 
 function textNatural(text) {
+    // Función auxiliar: elimina palabras primitivas del texto
+    function removePrimitives(cleanText) {
+        // Creamos una expresión regular dinámica con todas las palabras del array
+        const regex = new RegExp("\\b(" + DataPrimitive_Armadillo.join("|") + ")\\b", "gi");
+        return cleanText.replace(regex, " ");
+    }
+
+    // Normalización base (como tu versión original)
+    function cleanBase(rawText) {
+        return rawText
+            .replace(/[\/\\\]\}\[\{\(\)\&\+\¡\!¿?\-\$\#\=\.\:]/g, " ") // elimina símbolos
+            .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, " ") // deja solo letras y espacios
+            .replace(/\s+/g, " ") // reduce espacios múltiples
+            .trim();
+    }
+
+    // Bloque principal
     if (text[0] === "*") {
         let textManualPartition = manualPartition("/", "/", text);
-        return textManualPartition.join(" ").toString()
-                .replace(/[\/\\\]\}]/g, "").toString()
-                .replace(/[\.\[\{\(\)\&\+\¡\!¿?\-\$\#]/g, "").toString()
-                .replace(/=.*/g, "")
-                .replace(/\:.*/g, "");
-    } else { // ¿?
-        return text.toString().replace(/[\!\(\)¿?]/g, "").toString().replace(/\{.*\}/g, "").toString().replace(/\[.*\]/g, "").replace(/\:.*/g, "");
+        let joined = textManualPartition.join(" ").toString();
+        let cleaned = cleanBase(joined);
+        return removePrimitives(cleaned)
+            .replace(/\s+/g, " ") // vuelve a limpiar espacios tras eliminar primitivas
+            .trim();
+    } else {
+        let cleaned = cleanBase(text.toString());
+        return removePrimitives(cleaned)
+            .replace(/\s+/g, " ")
+            .trim();
     }
 }
+
 
 function getAttributes(text) {
     text = text.toString().replace(/[\/\\\)\(\{\}\[\]]/g, "");
@@ -638,10 +659,11 @@ function nameFormatAux(text, tipo) {
 
 function getClassName(text) {
 
-    if (text.toString().includes("|"))
-        return text;
-
     if (text !== undefined) {
+        
+        if (text.toString().includes("|"))
+        return text;
+        
         text = text.replace(/[!@¬º\?\(\*\:\^\~`]/g, "").replace(/[\/\{\[\:\)\%].*/g, "");
 
         text = unsupportedCharacters(text, 3);
@@ -884,6 +906,7 @@ function getDataTypes(obj) {
 }
 
 function getHackDiagram(text) {
+    console.log("getHackDiagram()");
     notifications.length = 0;
     text = text.replace(/[\r\n]/g, '');
     setNotifications(0, "Description entered: " + text, []);
