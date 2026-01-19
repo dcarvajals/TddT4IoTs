@@ -637,12 +637,13 @@ public final class Methods {
      * @return
      */
     public static String[] validatePermit(String identifier, String permit, int flag) {
-        String status = "4", message = "Sesión invalida.", data = "[]";
+        String status = "4", message = "Invalid session.", data = "[]";
         if (!identifier.equals("") && !permit.equals("")) {
             switch (flag) {
                 case 0:
                     if (permit.equals("S")) {// unequal // S
                         status = "2";
+                        message = "Valid session";
                     } else {
                         status = "3";
                         message = "Your account has already been verified.";
@@ -656,6 +657,7 @@ public final class Methods {
                         data = "[]";
                     } else if (!permit.equals("S")) {// unequal // S
                         status = "2";
+                        message = "Valid session";
                     } else {
                         status = "5";
                         message = "Account not verified.";
@@ -666,6 +668,7 @@ public final class Methods {
                 case 2:
                     if (permit.equals("U") || permit.equals("A") || permit.equals("R")) {
                         status = "2";
+                        message = "Valid session";
                     } else {
                         status = "3";
                         message = "This content is not available to you.";
@@ -675,6 +678,7 @@ public final class Methods {
                 case 3:
                     if (permit.equals("A") || permit.equals("R")) {
                         status = "2";
+                        message = "Valid session";
                     } else {
                         status = "3";
                         message = "You do not have the required permissions for this action.";
@@ -684,6 +688,7 @@ public final class Methods {
                 case 4:
                     if (permit.equals("R")) {
                         status = "2";
+                        message = "Valid session";
                     } else {
                         status = "3";
                         message = "This action is only available to the Administrator.";

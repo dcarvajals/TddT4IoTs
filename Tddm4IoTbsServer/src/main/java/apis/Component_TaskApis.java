@@ -11,11 +11,19 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import util.Methods;
 import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
 import util.DataStatic;
 import util.FileAccess;
 import util.WeEncoder;
@@ -337,7 +345,7 @@ public class Component_TaskApis {
                 .build();
     }
     
-    
+
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     @Path("/getInfoTaskforComponent")
@@ -352,7 +360,7 @@ public class Component_TaskApis {
             System.out.println(id_component);
             String [] res = taskController.get_list_task(id_component);
             message = Methods.getJsonMessage(res[0], res[1], res[2]);
-          
+
         } else {
             message = Methods.getJsonMessage("4", "Missing data.", "[]");
         }
@@ -362,12 +370,12 @@ public class Component_TaskApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
 }

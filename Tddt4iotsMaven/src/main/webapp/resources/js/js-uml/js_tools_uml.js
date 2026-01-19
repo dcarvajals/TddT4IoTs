@@ -255,10 +255,12 @@ function deleteObjectClass(obj, type) {
             ac.$apply(function () {
                 function fromToEquals(relationships, fromRel, toRel) {
                     for (let x = 0; x < relationships.length; x++) {
-                        let elementA = relationships[x].from;
-                        let elementB = relationships[x].to;
-                        if (fromRel === elementA && toRel === elementB) {
-                            return [true, x];
+                        if (relationships[x] !== null) {
+                            let elementA = relationships[x].from;
+                            let elementB = relationships[x].to;
+                            if (fromRel === elementA && toRel === elementB) {
+                                return [true, x];
+                            }
                         }
                     }
                     return [false, -1];
@@ -425,8 +427,11 @@ function deleteObject(obj, type) {
 
 function searchPositionEqualsObject(array, key, name) {
     for (let i = 0; i < array.length; i++) {
-        if (array[i][key] === name) {
-            return [true, i];
+
+        if (array[i] !== null) {
+            if (array[i][key] === name) {
+                return [true, i];
+            }
         }
     }
     return [false, -1];
@@ -439,7 +444,7 @@ function searchTabName(ac, obj) {
 
         if (namebtn === undefined)
             namebtn = ac.btnDiagramUml[i].name;
-        
+
         namebtn = getHackDiagram(namebtn)[0].trim();
 
         let otroname = obj.getName().trim();
@@ -579,7 +584,7 @@ function selectedUseCase(obj, flag) {
     let relations_usecase = obj.getRelations();
     //preguntamos si el caso de uso esta realcionado con algun actor
     if (relations_usecase.length > 0) {
-        console.log("tiene relacion");
+        //consolo.log("tiene relacion");
         let encontrado = -1;
         ac.$apply(function () {
             ac.actorsUseCase.length = 0;
@@ -591,9 +596,9 @@ function selectedUseCase(obj, flag) {
                 });
             }
         });
-        console.log(ac.actorsUseCase);
+        //consolo.log(ac.actorsUseCase);
     } else {
-        console.log("no tiene relacion");
+        //consolo.log("no tiene relacion");
     }
     if (flag)
         $('#modal_usecase').modal();
@@ -613,7 +618,7 @@ function createRelation(attributes) {
 
 // funcion para eliminar una relacion seleccionada
 function deleteRelation(rel) {
-    console.log("voy eliminar la relacion de tipo: ", rel.getId());
+    //consolo.log("voy eliminar la relacion de tipo: ", rel.getId());
     // variable para obtener datos desde el controlador principal
     let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
     let relations = ac.jsonUseCase.relations;
@@ -624,7 +629,7 @@ function deleteRelation(rel) {
             relations.splice(x, 1);
         }
     }
-    console.log(ac.jsonUseCase);
+    //consolo.log(ac.jsonUseCase);
 }
 
 function createSystem(projectName) {

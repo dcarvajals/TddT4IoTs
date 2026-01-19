@@ -410,7 +410,7 @@ public class PersonApis {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
-    
+
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     @Path("/validateToken")
@@ -418,7 +418,7 @@ public class PersonApis {
     public Response validateToken(String data) {
         String message;
         System.out.println("validateToken()");
-        
+
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");

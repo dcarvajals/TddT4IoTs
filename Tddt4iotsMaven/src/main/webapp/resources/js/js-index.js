@@ -2,7 +2,7 @@ app = angular.module('app', []);
 app.controller('controllerIndex', function ($scope, $http) {
     
     $(document).ready(function () {
-        var email_login = document.getElementById('email_login');
+        /*var email_login = document.getElementById('email_login');
         email_login.onpaste = function (e) {
             e.preventDefault();
             alertAll({"status": 3, "information": "Action not allowed"});
@@ -21,7 +21,7 @@ app.controller('controllerIndex', function ($scope, $http) {
         password_login.oncopy = function (e) {
             e.preventDefault();
             alertAll({"status": 3, "information": "Action not allowed"});
-        };
+        };*/
 
     });
     
@@ -42,6 +42,7 @@ app.controller('controllerIndex', function ($scope, $http) {
                 // console.log(data);
                 if (data.status === 2) {
                     store.session.set("user_tddm4iotbs", data.data[0]);
+                    store.session.set("natural_text", []);
                     location.href = 'app.html';
                 }
                 alertAll(data);

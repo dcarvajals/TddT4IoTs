@@ -1,0 +1,111 @@
+<div class="modal fade" id="modalNewBaseModel" tabindex="-1" role="dialog" aria-labelledby="modalNewBaseModel"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered sha" role="document">
+        <div class="modal-content">
+            <form name="formModel" ng-submit="addNewModel(formModel)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Model</h5>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="ip_nameModel">Name:</label>
+                        <input type="text" id="ip_nameModel"
+                               name="ip_nameModel"
+                               ng-model="ip_nameModel"
+                               autocomplete="false"
+                               ng-class="(formModel.ip_nameModel.$invalid &&
+                                                       formModel.ip_nameModel.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required />
+                        <div class="invalid-feedback">
+                            Please enter the name protocol
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ip_descriptionModel">Description:</label>
+                        <textarea type="text" id="ip_descriptionModel"
+                               name="ip_descriptionModel"
+                               ng-model="ip_descriptionModel"
+                               autocomplete="false"
+                               ng-class="(formModel.ip_descriptionModel.$invalid &&
+                                                       formModel.ip_descriptionModel.$dirty) ?
+                                                       'form-control form-control-sm is-invalid'
+                                                       : 'form-control form-control-sm'" required >
+
+                        </textarea>
+                        <div class="invalid-feedback">
+                            Please enter the name protocol
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button ng-click="closeModalNewModel()" type="button" class="btn btn-sm btn-danger">Cancel</button>
+                    <button  type="submit" class="btn btn-sm btn-primary" ng-disabled="formModel.$invalid">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
+        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Base Models</h5>
+        <ul class="breadcrumb fw-bold fs-7 small">
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/basemodels" class="text-muted text-hover-primary">Base Models</a>
+            </li>
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
+
+    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
+
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-dark">
+            Base Models - List ({{baseModels.length}}) </h6>
+        <button class="btn button-d btn-sm"
+                type="button" id="newProtocol"
+                ng-click="openModalNewModel()">
+            New Model
+        </button>
+    </div>
+
+    <div class="card-body" style="height: auto; overflow: auto">
+        <div class="alert alert-primary" role="alert" id="component_table"
+             ng-repeat="dom_baseModels in baseModels" ng-show="baseModels.length > 0">
+            <div class="media mb-2">
+                <img src="resources/img/img-app/017-brain.png" class="align-self-center mr-3" alt="..." width="70">
+                <div class="media-body">
+                    <div>
+                        <strong> Name: </strong> {{dom_baseModels.name}} <br>
+                        <strong> Description: </strong> {{dom_baseModels.description}}
+                    </div>
+                    <div class="row">
+                        <button class="btn button-dt btn-sm ml-2"
+                                ng-click="selectedProtocol(dom_array_protocol, $index)">
+                            <i class="fas fa-edit"></i>
+                            Update
+                        </button>
+
+                        <button class="btn button-ds btn-sm ml-2"
+                                ng-click="deleteProtocol($index)">
+                            <i class="fas fa-ban"></i>
+                            Disable
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+</div>

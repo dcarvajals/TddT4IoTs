@@ -1,0 +1,57 @@
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
+        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Test models</h5>
+        <ul class="breadcrumb fw-bold fs-7 small">
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <li class="breadcrumb-item text-muted">
+                <a href="app.html#!/settingsprotocol" class="text-muted text-hover-primary">Test models</a>
+            </li>
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
+
+    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary"> Test model </h6>
+        </div>
+
+        <div class="card-body" style="height: auto; overflow: auto">
+            <form name="formTestModel" ng-submit="analizeUseCaseDescription(formTestModel)">
+                <div class="form-group">
+                    <label for="ip_descriptionUseCase">Enter de description use case:</label>
+                    <textarea type="text" id="ip_descriptionUseCase"
+                           name="ip_descriptionUseCase"
+                           ng-model="ip_descriptionUseCase"
+                           autocomplete="false" rows="5"
+                           ng-class="(formTestModel.ip_descriptionUseCase.$invalid &&
+                                                           formTestModel.ip_descriptionUseCase.$dirty) ?
+                                                           'form-control form-control-sm is-invalid'
+                                                           : 'form-control form-control-sm'" required ></textarea>
+                    <div class="invalid-feedback">
+                        Please enter the description use case.
+                    </div>
+                </div>
+
+                <button class="btn button-d btn-sm w-100 mb-2"
+                        type="submit" id="newProtocol">
+                    ANALYZE
+                </button>
+
+                <!-- End of Sidebar -->
+                <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true"
+                     style="max-width: 2000px; max-height: 2000px ;margin-top: 4px; height: 94%">
+                    <canvas id="mac">
+                    </canvas>
+                    <canvas id="mot">
+                    </canvas>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+</div>

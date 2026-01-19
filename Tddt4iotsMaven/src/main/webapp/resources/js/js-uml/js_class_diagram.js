@@ -23,6 +23,7 @@ const relationsGlobal = {
     "dependency": UMLDependency,
     "generalization": UMLGeneralization,
     "asociation": UMLAssociation,
+    "association": UMLAssociation,
     "composition": UMLComposition
 };
 
@@ -31,12 +32,87 @@ const relationsGlobalname = {
     "dependency": "dependency",
     "generalization": "generalization",
     "asociation": "asociation",
+    "association": "asociation",
     "composition": "composition"
 };
+
+function updateClassDiagramOpenAi(jsonInterprete, action) {
+    try {
+
+        for (let ipackage = 0; ipackage < jsonInterprete.diagram.length; ipackage++) {
+            package = jsonInterprete.diagram[ipackage];
+            //let newpackage = cretaePackcage({name: package.packName, x: 50, y: 70});
+            //elementsClass.push({"element": newpackage});
+            for (let iclass = 0; iclass < package.class.length; iclass++) {
+                clas = package.class[iclass];
+                if (clas.modifiers === "interface") {
+                    newclass = createInterface({
+                        name: visibilityGlobal[clas.visibility] + " " + clas.className,
+                        x: (Math.floor(Math.random() * 10) * 100),
+                        y: (Math.floor(Math.random() * 15) * 30)
+                    });
+                } else {
+                    newclass = createClass({
+                        name: visibilityGlobal[clas.visibility] + " " + clas.className,
+                        x: (Math.floor(Math.random() * 10) * 100),
+                        y: (Math.floor(Math.random() * 15) * 30)
+                    });
+                }
+                //newpackage.addChild(newclass);
+                elementsClass.push({"element": newclass});
+                for (let iattributes = 0; iattributes < clas.attributes.length; iattributes++) {
+                    attributes = clas.attributes[iattributes];
+                    if (attributes.name.toString().trim() !== "") {
+                        if (attributes.type === "fk" || attributes.type === "enumeration")
+                            newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name.toString().trim() + " fk");
+                        else
+                            newclass.addAttribute(visibilityGlobal[attributes.visibility] + " " + attributes.name + ":" + attributes.type);
+                    }
+
+                }
+                for (let imethods = 0; imethods < clas.methods.length; imethods++) {
+                    methods = clas.methods[imethods];
+                    newclass.addOperation(visibilityGlobal[methods.visibility] + " " + methods.name + "(" + getParamethers(methods.parameters) + "):" + methods.type);
+                }
+
+                for (let imethods = 0; imethods < clas.constructors.length; imethods++) {
+                    constructor = clas.constructors[imethods];
+                    newclass.addOperation(visibilityGlobal[constructor.visibility] + " new " + clas.className + "(" + getParamethers(constructor.parameters) + ")");
+                }
+            }
+
+            for (let ienum = 0; ienum < package.enums.length; ienum++) {
+                enumsx = package.enums[ienum];
+                newenum = createEnum({
+                    name: enumsx.name,
+                    x: (Math.floor(Math.random() * 10) * 100),
+                    y: (Math.floor(Math.random() * 15) * 30)
+                });
+                elementsClass.push({"element": newenum, "name": newenum.getName()});
+                for (let iattributes = 0; iattributes < enumsx.elements.length; iattributes++) {
+                    elementsE = enumsx.elements[iattributes];
+                    newenum.addAttribute(elementsE);
+                }
+            }
+        }
+        relationsClass(jsonInterprete.relationships);
+        setClassPosition();
+        alertAll({"status": 2, "information": "Class diagram successfully updated."});
+        diagramClass.draw();
+        diagramClass.interaction(true);
+    } catch (ErrorMessage) {
+        //consolo.log(ErrorMessage);
+        alertAll({
+            "status": 4,
+            "information": "[updateClassDiagram]: " + ErrorMessage.message
+        });
+    }
+}
 
 function updateClassDiagram(jsonInterprete, action) {
     try {
         let ac = angular.element($('[ng-controller="workAreaController"]')).scope();
+        ac.showMessageOpenAi = true;
         if (elementsClass.length > 0) {
             getClassPosition(diagramClass._nodes);
             for (ielement = 0; ielement < elementsClass.length; ielement++) {
@@ -110,8 +186,9 @@ function updateClassDiagram(jsonInterprete, action) {
         relationsClass(jsonInterprete.relationships);
         setClassPosition();
         alertAll({"status": 2, "information": "Class diagram successfully updated."});
+        //ac.showMessageOpenAi = false;
     } catch (ErrorMessage) {
-        console.log(ErrorMessage);
+        //consolo.log(ErrorMessage);
         alertAll({
             "status": 4,
             "information": "[updateClassDiagram]: " + ErrorMessage.message
@@ -125,7 +202,7 @@ function getClassPosition(elementsClass) {
             "posx": elementsClass[i]._x, "posy": elementsClass[i]._y, "name": elementsClass[i].getName()
         });
     }
-    console.log("POSITION CLASS ", positionsClass);
+    //consolo.log("POSITION CLASS ", positionsClass);
 }
 
 function setClassPosition() {
@@ -137,7 +214,7 @@ function setClassPosition() {
             break;
 
         if (diagramClass._nodes[class_num] !== undefined) {
-            console.log(diagramClass._nodes[class_num].getName());
+            //consolo.log(diagramClass._nodes[class_num].getName());
             if (diagramClass._nodes[class_num].getName() === positionsClass[i].name) {
                 found = true;
                 position_aux = i;
@@ -168,14 +245,15 @@ function deleteRelationsRedundant(relations) {
         for (let positionRelation = 0; positionRelation < relations.length; positionRelation++) {
             let rel_origi = relations[positionRelation];
 
-            if (rel_origi !== undefined) {
+            if (rel_origi !== undefined && rel_origi !== null) {
 
                 let from = rel_origi.from;
                 let to = rel_origi.to;
                 for (let positionRelationAux = 0; positionRelationAux < relations.length; positionRelationAux++) {
                     let rela = relations[positionRelationAux];
 
-                    if (rela !== undefined) {
+                    if (rela !== undefined && rela !== null) {
+
                         let fromx = rela.from;
                         let tox = rela.to;
 
@@ -188,7 +266,7 @@ function deleteRelationsRedundant(relations) {
                 }
             }
         }
-        console.log("cantidad de relaciones redundantes: ", relationsSuccess.length);
+        //consolo.log("cantidad de relaciones redundantes: ", relationsSuccess.length);
         let unique_data = [];
         unique_data = relationsSuccess.filter(onlyUnique);
         // agregar las relaciones que no se repitieron
@@ -217,7 +295,7 @@ function relationsClass(relations) {
                     let to = getFromToRelation(relations[irelation].to);
 
                     if (from === undefined || to === undefined) {
-                        console.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
+                        //consolo.log("NO EXISTEN OBJETOS PARA REALIZAR ESTE TIPO DE RELACION => " + relations[irelation].typeRelatioship);
                     } else {
 
                         if (relations[irelation].cardinalidate === undefined) {
@@ -237,17 +315,17 @@ function relationsClass(relations) {
                         }
 
                         if (relations[irelation].value === undefined) {
-                            relations[irelation]["value"] = relations[irelation].typeRelatioship;
+                            relations[irelation]["value"] = relations[irelation].typeRelatioship.toLowerCase();
                         }
 
                         let relation = createRelationClass({
-                            type: relationsGlobal[relations[irelation].typeRelatioship],
+                            type: relationsGlobal[relations[irelation].typeRelatioship.toLowerCase()],
                             a: from,
                             b: to,
                             card_A: relations[irelation].cardinalidate.split("..")[0],
                             card_B: relations[irelation].cardinalidate.split("..")[1],
                             value: relations[irelation].value,
-                            typeRelatioship: relations[irelation].typeRelatioship
+                            typeRelatioship: relations[irelation].typeRelatioship.toLowerCase()
                         });
                         elementsClass.push({"element": relation});
                     }

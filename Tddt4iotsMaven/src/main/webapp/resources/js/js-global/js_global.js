@@ -6,7 +6,8 @@
 /* global angular, swal, store */
 
 //variable que obtiene la url del proyecto donde se obtiene los webservicies
-var urlWebServicies = location.origin + "/Tddm4IoTbsServer/webapis/";;
+var urlWebServicies = location.origin + "/Tddm4IoTbsServer/webapis/";
+var urlWsOpenAi = "http://localhost:8181/core/tddt4iots/openai/";
 //var urlWebServicies = "http://190.15.134.19:8080/bioforestserver/webresources/";
 //
 var rutasStorage = {

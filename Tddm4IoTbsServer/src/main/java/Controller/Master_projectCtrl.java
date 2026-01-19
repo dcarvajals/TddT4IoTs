@@ -9,6 +9,7 @@ import DAO.Master_projectDAO;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
+import dto.GenericResponseDTO;
 import java.io.BufferedWriter;
 
 import java.io.File;
@@ -104,8 +105,8 @@ public class Master_projectCtrl {
     public String[] insertProject(String name_mp, String description_mp,
             String id_user, String path) {
         String status = "4", message = "Error returning data", data = "[]";
-        if (Methods.verifyString(name_mp, "", 30)
-                && Methods.verifyMaxWords(description_mp, 150, " ")) {
+        if (Methods.verifyString(name_mp, "", 500)
+                && Methods.verifyMaxWords(description_mp, 1000, " ")) {
 
             WeEncoder we = new WeEncoder();
             FileAccess fac = new FileAccess();
@@ -330,6 +331,7 @@ public class Master_projectCtrl {
 
         if (stateUml.matches("[AIS]") && stateIot.matches("[AIS]")) {
             String modulePath = path + DataStatic.folderProyect + filePath + "/";
+            System.out.println("Path: " + modulePath);
             FileAccess fac = new FileAccess();
 
             String aux1 = "No data available.", aux2 = "No data available.", infoUml = "[]", infoIoT = "[]";
@@ -769,7 +771,23 @@ public class Master_projectCtrl {
         return new String [] {
             status, message, data
         };
-       
+    }
+    
+    public GenericResponseDTO activateOpenAi (String id_master_project, String status_openai) {
+        GenericResponseDTO response = new GenericResponseDTO();
+        response.setStatus("4");
+        response.setMessage("Error when activating the openai model");
+        response.setData("[]");
+        
+        id_master_project = codec.textDecryptor(id_master_project);
+        boolean query = master.activateOpenAi(id_master_project, status_openai);
+        if(query) {
+            String estado = status_openai.equals("T") ? "activated." : "desactivated.";
+            response.setStatus("2");
+            response.setMessage("The openai model was successfully " + estado);
+        }
+        
+        return response;
     }
     
     public String[] selectMembersInProject(String idMasterProject) {        

@@ -55,7 +55,7 @@ public class FileMangarApi {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
-    
+
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     @Path("/saveFileTraining")
@@ -76,7 +76,7 @@ public class FileMangarApi {
                 .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
                 .build();
     }
-    
+
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     @Path("/loadFile")
@@ -103,13 +103,14 @@ public class FileMangarApi {
         }
     }
     
-     private void saveToFileJsonL(String content, String path) throws IOException {
-        
+    private void saveToFileJsonL(String content, String path) throws IOException {
+
         // Reemplazar los caracteres de nueva línea en el contenido JSONL para evitar problemas
         String sanitizedContent = content.replace("\\n", "\n");
-        
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             writer.write(sanitizedContent);
         }
     }
+
 }

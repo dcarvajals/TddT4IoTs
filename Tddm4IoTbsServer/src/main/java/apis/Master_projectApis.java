@@ -8,6 +8,7 @@ package apis;
 import Controller.Master_projectCtrl;
 import Controller.PersonaCtrl;
 import com.google.gson.JsonObject;
+import dto.GenericResponseDTO;
 import java.io.UnsupportedEncodingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -65,6 +66,7 @@ public class Master_projectApis {
         JsonObject Jso = Methods.stringToJSON(data);
         if (Jso.size() > 0) {
             String sessionToken = Methods.JsonToString(Jso, "user_token", "");
+            System.out.println("sessionToke: " + sessionToken);
             String type = Methods.JsonToString(Jso, "type", "");
             String[] clains = Methods.getDataToJwt(sessionToken);
             System.out.println("clains 0 => " + clains[0]);
@@ -846,6 +848,30 @@ public class Master_projectApis {
            
             String [] res = mpControl.getGanttObjects(id_master_project);
             message = Methods.getJsonMessage(res[0], res[1], res[2]);
+       } else {
+            message = Methods.getJsonMessage("4", "Missing data.", "[]");
+        }
+        return Response.ok(message)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-with")
+                .build();
+    }
+    
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/activateOpenAi")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response activateOpenAi (String data) {
+        String message;
+        JsonObject Jso = Methods.stringToJSON(data);
+        System.out.println("activateOpenAi()");
+        if (Jso.size() > 0) {                
+            String id_master_project = Methods.JsonToString(Jso, "idmasterproject", "");
+            String status_openai = Methods.JsonToString(Jso, "status_openai", "");
+           
+            GenericResponseDTO res = mpControl.activateOpenAi(id_master_project, status_openai);
+            message = Methods.getJsonMessage(res.getStatus(), res.getMessage(), res.getData());
        } else {
             message = Methods.getJsonMessage("4", "Missing data.", "[]");
         }
