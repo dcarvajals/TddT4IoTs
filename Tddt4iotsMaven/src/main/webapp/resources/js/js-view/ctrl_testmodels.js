@@ -42,13 +42,42 @@ app.controller("testmodels_controller", function ($scope, $http) {
             },
             success: function (response) {
                 swal.close();
-                let dataDiagramClass = JSON.parse(response.data);
-                response.data = JSON.parse(dataDiagramClass.data);
-                //response.data = response.data.data;
-                $scope.initDiagramClass();
-                updateClassDiagramOpenAi(response.data, "C");
-                console.log(response);
-                alertAll(response);
+                try {
+                    // 1. Parseamos el contenido de 'data' que viene como String
+                    let innerData = JSON.parse(response.data);
+
+                    // 2. Validamos el estado INTERNO
+                    if (innerData.status === "ERROR") {
+                        // Preparamos el objeto para tu función alertAll
+                        alertAll({
+                            status: 4, // Caso errorTo
+                            information: innerData.message,
+                            tittle: "Error OpenAI"
+                        });
+                        return; // Detenemos la ejecución
+                    }
+
+                    // 3. Si no hay error interno, procedemos con el diagrama
+                    // Según tu lógica anterior, parece que hay un tercer nivel de datos
+                    let finalDiagramData = JSON.parse(innerData.data);
+
+                    $scope.initDiagramClass();
+                    updateClassDiagramOpenAi(finalDiagramData, "C");
+
+                    alertAll({
+                        status: 2, // Caso successTo
+                        information: "Diagrama generado",
+                        tittle: "Éxito"
+                    });
+
+                } catch (e) {
+                    console.error("Error al parsear la respuesta:", e);
+                    alertAll({
+                        status: 4,
+                        information: "La respuesta del servidor no tiene el formato esperado",
+                        tittle: "Error de Sistema"
+                    });
+                }
             },
             error: function (objXMLHttpRequest) {
                 console.log("Error: ", objXMLHttpRequest.responseText);

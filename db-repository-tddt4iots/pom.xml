@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.ugr.microservices.dependencies.scheme.tddt4iots</groupId>
 	<artifactId>db-repository-tddt4iots</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>db-repository-tddt4iots</name>
 	<description>db-repository-tddt4iots</description>
 	<properties>

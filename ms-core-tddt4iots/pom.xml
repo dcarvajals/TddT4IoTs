@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.ugr.microservices.dependencies.tddt4iots</groupId>
     <artifactId>ms-core-tddt4iots</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>ms-core-tddt4iots</name>
     <description>ms-core-tddt4iots</description>
     <properties>

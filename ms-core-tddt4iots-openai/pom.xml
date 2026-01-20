@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.microservices.core.tddt4iots</groupId>
 	<artifactId>ms-core-tddt4iots-openai</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>ms-core-tddt4iots-openai</name>
 	<description>ms-core-tddt4iots-openai</description>
 	<properties>
