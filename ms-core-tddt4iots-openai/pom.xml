@@ -17,8 +17,8 @@
 		<java.version>22</java.version>
 		<maven.compiler.source>22</maven.compiler.source>
 		<maven.compiler.target>22</maven.compiler.target>
-		<version.db-repository-tddt4iots>1.0.0-SNAPSHOT</version.db-repository-tddt4iots>
-		<version.ms-core-tddt4iots>1.0.0-SNAPSHOT</version.ms-core-tddt4iots>
+		<version.db-repository-tddt4iots>1.0.0</version.db-repository-tddt4iots>
+		<version.ms-core-tddt4iots>1.0.0</version.ms-core-tddt4iots>
 		<grpc-client.version>2.14.0.RELEASE</grpc-client.version>
 	</properties>
 	<dependencies>
@@ -104,6 +104,12 @@
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.ugr.microservices.dependencies.tddt4iots</groupId>
+			<artifactId>ms-core-tddt4iots</artifactId>
+			<version>1.0.0</version>
+			<scope>compile</scope>
 		</dependency>
 
 	</dependencies>

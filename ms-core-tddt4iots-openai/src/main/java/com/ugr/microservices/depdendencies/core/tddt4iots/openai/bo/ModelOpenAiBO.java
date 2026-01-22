@@ -12,6 +12,6 @@ import java.util.List;
 public interface ModelOpenAiBO {
     List<ModelDTO> getAllModel () throws GenericException;
     ModelDTO save (GenericTddt4iotsReqDTO<ModelDTO> request) throws GenericException, IOException, InterruptedException;
-
+    ModelDTO update (GenericTddt4iotsReqDTO<ModelDTO> request) throws GenericException, IOException, InterruptedException;
     ModelDTO inactive (ModelDTO request) throws GenericException;
 }

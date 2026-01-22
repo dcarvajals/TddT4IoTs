@@ -1,5 +1,8 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.MasterProjectBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.ModelPermissionBO;
@@ -11,6 +14,7 @@ import com.ugr.microservices.dependencies.core.tddt4iots.cons.Tddt4iotsCons;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.*;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.diagramclass.DiagramDataResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.Tddt4iotsUtil;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingHistory;
@@ -320,7 +324,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     }
 
     @Override
-    public String useModelOpenAi(GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException {
+    public DiagramDataResDTO useModelOpenAi(GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException {
         // validar la session de la herramienta
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(genericTddt4iotsReqDTO.getUserToken());
         // buscamos los datos del modelo a utilizar por la persona
@@ -328,6 +332,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         GrpcTrainModelResDTO grpcTrainModelResDTO =
                 Tddt4iotsUtil.fetchDataFromJsonString(modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
         List<MessageDTO> messages = new ArrayList<>();
+        DiagramDataResDTO response = new DiagramDataResDTO();
         // leer el promp por defecto para cada peticion
         String contentDefault = Tddt4iotsUtil.fetchTextFromUrl(applicationConfig.getTddt4iotsNfs() + Tddt4iotsCons.PATH_TEMPLATE + "prompt.txt");
         MessageDTO messageDTOSystem = MessageDTO.builder()
@@ -347,16 +352,39 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 .build();
         String grpcUseModelString = Tddt4iotsUtil.convertObjectToJsonString(grpcUseModelReqDTO);
         log.info(grpcUseModelString);
-        String response = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
-        log.info(response);
+        String responseGrpc = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
+        log.info(responseGrpc);
 
-        // Define the regex pattern to capture the JSON part of the string
+        // 1. Extraer el JSON usando el Matcher que ya tienes
         Pattern pattern = Pattern.compile("Processing result: (\\{.*\\})");
-        Matcher matcher = pattern.matcher(response);
+        Matcher matcher = pattern.matcher(responseGrpc);
 
         if (matcher.find()) {
-            // Extract the JSON part
-            response = matcher.group(1);
+            String jsonExtraido = matcher.group(1);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                // 1. Leemos el envoltorio externo de gRPC
+                JsonNode rootNode = objectMapper.readTree(jsonExtraido);
+
+                // 2. Extraemos el contenido del campo "data" como texto crudo
+                String rawData = rootNode.get("data").asText();
+
+                // ESTRATEGIA DE MITIGACIÓN (Requerida por el revisor):
+                // Verificación de integridad del cierre de la cadena
+                if (rawData == null || !rawData.trim().endsWith("}")) {
+                    log.error("Detección de JSON truncado en el campo data");
+                    throw new GenericException("Error de robustez: La respuesta de la IA llegó incompleta (Unterminated JSON).");
+                }
+
+                // 4. EL MAPEO CLAVE: Convertimos el String de 'data' a nuestro objeto DTO
+                // Aquí es donde se llenan: List<PackageDTO> diagram, relationships, etc.
+                response = objectMapper.readValue(rawData, DiagramDataResDTO.class);
+
+            } catch (JsonProcessingException e) {
+                log.error("Error en la estructura del diagrama: " + e.getMessage());
+                throw new GenericException("La IA generó una estructura incompatible con el estándar UML.");
+            }
         }
 
         return response;

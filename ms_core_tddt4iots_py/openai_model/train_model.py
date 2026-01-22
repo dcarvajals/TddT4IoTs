@@ -2,6 +2,7 @@ import os
 import requests
 import json
 from openai import OpenAI
+import httpx
 
 def train_model(json_string):
     """
@@ -29,10 +30,12 @@ def train_model(json_string):
     openai_secret_key = json_object.get('openAiSecretKey')
     model = json_object.get('model')
     pathFileTrain = json_object.get('pathFileTrain')
+    custom_http_client = httpx.Client(trust_env=False)
 
     # Configuración del cliente de OpenAI con la clave API
     client = OpenAI(
-        api_key=openai_secret_key
+        api_key=openai_secret_key,
+        http_client=custom_http_client
     )
 
     # Nombre del modelo preentrenado de OpenAI
@@ -142,13 +145,15 @@ def use_model (json_string):
     openai_secret_key = json_object.get('openAiSecretKey')
     model = json_object.get('model')
     messages = json_object.get('messages');
+    custom_http_client = httpx.Client(trust_env=False)
 
     print(f"Texto para analizar: {messages[1]}")
 
     # Configuración del cliente de OpenAI con la clave API
     try:
         client = OpenAI(
-            api_key=openai_secret_key
+            api_key=openai_secret_key,
+            http_client=custom_http_client
         )
 
         # Nombre del modelo preentrenado de OpenAI
@@ -159,7 +164,7 @@ def use_model (json_string):
             model=MODEL_ENGINE,
             response_format={"type": "json_object"},
             messages=messages,
-            max_tokens=2000,
+            max_tokens=4000,
             temperature=0.2
         )
 

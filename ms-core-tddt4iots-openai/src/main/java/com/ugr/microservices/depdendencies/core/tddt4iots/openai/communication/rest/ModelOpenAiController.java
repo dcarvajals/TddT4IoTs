@@ -46,9 +46,41 @@ public class ModelOpenAiController {
     ) throws GenericException, IOException, InterruptedException {
         GenericBasicResponse<ModelDTO> response = new GenericBasicResponse<>();
         genericTddt4iotsReqDTO.setUserToken(userToken);
-        log.info("Request received: listProjectFromToDate");
+        log.info("Request received: createModel");
         response.setData(modelOpenAiBO.save(genericTddt4iotsReqDTO));
-        log.info("Request completed: listProjectFromToDate");
+        log.info("Request completed: createModel");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/update-model",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<ModelDTO> updateModel (
+            @RequestBody GenericTddt4iotsReqDTO<ModelDTO> genericTddt4iotsReqDTO,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<ModelDTO> response = new GenericBasicResponse<>();
+        genericTddt4iotsReqDTO.setUserToken(userToken);
+        log.info("Request received: updateModel");
+        response.setData(modelOpenAiBO.update(genericTddt4iotsReqDTO));
+        log.info("Request completed: updateModel");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/inactive-model",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<ModelDTO> inactiveModel (
+            @RequestBody GenericTddt4iotsReqDTO<ModelDTO> genericTddt4iotsReqDTO,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<ModelDTO> response = new GenericBasicResponse<>();
+        genericTddt4iotsReqDTO.setUserToken(userToken);
+        log.info("Request received: inactiveModel");
+        response.setData(modelOpenAiBO.inactive(genericTddt4iotsReqDTO.getClassDTO()));
+        log.info("Request completed: inactiveModel");
         return response;
     }
 

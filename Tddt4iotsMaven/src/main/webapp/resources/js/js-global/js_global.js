@@ -7,7 +7,8 @@
 
 //variable que obtiene la url del proyecto donde se obtiene los webservicies
 var urlWebServicies = location.origin + "/Tddm4IoTbsServer/webapis/";
-var urlWsOpenAi = "http://82.180.136.74:8181/core/tddt4iots/openai/";
+var urlWsOpenAi = location.origin + "/core/tddt4iots/openai/";
+// var urlWsOpenAi = "http://localhost:8181/core/tddt4iots/openai/";
 //var urlWebServicies = "http://190.15.134.19:8080/bioforestserver/webresources/";
 //
 var rutasStorage = {
@@ -429,6 +430,75 @@ function limpiarSugerencia() {
     $("#descripcionmensaje").val("");
 }
 
+const HttpService = {
+    // Definición de las URLs base
+    urls: {
+        api: urlWebServicies, // Tu URL estándar
+        openai: urlWsOpenAi    // Tu URL de OpenAI
+    },
+
+    /**
+     * @param {string} method - GET, POST, etc.
+     * @param {string} endpoint - La ruta del servicio
+     * @param {object} data - El payload (opcional)
+     * @param {string} target - 'api' o 'openai' (por defecto 'api')
+     */
+    send: function (method, endpoint, data = null, target = 'api') {
+        // Seleccionamos la URL base según el target
+        const baseUrl = this.urls[target] || this.urls.api;
+        const dataUser = store.session.get("user_tddm4iotbs");
+        
+        // tratar el payload para openai
+        if(target === "openai") {
+            data = { classDTO: data };
+        }
+
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                method: method,
+                url: baseUrl + endpoint,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: data ? JSON.stringify(data) : null,
+                headers: target === "api" ? {} : {"userToken": dataUser.user_token},
+                beforeSend: function () {
+                    if (typeof loading === "function") loading();
+                }
+            })
+            .done((response) => {
+                if (typeof swal !== "undefined") swal.close();
+                resolve(response);
+            })
+            .fail((jqXHR) => {
+                // TRY-CATCH CENTRALIZADO
+                if (typeof swal !== "undefined") swal.close();
+
+                let errorMsg = "Error en la comunicación";
+                if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                    errorMsg = jqXHR.responseJSON.message;
+                }
+
+                // Log descriptivo para desarrollo
+                console.error(`[HTTP ${method} ERROR] [Target: ${target}] en ${endpoint}:`, jqXHR);
+                
+                if (typeof alertAll === "function") {
+                    alertAll({ status: 4, information: errorMsg });
+                }
+
+                reject(jqXHR);
+            });
+        });
+    },
+
+    // Métodos abreviados
+    get: function (endpoint, target = 'api') {
+        return this.send("GET", endpoint, null, target);
+    },
+
+    post: function (endpoint, data, target = 'api') {
+        return this.send("POST", endpoint, data, target);
+    }
+};
 
 app.directive('intense', function () {
     return {

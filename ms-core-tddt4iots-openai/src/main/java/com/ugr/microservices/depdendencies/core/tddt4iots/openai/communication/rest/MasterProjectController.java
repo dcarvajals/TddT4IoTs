@@ -6,6 +6,7 @@ import com.ugr.microservices.dependencies.core.tddt4iots.dto.MasterProjectDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.CreateFileTrainingResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.TrainingModelOpenAiRes;
+import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.diagramclass.DiagramDataResDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericBasicResponse;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
 import lombok.extern.slf4j.Slf4j;
@@ -87,11 +88,11 @@ public class MasterProjectController {
             path = "/useModelTraining",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public GenericBasicResponse<String> useModelTraining (
+    public GenericBasicResponse<DiagramDataResDTO> useModelTraining (
             @RequestBody GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO,
             @RequestHeader String userToken
     ) throws GenericException, IOException, InterruptedException {
-        GenericBasicResponse<String> response = new GenericBasicResponse<>();
+        GenericBasicResponse<DiagramDataResDTO> response = new GenericBasicResponse<>();
         log.info("Request received: listProjectFromToDate");
         genericTddt4iotsReqDTO.setUserToken(userToken);
         response.setData(masterProjectBO.useModelOpenAi(genericTddt4iotsReqDTO));

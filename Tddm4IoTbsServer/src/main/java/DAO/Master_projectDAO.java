@@ -317,7 +317,7 @@ public class Master_projectDAO {
     }
     
     public boolean activateOpenAi (String id_master_project, String status_openai) {
-        String sentecy = "update master_project set status_openai = '"+status_openai+"' where id_masterproject = " + id_master_project;
-        return conex.modifyBD(sentecy);
+        String sentency = "update master_project set status_openai = '"+status_openai+"' where id_masterproject = " + id_master_project;
+        return conex.modifyBD(sentency);
     }
 }

@@ -43,15 +43,12 @@ app.controller("testmodels_controller", function ($scope, $http) {
             success: function (response) {
                 swal.close();
                 try {
-                    // 1. Parseamos el contenido de 'data' que viene como String
-                    let innerData = JSON.parse(response.data);
-
                     // 2. Validamos el estado INTERNO
-                    if (innerData.status === "ERROR") {
+                    if (response.status !== "OK") {
                         // Preparamos el objeto para tu función alertAll
                         alertAll({
                             status: 4, // Caso errorTo
-                            information: innerData.message,
+                            information: response.message,
                             tittle: "Error OpenAI"
                         });
                         return; // Detenemos la ejecución
@@ -59,10 +56,8 @@ app.controller("testmodels_controller", function ($scope, $http) {
 
                     // 3. Si no hay error interno, procedemos con el diagrama
                     // Según tu lógica anterior, parece que hay un tercer nivel de datos
-                    let finalDiagramData = JSON.parse(innerData.data);
-
                     $scope.initDiagramClass();
-                    updateClassDiagramOpenAi(finalDiagramData, "C");
+                    updateClassDiagramOpenAi(response.data, "C");
 
                     alertAll({
                         status: 2, // Caso successTo

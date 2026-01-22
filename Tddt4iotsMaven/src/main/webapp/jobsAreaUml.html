@@ -1249,14 +1249,14 @@
                             </tr>
                             <tr ng-repeat="dom_main_stage in jsonUseCase.useCase[encontrado].main_stage">
                                 <td class="w-50">
-                                    <span ng-show="dom_main_stage.actor !== 'System'">
+                                    <span ng-if="dom_main_stage.actor !== 'System'">
                                         <strong> {{($index + 1) + ') ' +
                                                     dom_main_stage.actor + ': '}}</strong>
                                         {{!showLS ? dom_main_stage.action_interpret : dom_main_stage.action_original}}
                                     </span>
                                 </td>
                                 <td class="w-50">
-                                    <span ng-show="dom_main_stage.actor === 'System'">
+                                    <span ng-if="dom_main_stage.actor === 'System'">
                                         <strong> {{($index + 1) + ') ' +
                                                     dom_main_stage.actor + ': '}}</strong>
                                         {{!showLS ? dom_main_stage.action_interpret : dom_main_stage.action_original}}
@@ -1273,13 +1273,13 @@
                             </tr>
                             <tr ng-repeat="dom_alternative_flow in jsonUseCase.useCase[encontrado].alternative_flow">
                                 <td class="w-50">
-                                    <span ng-show="dom_alternative_flow.action_interpret === true">
+                                    <span ng-if="dom_alternative_flow.action_interpret === true">
                                         <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
                                         {{!showLS ? dom_alternative_flow.action_interpret : dom_alternative_flow.action_original}}
                                     </span>
                                 </td>
                                 <td class="w-50">
-                                    <span ng-show="dom_alternative_flow.action_interpret !== ''">
+                                    <span ng-if="dom_alternative_flow.action_interpret !== ''">
                                         <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
                                         {{!showLS ? dom_alternative_flow.action_interpret : dom_alternative_flow.action_original}}
                                     </span>

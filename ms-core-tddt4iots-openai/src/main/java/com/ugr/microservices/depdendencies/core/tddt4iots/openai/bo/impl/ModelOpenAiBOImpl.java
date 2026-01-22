@@ -59,6 +59,15 @@ public class ModelOpenAiBOImpl implements ModelOpenAiBO {
     }
 
     @Override
+    public ModelDTO update(GenericTddt4iotsReqDTO<ModelDTO> request) throws GenericException, IOException, InterruptedException {
+        // validar la session de la herramienta
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
+
+        request.getClassDTO().setIdPerson(personDTO);
+        return modelMapper.modelDTOTo(modelService.save(modelMapper.modelTo(request.getClassDTO())));
+    }
+
+    @Override
     public ModelDTO inactive(ModelDTO request) throws GenericException {
         request.setActive(Boolean.FALSE);
         return modelMapper.modelDTOTo(modelService.save(modelMapper.modelTo(request)));

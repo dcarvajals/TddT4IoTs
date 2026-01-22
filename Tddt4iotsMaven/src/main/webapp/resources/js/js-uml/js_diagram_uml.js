@@ -151,7 +151,7 @@ controller = app.controller("workAreaController", function ($scope) {
     $scope.activateOpenAiApi = () => {
         console.log("activateOpenAi()");
         let dataUser = store.session.get("user_tddm4iotbs");
-        $scope.activateOpenAi = !$scope.activateOpenAi;
+        //$scope.activateOpenAi = $scope.activateOpenAi;
         let api_param = {
             idmasterproject: $scope.dataProject.id_masterproject,
             status_openai: !$scope.activateOpenAi ? "T" : "F"
@@ -185,7 +185,7 @@ controller = app.controller("workAreaController", function ($scope) {
         }
     };
 
-    $scope.showHideConsole = ()=> {
+    $scope.showHideConsole = () => {
         $scope.viewConsole = !$scope.viewConsole;
     }
 
@@ -1329,10 +1329,10 @@ controller = app.controller("workAreaController", function ($scope) {
             console.log($scope.update_action);
         }
     };
-    
+
     /**
      * funcion para editar las acciones del flujo normal de eventos
-     * */ 
+     * */
 
     //funcion para actualizar los datos de la accion editada
     $scope.updateActionMSFA = function (form) {
@@ -1351,7 +1351,7 @@ controller = app.controller("workAreaController", function ($scope) {
             /*objectActual.action_interpret = objetoCambiarPosicion.action_interpret;
              objectActual.action_original = objetoCambiarPosicion.action_original;
              objectActual.actor = objetoCambiarPosicion.actor;
-
+             
              $scope.manager_maf.main_stage[$scope.position].action_interpret = form.action_interpret.$viewValue;
              $scope.manager_maf.main_stage[$scope.position].action_original = form.action_original.$viewValue;
              $scope.manager_maf.main_stage[$scope.position].actor = form.actor.$viewValue;
@@ -2749,61 +2749,62 @@ controller = app.controller("workAreaController", function ($scope) {
         selectElementContents("viewUseCaseTable");
     };
 
-    function selectElementContents(elementId) {
-        var table = document.getElementById(elementId);
-        var htmlContent = `
-            <html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    table, th, td {
-                        border: 1px solid black;
-                    }
-                    th, td {
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    .table-active {
-                        background-color: #f2f2f2;
-                    }
-                    .center-d {
-                        text-align: center;
-                    }
-                </style>
-            </head>
-            <body>${table.outerHTML}</body>
-            </html>
-        `;
+    async function selectElementContents(elementId) {
+        const table = document.getElementById(elementId);
 
-        // Crear un elemento temporal para copiar el HTML
-        var tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        document.body.appendChild(tempDiv);
+        if (!table) {
+            alertAll({status: 4, information: "No se encontró la tabla seleccionada."});
+            return;
+        }
 
-        var clipboard = new ClipboardJS('#copyButton', {
-            text: function () {
-                return tempDiv.innerHTML;
+        // 1. Construimos el HTML completo con estilos para que Word los entienda
+        const htmlContent = `
+        <html>
+        <head>
+        <style>
+            table { 
+                border-collapse: collapse; 
+                width: auto; 
+                font-family: 'Consolas', 'Courier New', monospace; 
+                font-size: 10px;
+                line-height: 1.1;
             }
-        });
+            table, th, td { 
+                border: 0.5pt solid #000000; 
+            }
+            th, td { 
+                padding: 2px 4px; /* Padding reducido para hacerlo compacto */
+                text-align: left;
+            }
+            .table-active { 
+                background-color: #f2f2f2; 
+            }
+            .center-d { 
+                text-align: center; 
+            }
+        </style>
+        </head>
+        <body>
+            ${table.outerHTML}
+        </body>
+        </html>
+    `;
 
-        clipboard.on('success', function (e) {
-            console.log('Contenido copiado al portapapeles!');
-            alert("Content successfully copied.");
-            e.clearSelection();
-            document.body.removeChild(tempDiv); // Eliminar el elemento temporal
-        });
+        // 2. Usamos el API de Portapapeles moderno (soporta formato HTML)
+        try {
+            const type = "text/html";
+            const blob = new Blob([htmlContent], {type});
+            const data = [new ClipboardItem({[type]: blob})];
 
-        clipboard.on('error', function (e) {
-            console.error('Error al copiar al portapapeles.');
-            alert("Failed to copy content.");
-            document.body.removeChild(tempDiv); // Eliminar el elemento temporal
-        });
+            await navigator.clipboard.write(data);
 
-        // Activar el clic en el botón de copia
-        document.getElementById('copyButton').click();
+            // 3. Alerta de éxito con tu función alertAll
+            alertAll({status: 2, information: "Contenido copiado con éxito para Word."});
+
+        } catch (err) {
+            console.error('Error al copiar:', err);
+            alertAll({status: 4, information: "Error al copiar al portapapeles."});
+        }
     }
 
     function copyFallback(htmlContent) {
@@ -2930,38 +2931,40 @@ controller = app.controller("workAreaController", function ($scope) {
                 $scope.showMessageOpenAi = true;
             },
             success: function (response) {
-                let dataDiagramClass = JSON.parse(response.data);
-                response.data = JSON.parse(dataDiagramClass.data);
-                /*$scope.initDiagramClass();
-                 updateClassDiagramOpenAi(response.data, "C");*/
-                $scope.$apply(function () {
+                $scope.showMessageOpenAi = false;
+                if (response.status === "OK") {
+                    $scope.$apply(function () {
 
-                    // obtener el diagrama de clases almacenado en cache:
-                    $scope.jsonClass = store.session.get("jsonClass");
-                    let minJson = {};
+                        // obtener el diagrama de clases almacenado en cache:
+                        $scope.jsonClass = store.session.get("jsonClass");
+                        let minJson = {};
 
-                    if($scope.jsonClass.length === 0) {
-                        $scope.jsonClass = response.data;
-                    } else {
-                        minJson = response.data;
-                        mergeClassDiagram($scope.jsonClass, minJson);
-                    }
+                        if ($scope.jsonClass.length === 0) {
+                            $scope.jsonClass = response.data;
+                        } else {
+                            minJson = response.data;
+                            mergeClassDiagram($scope.jsonClass, minJson);
+                        }
 
 
-                    updateClassDiagram($scope.jsonClass, "U");
-                    diagramUseCase.draw();
-                    $scope.showMessageOpenAi = false;
-                    $scope.natural_text.push({
-                        text: request.classDTO.descriptionUseCase,
-                        classDiagram: response.data
+                        updateClassDiagram($scope.jsonClass, "U");
+                        diagramUseCase.draw();
+                        $scope.showMessageOpenAi = false;
+                        $scope.natural_text.push({
+                            text: request.classDTO.descriptionUseCase,
+                            classDiagram: response.data
+                        });
+                        store.session.set("natural_text", $scope.natural_text);
+                        store.session.set("jsonClass", $scope.jsonClass);
                     });
-                    store.session.set("natural_text", $scope.natural_text);
-                    store.session.set("jsonClass", $scope.jsonClass);
-                });
+                } else {
+                    alertAll({status: 4, information: response.message});
+
+                }
                 console.log(response);
-                //alertAll(response);
             },
             error: function (objXMLHttpRequest) {
+                $scope.showMessageOpenAi = true;
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });

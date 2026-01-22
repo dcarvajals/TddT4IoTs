@@ -70,7 +70,8 @@ function allswal(minrequest) {
 function successTo(obj) {
     toastr.success(obj.message, obj.nameApplication, {
         positionClass: "toast-bottom-right",
-        closeButton: true
+        closeButton: true,
+        progressBar: true
     });
 }
 /**
@@ -84,7 +85,8 @@ function successTo(obj) {
 function errorTo(obj) {
     toastr.error(obj.message, obj.nameApplication, {
         positionClass: "toast-bottom-right",
-        closeButton: true
+        closeButton: true,
+        progressBar: true
     });
 }
 /**
@@ -98,7 +100,8 @@ function errorTo(obj) {
 function infoTo(obj) {
     toastr.info(obj.message, obj.nameApplication, {
         positionClass: "toast-bottom-right",
-        closeButton: true
+        closeButton: true,
+        progressBar: true
     });
 }
 /**
@@ -112,7 +115,8 @@ function infoTo(obj) {
 function warningTo(obj) {
     toastr.warning(obj.message, obj.nameApplication, {
         positionClass: "toast-bottom-right",
-        closeButton: true
+        closeButton: true,
+        progressBar: true
     });
 }
 

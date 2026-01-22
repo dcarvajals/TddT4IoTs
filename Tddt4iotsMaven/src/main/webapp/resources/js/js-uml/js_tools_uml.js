@@ -481,7 +481,7 @@ function createUseCase(attributes) {
                 deleteObject(objectcase, 1);
             }, 'Delete'],
         [function () {
-                viewUseCase(node);
+                viewUseCase(objectcase);
             }, 'View']
     ]);
     return objectcase;
