@@ -1,25 +1,11 @@
 <div class="container-fluid" ng-show="flag_selected_entregable === true && flag_selected_component === false && flag_selected_task === false">
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Project - Deliverables</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/myprojects" class="text-muted text-hover-primary">My Projects</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-
     <!--Tareas de entrgable !-->
     <div class="card shadow mb-4 w-75 m-auto  mb-3">
         <!-- Card Header - Dropdown -->
 
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <div class="float-right">
+                <span class="screen-kicker">Workspace</span>
                 <h3 class="font-weight-bold text-dark">{{alldata_selected_project.name_mp}}</h3>          
             </div>  
             <div class="">
@@ -867,22 +853,6 @@
 
 <!-- COMPONENTS -->
 <div class="container-fluid" ng-show="flag_selected_entregable === true && flag_selected_component === true && flag_selected_task === false">
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Project - Deliverables - Components</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/myprojects" class="text-muted text-hover-primary">My Projects</a>
-            </li>            
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-
-
     <!--Tareas de entrgable !-->
 
 
@@ -890,7 +860,7 @@
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-column align-items-stretch justify-content-between">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h3 class="m-0 font-weight-bold text-dark">{{selected_entregable.name_entregable}}</h3>                         
+                <div><span class="screen-kicker">Workspace</span><h3 class="m-0 font-weight-bold text-dark">{{selected_entregable.name_entregable}}</h3></div>
                 <div class="">
                     <button type="button" ng-click="flag_selected_component = false; executeLoadEntregables();" class="btn button-ds btn-sm float-right">
                         <i class="fas fa-chevron-circle-left float-end"></i> Return  
@@ -1058,26 +1028,13 @@
 
 <!-- TASKS -->
 <div class="container-fluid" ng-show="flag_selected_task === true && flag_selected_component === true && flag_selected_entregable === true">
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Project - Deliverables - Components - Tasks</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/myprojects" class="text-muted text-hover-primary">My Projects</a>
-            </li>            
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
     <!-- Tasks of component selected !-->  
 
     <div class="card shadow mb-4 w-75 m-auto  mb-3">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-column align-items-stretch justify-content-between">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h3 class="m-0 font-weight-bold text-dark">{{project_entregable_component_selected.name_component}}</h3>                         
+                <div><span class="screen-kicker">Workspace</span><h3 class="m-0 font-weight-bold text-dark">{{project_entregable_component_selected.name_component}}</h3></div>
                 <div class="">
                     <button type="button" ng-click="flag_selected_task = false; executeLoadComponents();" class="btn button-ds btn-sm float-right">
                         <i class="fas fa-chevron-circle-left float-end"></i> Return  
@@ -2398,5 +2355,3 @@
         </div>
     </div>
 </div>
-
-

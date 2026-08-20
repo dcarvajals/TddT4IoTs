@@ -1,57 +1,91 @@
-<div class="container-fluid">
-
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Test models</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/settingsprotocol" class="text-muted text-hover-primary">Test models</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary"> Test model </h6>
+<div class="container-fluid test-models-view">
+    <div class="card projects-panel project-layout-width mb-4 m-auto ai-test-shell">
+        <div class="projects-panel-header model-panel-header">
+            <div>
+                <span class="screen-kicker">AI models</span>
+                <h2 class="projects-panel-title">AI model diagram test</h2>
+                <p class="projects-panel-subtitle">Describe a software requirement and generate its UML class diagram with the model currently assigned to your account.</p>
+            </div>
+            <span class="ai-model-badge"><i class="fas fa-robot"></i>Natural language → UML</span>
         </div>
 
-        <div class="card-body" style="height: auto; overflow: auto">
-            <form name="formTestModel" ng-submit="analizeUseCaseDescription(formTestModel)">
-                <div class="form-group">
-                    <label for="ip_descriptionUseCase">Enter de description use case:</label>
-                    <textarea type="text" id="ip_descriptionUseCase"
-                           name="ip_descriptionUseCase"
-                           ng-model="ip_descriptionUseCase"
-                           autocomplete="false" rows="5"
-                           ng-class="(formTestModel.ip_descriptionUseCase.$invalid &&
-                                                           formTestModel.ip_descriptionUseCase.$dirty) ?
-                                                           'form-control form-control-sm is-invalid'
-                                                           : 'form-control form-control-sm'" required ></textarea>
-                    <div class="invalid-feedback">
-                        Please enter the description use case.
+        <div class="ai-test-workspace">
+            <section class="ai-prompt-panel">
+                <div class="ai-test-section-heading">
+                    <div>
+                        <span class="interpreter-step">01 · Requirement</span>
+                        <h3>Use-case description</h3>
+                    </div>
+                    <span class="interpreter-counter">{{(ip_descriptionUseCase || '').length}} characters</span>
+                </div>
+                <p class="ai-test-guidance">Describe the actors, responsibilities, information and relationships the system needs. More context produces a more useful model.</p>
+
+                <form name="formTestModel" ng-submit="analizeUseCaseDescription(formTestModel)" novalidate>
+                    <label class="ai-prompt-label" for="ip_descriptionUseCase">Engineering requirement</label>
+                    <div class="ai-prompt-field">
+                        <div class="ai-prompt-toolbar"><span><i class="far fa-file-alt mr-2"></i>Natural language</span><span>AI input</span></div>
+                        <textarea id="ip_descriptionUseCase" name="ip_descriptionUseCase"
+                                  ng-model="ip_descriptionUseCase" autocomplete="off" rows="13"
+                                  placeholder="Example: A customer creates an order with one or more products. The order calculates its total and is paid through a payment transaction."
+                                  ng-class="(formTestModel.ip_descriptionUseCase.$invalid && formTestModel.ip_descriptionUseCase.$submitted) ? 'is-invalid' : ''"
+                                  required></textarea>
+                    </div>
+                    <div class="invalid-feedback" ng-show="formTestModel.ip_descriptionUseCase.$invalid && formTestModel.$submitted">
+                        Enter a use-case description before generating the diagram.
+                    </div>
+
+                    <div class="ai-prompt-tips">
+                        <span><i class="fas fa-check"></i>Name the main domain objects</span>
+                        <span><i class="fas fa-check"></i>Explain what each object does</span>
+                        <span><i class="fas fa-check"></i>Mention important relationships</span>
+                    </div>
+
+                    <button class="btn project-primary-btn ai-generate-btn" type="submit"
+                            ng-disabled="formTestModel.$invalid || isAnalyzingModel">
+                        <i ng-class="isAnalyzingModel ? 'fas fa-circle-notch fa-spin mr-2' : 'fas fa-magic mr-2'"></i>
+                        {{isAnalyzingModel ? 'Generating diagram…' : 'Generate UML diagram'}}
+                    </button>
+                </form>
+            </section>
+
+            <section class="ai-diagram-panel">
+                <header class="ai-diagram-header">
+                    <div>
+                        <span class="interpreter-step">02 · Generated model</span>
+                        <h3>UML class diagram</h3>
+                    </div>
+                    <div class="ai-diagram-stats" ng-show="modelDiagramReady">
+                        <span><strong>{{modelDiagramStats.classes}}</strong> classes</span>
+                        <span><strong>{{modelDiagramStats.relationships}}</strong> relationships</span>
+                    </div>
+                    <span class="ai-diagram-status" ng-class="modelDiagramReady ? 'is-ready' : 'is-waiting'">
+                        <i ng-class="modelDiagramReady ? 'fas fa-check-circle' : 'far fa-clock'"></i>
+                        {{modelDiagramReady ? 'Generated' : 'Waiting for input'}}
+                    </span>
+                </header>
+
+                <div class="ai-diagram-stage">
+                    <div class="ai-diagram-placeholder" ng-show="!modelDiagramReady && !isAnalyzingModel">
+                        <span><i class="fas fa-project-diagram"></i></span>
+                        <h4>Your generated diagram will appear here</h4>
+                        <p>Submit a detailed requirement to identify classes, members and their relationships.</p>
+                    </div>
+                    <div class="ai-diagram-placeholder is-loading" ng-show="isAnalyzingModel">
+                        <span><i class="fas fa-circle-notch fa-spin"></i></span>
+                        <h4>Building the class model</h4>
+                        <p>The selected AI model is analyzing the requirement and preparing the UML structure.</p>
+                    </div>
+                    <div id="areaDiagram" class="ud_diagram_div" aria-label="Generated UML class diagram">
+                        <canvas id="mac"></canvas>
+                        <canvas id="mot"></canvas>
                     </div>
                 </div>
 
-                <button class="btn button-d btn-sm w-100 mb-2"
-                        type="submit" id="newProtocol">
-                    ANALYZE
-                </button>
-
-                <!-- End of Sidebar -->
-                <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true"
-                     style="max-width: 2000px; max-height: 2000px ;margin-top: 4px; height: 94%">
-                    <canvas id="mac">
-                    </canvas>
-                    <canvas id="mot">
-                    </canvas>
-                </div>
-            </form>
-            </div>
+                <footer class="ai-diagram-footer">
+                    <span><i class="fas fa-mouse-pointer mr-1"></i>The generated nodes remain interactive in the UML canvas.</span>
+                    <span ng-show="modelDiagramReady"><i class="fas fa-info-circle mr-1"></i>Review the result before using it as an engineering model.</span>
+                </footer>
+            </section>
         </div>
     </div>
-
 </div>

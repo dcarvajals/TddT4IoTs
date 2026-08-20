@@ -1,5 +1,6 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.rest;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.MasterProjectBO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.MasterProjectDTO;
@@ -97,6 +98,22 @@ public class MasterProjectController {
         genericTddt4iotsReqDTO.setUserToken(userToken);
         response.setData(masterProjectBO.useModelOpenAi(genericTddt4iotsReqDTO));
         log.info("Request completed: listProjectFromToDate");
+        return response;
+    }
+
+    @PostMapping(
+            path = "/generate-case-workspace",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public GenericBasicResponse<JsonNode> generateCaseWorkspace (
+            @RequestBody GenericTddt4iotsReqDTO<GenerateCaseWorkspaceReqDTO> request,
+            @RequestHeader String userToken
+    ) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<JsonNode> response = new GenericBasicResponse<>();
+        log.info("Request received: generateCaseWorkspace");
+        request.setUserToken(userToken);
+        response.setData(masterProjectBO.generateCaseWorkspace(request));
+        log.info("Request completed: generateCaseWorkspace");
         return response;
     }
 

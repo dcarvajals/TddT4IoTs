@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="resources/css/css-library/sb-admin-2.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-app/index-app.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-app/styleTdd.css" type="text/css"/>
-        <link rel="stylesheet" href="resources/css/css-app/jobsAeraUml.css" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-app/jobsAeraUml.css?v=20260819-test-studio-2" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/UDStyle.css" type="text/css"/>
@@ -22,6 +22,8 @@
         <link href="resources/css/css-viewcode/view_code_we.css" rel="stylesheet" type="text/css"/>
 
         <link href="resources/css/css-app/utils.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/css-app/modal-system.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/css-app/system-feedback.css" rel="stylesheet" type="text/css"/>
 
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
 
@@ -58,47 +60,175 @@
     </head>
     <body ng-controller="workAreaController">
 
-        <!-- Modal Symbols to describe use cases-->
-        <div class="modal fade" id="modal_Symbols" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-             aria-hidden="true" data-backdrop="static" data-keyboard="false">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <!-- Card Header - Dropdown -->
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Symbols to describe use cases</h6>
+        <!-- Import a complete CASE workspace from the documented JSON contract -->
+        <div class="modal fade" id="modal_import_case_workspace" tabindex="-1" role="dialog"
+             aria-labelledby="importCaseWorkspaceTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+                <div class="modal-content uml-import-modal">
+                    <div class="modal-header">
+                        <div class="uml-import-title">
+                            <span class="uml-import-icon"><i class="fas fa-file-code"></i></span>
+                            <div><small>CASE WORKSPACE</small><h5 class="modal-title" id="importCaseWorkspaceTitle">Import diagrams from JSON</h5></div>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
-                    <!-- Card Body -->
-                    <div class="card-body">
-                        <!-- Card Body -->
-                        <table class="table table-sm table-bordered table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th scope="col">Symbols</th>
-                                    <th scope="col">Description</th>              
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <div class="modal-body">
+                        <div class="uml-import-intro">
+                            <div>
+                                <strong>Build the complete project model in one operation</strong>
+                                <p>The file creates use case diagrams, actors, relations, use cases and one sequence-diagram entry per use case. It then generates a single consolidated class diagram.</p>
+                            </div>
+                            <span><i class="fas fa-shield-alt"></i> Validated before import</span>
+                        </div>
 
-                                <tr ng-repeat="keyinterpret in interpret" ng-click="loadExample(keyinterpret)" style="cursor: pointer">
-                                    <th scope="row" style="text-align: center">
-                                        <span class="badge badge-light">
-                                            {{keyinterpret.simbol}}
-                                        </span>
-                                    </th>
-                                    <td> 
-                                        <!-- span class="badge badge-success"> 
-                                        {{keyinterpret.ascii.trim()}} 
-                                    </span -->
-                                        <span style="font-size: 75%">
-                                            {{keyinterpret.description}}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>                        
+                        <div class="uml-import-rule">
+                            <i class="fas fa-code"></i>
+                            <div><strong>Symbol language is mandatory</strong><p>Every use case description and flow action must include the existing modeling symbols, for example <code>(Class &amp;-id=string [+save=void])</code> or <code>*¡ClassA 1&gt;[owns]&lt;n ClassB!</code>.</p></div>
+                        </div>
+
+                        <label class="uml-json-dropzone" for="caseWorkspaceFile" ng-class="{'has-file': caseWorkspaceImport.fileName}">
+                            <input id="caseWorkspaceFile" type="file" accept=".json,application/json"
+                                   onchange="angular.element(this).scope().handleCaseWorkspaceFile(this)"/>
+                            <i class="fas" ng-class="caseWorkspaceImport.fileName ? 'fa-check-circle' : 'fa-cloud-upload-alt'"></i>
+                            <span><strong>{{caseWorkspaceImport.fileName || 'Choose a JSON workspace file'}}</strong><small>{{caseWorkspaceImport.fileName ? 'Validation completed' : 'Click here to browse · maximum one JSON file'}}</small></span>
+                            <em>{{caseWorkspaceImport.fileName ? 'Change file' : 'Browse'}}</em>
+                        </label>
+
+                        <div class="uml-import-actions-row">
+                            <a href="resources/examples/older-adult-assistance-workspace.json" download>
+                                <i class="fas fa-download"></i><span><strong>Download complete example</strong><small>Two diagrams for an older-adult assistance system</small></span>
+                            </a>
+                            <button type="button" id="Symbols_use_cases_import"><i class="fas fa-book-open"></i>Open symbol guide</button>
+                        </div>
+
+                        <div class="uml-import-summary" ng-if="caseWorkspaceImport.summary && caseWorkspaceImport.errors.length === 0">
+                            <div><span>{{caseWorkspaceImport.summary.diagrams}}</span><small>Diagrams</small></div>
+                            <div><span>{{caseWorkspaceImport.summary.actors}}</span><small>Actors</small></div>
+                            <div><span>{{caseWorkspaceImport.summary.useCases}}</span><small>Use cases</small></div>
+                            <div><span>{{caseWorkspaceImport.summary.relations}}</span><small>Relations</small></div>
+                            <div><span>{{caseWorkspaceImport.summary.sequences}}</span><small>Sequences</small></div>
+                        </div>
+
+                        <div class="uml-import-messages is-error" ng-if="caseWorkspaceImport.errors.length">
+                            <div class="uml-import-message-heading"><i class="fas fa-exclamation-circle"></i><strong>Correct {{caseWorkspaceImport.errors.length}} validation issue{{caseWorkspaceImport.errors.length === 1 ? '' : 's'}}</strong></div>
+                            <ul><li ng-repeat="message in caseWorkspaceImport.errors track by $index">{{message}}</li></ul>
+                        </div>
+                        <div class="uml-import-messages is-warning" ng-if="caseWorkspaceImport.warnings.length">
+                            <div class="uml-import-message-heading"><i class="fas fa-exclamation-triangle"></i><strong>Recommendations</strong></div>
+                            <ul><li ng-repeat="message in caseWorkspaceImport.warnings track by $index">{{message}}</li></ul>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary rounded-pill btn-sm" data-dismiss="modal">Close</button>
+                        <span><i class="fas fa-info-circle"></i> Import replaces the diagrams currently open. Save them first if necessary.</span>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-primary" ng-click="confirmCaseWorkspaceImport()"
+                                ng-disabled="!caseWorkspaceImport.payload || caseWorkspaceImport.errors.length">
+                            <i class="fas fa-project-diagram"></i>Import and generate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal_generate_case_workspace" tabindex="-1" role="dialog"
+             aria-labelledby="generateCaseWorkspaceTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+                <div class="modal-content uml-import-modal">
+                    <div class="modal-header">
+                        <div class="uml-import-title">
+                            <span class="uml-import-icon"><i class="fas fa-brain"></i></span>
+                            <div><small>AI REQUIREMENTS ANALYSIS</small><h5 class="modal-title" id="generateCaseWorkspaceTitle">Generate the complete CASE model</h5></div>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="uml-import-intro">
+                            <div><strong>Describe the system in natural language</strong><p>Upload one or several requirements documents, write a paragraph, or combine both. The model will produce the structured JSON used by the CASE workspace.</p></div>
+                            <span><i class="fas fa-project-diagram"></i> Use cases · classes · sequences</span>
+                        </div>
+                        <label class="uml-json-dropzone" for="naturalLanguageDocuments" ng-class="{'has-file': documentWorkspace.files.length}">
+                            <input id="naturalLanguageDocuments" type="file" multiple
+                                   accept=".txt,.pdf,.doc,.docx,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                   onchange="angular.element(this).scope().handleNaturalLanguageDocuments(this)"/>
+                            <i class="fas" ng-class="documentWorkspace.files.length ? 'fa-check-circle' : 'fa-file-upload'"></i>
+                            <span><strong>{{documentWorkspace.files.length ? documentWorkspace.files.length + ' document(s) ready' : 'Add TXT, PDF or Word documents'}}</strong><small>Multiple files allowed · maximum 10 MB per document</small></span>
+                            <em>Browse</em>
+                        </label>
+                        <div class="uml-document-list" ng-if="documentWorkspace.files.length">
+                            <div ng-repeat="file in documentWorkspace.files track by file.name"><i class="far fa-file-alt"></i><span><strong>{{file.name}}</strong><small>{{file.sizeLabel}}</small></span><button type="button" ng-click="removeNaturalLanguageDocument($index)" title="Remove"><i class="fas fa-times"></i></button></div>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="workspaceNaturalDescription">Additional description or complete requirement</label>
+                            <textarea id="workspaceNaturalDescription" class="form-control form-control-sm" rows="7"
+                                      ng-model="documentWorkspace.description" maxlength="50000"
+                                      placeholder="Example: The system assists older adults with medication reminders, emergency requests and notifications to caregivers..."></textarea>
+                            <small class="form-text text-muted">This text is analyzed together with all selected documents.</small>
+                        </div>
+                        <div class="uml-import-messages is-error" ng-if="documentWorkspace.errors.length">
+                            <div class="uml-import-message-heading"><i class="fas fa-exclamation-circle"></i><strong>Review the input</strong></div>
+                            <ul><li ng-repeat="message in documentWorkspace.errors track by $index">{{message}}</li></ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <span><i class="fas fa-info-circle"></i> Nothing is replaced until the generated JSON passes local validation.</span>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-primary" ng-click="generateCaseWorkspaceFromDocuments()"
+                                ng-disabled="documentWorkspace.loading || (!documentWorkspace.files.length && !documentWorkspace.description.trim())">
+                            <i ng-class="documentWorkspace.loading ? 'fas fa-spinner fa-spin' : 'fas fa-magic'"></i>
+                            {{documentWorkspace.loading ? 'Analyzing requirements…' : 'Generate complete model'}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Symbols to describe use cases-->
+        <div class="modal fade" id="modal_Symbols" tabindex="-1" role="dialog" aria-labelledby="symbolGuideTitle"
+             aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+                <div class="modal-content uml-symbol-modal">
+                    <div class="modal-header">
+                        <div class="uml-symbol-title">
+                            <span><i class="fas fa-code"></i></span>
+                            <div><small>SYMLAN REFERENCE</small><h5 id="symbolGuideTitle">Modeling symbol guide</h5><p>Write structured natural language that the CASE engine can transform into UML.</p></div>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="uml-symbol-toolbar">
+                            <label><i class="fas fa-search"></i><input type="search" ng-model="symbolGuideQuery" placeholder="Search symbol, class, relation…"></label>
+                            <span><i class="fas fa-layer-group"></i>{{interpret.length}} modeling rules</span>
+                        </div>
+                        <div class="uml-symbol-workspace">
+                            <aside class="uml-symbol-index">
+                                <button type="button" ng-repeat="keyinterpret in interpret | filter:symbolGuideQuery track by $index"
+                                        ng-click="loadExample(keyinterpret)" ng-class="{'is-active': selectedSymbol === keyinterpret}">
+                                    <code>{{keyinterpret.simbol}}</code>
+                                    <span><strong>{{keyinterpret.description}}</strong><small>{{keyinterpret.ascii || 'SymLan syntax'}}</small></span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <div class="uml-symbol-no-results" ng-if="(interpret | filter:symbolGuideQuery).length === 0"><i class="fas fa-search"></i><span>No matching symbols</span></div>
+                            </aside>
+                            <section class="uml-symbol-detail" ng-if="selectedSymbol">
+                                <div class="uml-symbol-detail-heading">
+                                    <span class="uml-symbol-token">{{selectedSymbol.simbol}}</span>
+                                    <div><small>MODELING CONSTRUCT</small><h6>{{selectedSymbol.description}}</h6></div>
+                                </div>
+                                <div class="uml-symbol-purpose"><i class="fas fa-info-circle"></i><p>Use this notation inside the use-case description or flow action. It will be interpreted as part of the structural model.</p></div>
+                                <div class="uml-symbol-example-heading"><span>Example syntax</span><small>Copy and adapt names and data types</small></div>
+                                <pre class="uml-symbol-code"><code>{{selectedSymbol.exampleText}}</code></pre>
+                                <div class="uml-symbol-tips">
+                                    <div><i class="fas fa-check"></i><span><strong>Readable text</strong><small>Combine the symbol with a clear natural-language sentence.</small></span></div>
+                                    <div><i class="fas fa-link"></i><span><strong>Consistent names</strong><small>Reuse the same class and object names across use cases.</small></span></div>
+                                    <div><i class="fas fa-project-diagram"></i><span><strong>Automatic model</strong><small>The syntax contributes to the consolidated class diagram.</small></span></div>
+                                </div>
+                            </section>
+                            <section class="uml-symbol-detail is-empty" ng-if="!selectedSymbol"><i class="fas fa-mouse-pointer"></i><strong>Select a symbol</strong><small>Its description and complete example will appear here.</small></section>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <span><i class="fas fa-lightbulb"></i>Symbols can be combined in the same requirement sentence.</span>
+                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Done</button>
                     </div>
                 </div>
             </div>
@@ -111,7 +241,7 @@
                 <div class="modal-content">
                     <form name="form_update_action" ng-submit="updateActionMSFA(form_update_action)">
                         <div class="modal-header">
-                            <h5 class="modal-title">Update Action</h5>
+                            <h5 class="modal-title">{{updateFlowType === 'A' ? 'Update alternative flow' : 'Update normal-flow action'}}</h5>
                         </div> 
                         <div class="modal-body">
                             <div class="form-group">
@@ -133,22 +263,51 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="col-form-label col-form-label-sm"> Select position: <strong style="color: crimson"> Actual position ({{positionActual}}) </strong> </label>
-                                <select name="position" ng-model="position"
+                                <label class="col-form-label col-form-label-sm"> Position: <strong style="color: crimson"> Current ({{positionActual}}) </strong> </label>
+                                <select name="position" ng-model="position" required
                                         ng-class="(form_update_action.position.$invalid &&
                                                                 form_update_action.position.$dirty) ?
                                                                 'form-control form-control-sm is-invalid'
                                                                 : 'form-control form-control-sm'">
                                     <option value="">----</option>
-                                    <option ng-repeat="dom_main_stage in manager_maf.main_stage"
+                                    <option ng-repeat="flowAction in (updateFlowType === 'A' ? manager_maf.alternative_flow : manager_maf.main_stage)"
                                             value="{{$index}}">
                                         {{$index + 1}}
                                     </option>
                                 </select>
                             </div>
+                            <div ng-show="updateFlowType === 'A'" class="uml-alternative-edit-fields">
+                                <div class="form-group">
+                                    <label class="col-form-label col-form-label-sm">Origin step</label>
+                                    <select name="alternative_edit_start" ng-model="alternativeEditStart" class="form-control form-control-sm" ng-required="updateFlowType === 'A'">
+                                        <option value="">--------</option>
+                                        <option ng-repeat="mainAction in manager_maf.main_stage" value="{{$index + 1}}">{{$index + 1}}) {{mainAction.actor}}: {{mainAction.action_interpret}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-form-label col-form-label-sm">Condition or exception</label>
+                                    <input name="alternative_edit_condition" ng-model="alternativeEditCondition" class="form-control form-control-sm" ng-required="updateFlowType === 'A'">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label class="col-form-label col-form-label-sm">Result</label>
+                                        <select name="alternative_edit_outcome" ng-model="alternativeEditOutcome" class="form-control form-control-sm" ng-required="updateFlowType === 'A'">
+                                            <option value="return">Return to normal flow</option>
+                                            <option value="end">End use case</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6" ng-show="alternativeEditOutcome === 'return'">
+                                        <label class="col-form-label col-form-label-sm">Return step</label>
+                                        <select name="alternative_edit_return" ng-model="alternativeEditReturn" class="form-control form-control-sm" ng-required="updateFlowType === 'A' && alternativeEditOutcome === 'return'">
+                                            <option value="">--------</option>
+                                            <option ng-repeat="mainAction in manager_maf.main_stage" ng-disabled="($index + 1) < (alternativeEditStart * 1)" value="{{$index + 1}}">{{$index + 1}}) {{mainAction.actor}}: {{mainAction.action_interpret}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <button type="button" href="" ng-click="interpretUseCaseAction()"
-                                        ng-disabled="form_update_action.usecase_description.$invalid"
+                                        ng-disabled="form_update_action.action_original.$invalid"
                                         class="btn btn-success btn-sm float-right"
                                         style="padding: 0px 10px; margin-top: 6px; font-size: 0.8rem;">
                                     Interpret
@@ -156,6 +315,7 @@
                                 <label class="col-form-label col-form-label-sm"> Action:</label>
                                 <textarea name="action_original"
                                           ng-model="action_original"
+                                          required
                                           spellcheck="false"
                                           ng-class="(form_update_action.action_original.$invalid &&
                                                                   form_update_action.action_original.$dirty) ?
@@ -174,7 +334,7 @@
                                           ng-class="(form_update_action.action_interpret.$invalid &&
                                                                   form_update_action.action_interpret.$dirty) ?
                                                                   'form-control form-control-sm is-invalid'
-                                                                  : 'form-control form-control-sm'" required name=""
+                                                                  : 'form-control form-control-sm'" required
                                           cols="30"
                                           readonly
                                           rows="5">
@@ -307,7 +467,7 @@
                                 <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile"
                                    role="tab" aria-controls="nav-profile" aria-selected="false">Normal scenario</a>
                                 <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact"
-                                   role="tab" aria-controls="nav-contact" aria-selected="false">Alternating flow</a>
+                                   role="tab" aria-controls="nav-contact" aria-selected="false">Alternative flow</a>
                                 <a class="nav-item nav-link" id="nav-secuence-tab" data-toggle="tab" href="#nav-secuence"
                                    role="tab" aria-controls="nav-secuence" aria-selected="false">Sequence diagram</a>
                             </div>
@@ -315,10 +475,6 @@
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
                                  aria-labelledby="nav-home-tab">
-                                <div class="custom-control custom-checkbox mt-1 mb-1">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck1" checked>
-                                    <label class="custom-control-label" for="customCheck1">Show input without SymLan symbols</label>
-                                </div>
                                 <form id="form_usecase" name="form_usecase" ng-submit="createUseCaseUC(form_usecase, true)">
                                     <div class="row">
                                         <div class="col">
@@ -330,9 +486,9 @@
                                                                                form_usecase.usecase_name.$dirty) ?
                                                                                'form-control form-control-sm is-invalid'
                                                                                : 'form-control form-control-sm'"
-                                                       ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_name, 'usecase_name_i')">
+                                                       >
                                                 <input type="text" name="usecase_name_i" ng-model="usecase_name_i"
-                                                       class="form-control form-control-sm mt-1" readonly>
+                                                       class="form-control form-control-sm mt-1 d-none" readonly>
                                                 <div class="invalid-feedback">
                                                     Please choose a use case name.
                                                 </div>
@@ -424,25 +580,25 @@
                                         <label class="col-form-label col-form-label-sm"> Porpuse:</label>
                                         <input name="usecase_porpuse" ng-model="usecase_porpuse"
                                                type="text" class="form-control form-control-sm"
-                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_porpuse, 'usecase_porpuse_i')">
+                                               >
                                         <input name="usecase_porpuse_i" ng-model="usecase_porpuse_i"
-                                               type="text" class="form-control form-control-sm mt-1" readonly>
+                                               type="text" class="form-control form-control-sm mt-1 d-none" readonly>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-form-label col-form-label-sm"> Pre-condition:</label>
                                         <input name="usecase_precondition" ng-model="usecase_precondition"
                                                type="text" class="form-control form-control-sm"
-                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_precondition, 'usecase_precondition_i')">
+                                               >
                                         <input name="usecase_precondition_i" ng-model="usecase_precondition_i"
-                                               type="text" class="form-control form-control-sm mt-1" readonly>
+                                               type="text" class="form-control form-control-sm mt-1 d-none" readonly>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-form-label col-form-label-sm"> Post-condition:</label>
                                         <input name="usecase_postcondition" ng-model="usecase_postcondition"
                                                type="text" class="form-control form-control-sm"
-                                               ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_postcondition, 'usecase_postcondition_i')">
+                                               >
                                         <input name="usecase_postcondition_i" ng-model="usecase_postcondition_i"
-                                               type="text" class="form-control form-control-sm mt-1" readonly>
+                                               type="text" class="form-control form-control-sm mt-1 d-none" readonly>
                                     </div>
                                     <div class="form-group">
                                         <!--<button type="button" href="" ng-click="interpretUseCaseDescription(true)"
@@ -460,8 +616,7 @@
                                                                           'form-control form-control-sm is-invalid'
                                                                           : 'form-control form-control-sm'" required
                                                   cols="30"
-                                                  rows="5"
-                                                  ng-blur="interpretUseCaseDescription(true, form_usecase.usecase_description_interpret, 'usecase_description_original')"></textarea>
+                                                  rows="5"></textarea>
                                         <div class="invalid-feedback">
                                             Please enter the use case description
                                         </div>
@@ -470,10 +625,9 @@
                                         <textarea name="usecase_description_original"
                                                   ng-model="usecase_description_original"
                                                   spellcheck="false"
-                                                  ng-class="(form_usecase.usecase_description_original.$invalid &&
-                                                                          form_usecase.usecase_description_original.$dirty) ?
-                                                                          'form-control form-control-sm is-invalid'
-                                                                          : 'form-control form-control-sm'" cols="30"
+                                                  ng-class="'form-control form-control-sm d-none'"
+                                                  class="d-none"
+                                                  cols="30"
                                                   readonly
                                                   rows="5"></textarea>
                                     </div>
@@ -605,7 +759,25 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="col-form-label col-form-label-sm">Reason for alternating flow:</label>
+                                        <label class="col-form-label col-form-label-sm">Condition or exception:</label>
+                                        <input name="alternative_condition"
+                                               ng-model="alternative_condition"
+                                               class="form-control form-control-sm"
+                                               placeholder="Example: Payment is rejected"
+                                               required>
+                                        <div class="invalid-feedback">Describe what causes this alternative.</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label col-form-label-sm">Responsible actor:</label>
+                                        <select name="actor_fa" ng-model="actor_fa" class="form-control form-control-sm" required>
+                                            <option value="">--------</option>
+                                            <option value="System">System response</option>
+                                            <option ng-repeat="alternativeActor in actorsUseCase" ng-show="alternativeActor.obj_actor._type === 'UMLActor'" value="{{alternativeActor.obj_actor.getName()}}">{{alternativeActor.obj_actor.getName()}}</option>
+                                        </select>
+                                        <div class="invalid-feedback">Select who performs the alternative action.</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label col-form-label-sm">Alternative action:</label>
                                         <textarea name="action_fa"
                                                   ng-model="action_fa"
                                                   spellcheck="false"
@@ -617,16 +789,25 @@
                                                   cols="30" rows="5"
                                                   required></textarea>
                                         <div class="invalid-feedback">
-                                            Enter the actor's action.
+                                            Enter the alternative action.
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="col-form-label col-form-label-sm">Return step:</label>
+                                        <label class="col-form-label col-form-label-sm">Result of the alternative:</label>
+                                        <select name="alternative_outcome" ng-model="alternative_outcome" class="form-control form-control-sm" required>
+                                            <option value="return">Return to normal flow</option>
+                                            <option value="end">End use case</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" ng-show="alternative_outcome === 'return'">
+                                        <label class="col-form-label col-form-label-sm">Return to step:</label>
                                         <select name="return_step"
                                                 ng-model="return_step"
-                                                class="form-control form-control-sm" required="">
+                                                class="form-control form-control-sm"
+                                                ng-required="alternative_outcome === 'return'">
                                             <option value="">--------</option>
                                             <option ng-repeat="dom_main_stage in manager_maf.main_stage"
+                                                    ng-disabled="($index + 1) < (alternate_flow_begins * 1)"
                                                     value="{{$index + 1}}">
                                                 {{($index + 1).toString() + ') ' + dom_main_stage.actor + ': ' + dom_main_stage.action_interpret}}
                                             </option>
@@ -640,50 +821,34 @@
                                     </button>
                                 </form>
 
-                                <table class="table table-sm table-bordered mt-5"
-                                       ng-show="manager_maf.main_stage.length > 0">
-                                    <thead class="thead-dark">
+                                <table class="table table-sm table-bordered mt-5 uml-alternative-table"
+                                       ng-show="manager_maf.alternative_flow.length > 0">
+                                    <thead>
                                         <tr>
-                                            <th colspan="2" class="text-center">Alternating Flow</th>
+                                            <th>Ref.</th>
+                                            <th>Condition</th>
+                                            <th>Alternative action</th>
+                                            <th>Result</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td><strong>Actions the actor</strong></td>
-                                            <td><strong>System Response</strong></td>
-                                        </tr>
                                         <tr ng-repeat="dom_alternative_flow in manager_maf.alternative_flow">
-                                            <td class="w-50">
-                                                <span ng-show="dom_alternative_flow.action_interpret === true">
-                                                    <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
-                                                    {{dom_alternative_flow.action_interpret}}
-                                                    <div class="mt-2 mb-2 text-center">
-                                                        <button class="btn btn-success btn-sm"
-                                                                ng-click="openModalUpdateAction(dom_alternative_flow, 'A')">
-                                                            <i class="fas fa-edit"></i> Update
-                                                        </button>
-                                                        <button class="btn btn-danger btn-sm"
-                                                                ng-click="removeActionMS($index, 'A')">
-                                                            <i class="fas fa-trash"></i> Remove
-                                                        </button>
-                                                    </div>
+                                            <td><strong>A{{(dom_alternative_flow.start_step || dom_alternative_flow.he_passed) + '.' + ($index + 1)}}</strong></td>
+                                            <td>{{dom_alternative_flow.condition || 'Alternative condition'}}</td>
+                                            <td>
+                                                <strong>{{dom_alternative_flow.actor || 'System'}}:</strong>
+                                                {{dom_alternative_flow.action_interpret}}
+                                            </td>
+                                            <td>
+                                                <span class="uml-flow-result" ng-class="{'is-end': dom_alternative_flow.outcome === 'end'}">
+                                                    <i ng-class="dom_alternative_flow.outcome === 'end' ? 'fas fa-stop-circle' : 'fas fa-undo-alt'"></i>
+                                                    {{dom_alternative_flow.outcome === 'end' ? 'Ends use case' : 'Returns to step ' + (dom_alternative_flow.return_step || dom_alternative_flow.return)}}
                                                 </span>
                                             </td>
-                                            <td class="w-50">
-                                                <span ng-show="dom_alternative_flow.action_interpret !== ''">
-                                                    <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
-                                                    {{dom_alternative_flow.action_interpret}}
-                                                    <div class="mt-2 mb-2 text-center">
-                                                        <button class="btn btn-success btn-sm"
-                                                                ng-click="openModalUpdateAction(dom_alternative_flow, 'A')">
-                                                            <i class="fas fa-edit"></i> Update
-                                                        </button>
-                                                        <button class="btn btn-danger btn-sm"
-                                                                ng-click="removeActionMS($index, 'A')">
-                                                            <i class="fas fa-trash"></i> Remove
-                                                        </button>
-                                                    </div>
-                                                </span>
+                                            <td class="text-nowrap">
+                                                <button type="button" class="btn btn-success btn-sm" ng-click="openModalUpdateAction(dom_alternative_flow, 'A')" title="Update"><i class="fas fa-edit"></i></button>
+                                                <button type="button" class="btn btn-danger btn-sm" ng-click="removeActionMS($index, 'A')" title="Remove"><i class="fas fa-trash"></i></button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -692,171 +857,69 @@
                             <div class="tab-pane fade" id="nav-secuence" role="tabpanel"
                                  aria-labelledby="nav-secuence-tab">
 
-                                <div class="form-group">
-                                    <label class="col-form-label col-form-label-sm">Selected Package:</label>
-                                    <select class="form-control form-control-sm" name="s_package" ng-model="s_package">
-                                        <option value=""> ---</option>
-                                        <option ng-repeat="package in secuenceData.package" ng-value="$index">
-                                            {{package.packagename}}
-                                        </option>
-                                    </select>
+                                <div class="uml-sequence-assistant">
+                                    <div><strong><i class="fas fa-magic"></i> Sequence draft</strong><small>Creates ordered lifelines and calls from the current use-case steps and their modeled objects.</small></div>
+                                    <button type="button" class="btn btn-sm btn-info" ng-click="generateSequenceFromUseCaseFlow()"><i class="fas fa-project-diagram"></i> Generate from flow</button>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <label class="col-form-label col-form-label-sm">Selected object 1:</label>
-                                            <select class="form-control form-control-sm" name="s_object1" ng-model="s_object1">
-                                                <option value=""> ---</option>
-                                                <option ng-repeat="object in secuenceData.package[s_package].objects"
-                                                        ng-value="$index"> {{object.objectname}}
-                                                </option>
-                                            </select>
-                                        </div>
+
+                                <div class="uml-sequence-context">
+                                    <div class="uml-sequence-section-heading">
+                                        <span class="uml-sequence-step">1</span>
+                                        <div><strong>Select participants</strong><small>Choose the package and the two objects that exchange the message.</small></div>
                                     </div>
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <label class="col-form-label col-form-label-sm">Selected object 2:</label>
-                                            <select class="form-control form-control-sm" name="s_object2" ng-model="s_object2">
-                                                <option value=""> ---</option>
-                                                <option ng-repeat="object in secuenceData.package[s_package].objects"
-                                                        ng-value="$index"> {{object.objectname}}
-                                                </option>
-                                            </select>
-                                        </div>
+                                    <div class="uml-sequence-context-grid">
+                                        <label><span>Package</span><select class="form-control form-control-sm" name="s_package" ng-model="s_package" ng-change="s_object1 = null; s_object2 = null"><option value="">Select package</option><option ng-repeat="package in secuenceData.package" ng-value="$index">{{package.packagename}}</option></select></label>
+                                        <label class="is-participant"><span><i class="fas fa-circle"></i> From</span><select class="form-control form-control-sm" name="s_object1" ng-model="s_object1" ng-disabled="s_package === undefined || s_package === null || s_package === ''"><option value="">Select source object</option><option ng-repeat="object in secuenceData.package[s_package].objects" ng-value="$index">{{object.objectname}}</option></select></label>
+                                        <span class="uml-sequence-direction"><i class="fas fa-long-arrow-alt-right"></i></span>
+                                        <label class="is-participant is-target"><span><i class="fas fa-bullseye"></i> To</span><select class="form-control form-control-sm" name="s_object2" ng-model="s_object2" ng-disabled="s_package === undefined || s_package === null || s_package === ''"><option value="">Select target object</option><option ng-repeat="object in secuenceData.package[s_package].objects" ng-value="$index">{{object.objectname}}</option></select></label>
                                     </div>
                                 </div>
 
-                                <div class="accordion small" id="accordionExample">
-                                    <div class="card">
+                                <div class="accordion small uml-sequence-accordion" id="accordionExample">
+                                    <div class="card uml-sequence-card">
                                         <div class="card-header" id="headingOne">
-                                            <h2 class="mb-0">
-                                                <button class="btn btn-link" type="button" data-toggle="collapse"
-                                                        data-target="#collapseOne" aria-expanded="true"
-                                                        aria-controls="collapseOne">
-                                                    Normal flow
-                                                </button>
-                                            </h2>
+                                            <div class="uml-sequence-section-heading">
+                                                <span class="uml-sequence-step">2</span>
+                                                <div><strong>Define interaction</strong><small>Configure the call and its optional response.</small></div>
+                                            </div>
+                                            <span class="uml-sequence-flow-badge"><i class="fas fa-stream"></i> Normal flow</span>
                                         </div>
 
-                                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
-                                             data-parent="#accordionExample">
+                                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                                             <div class="card-body">
-                                                <form name="form_snf" ng-submit="addNormalFlow(form_snf)">
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label class="col-form-label col-form-label-sm">Object 1 methods:</label>
-                                                                <select class="form-control form-control-sm"
-                                                                        name="nf_objectmethods1" ng-model="nf_objectmethods1">
-                                                                    <option value=""> ---</option>
-                                                                    <option ng-repeat="method in secuenceData.package[s_package].objects[s_object1].methods"
-                                                                            ng-value="method.methodname"> {{method.methodname}}
-                                                                    </option>
-                                                                </select>
-                                                                <div class="invalid-feedback">
-                                                                    Select at least one method.
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label class="col-form-label col-form-label-sm">Object 2 methods:</label>
-                                                                <select class="form-control form-control-sm"
-                                                                        name="nf_objectmethods2x" ng-model="nf_objectmethods2x">
-                                                                    <option value=""> ---</option>
-                                                                    <option ng-repeat="method in secuenceData.package[s_package].objects[s_object2].methods"
-                                                                            ng-value="method.methodname"> {{method.methodname}}
-                                                                    </option>
-                                                                </select>
-                                                                <div class="invalid-feedback">
-                                                                    Select at least one method.
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label class="col-form-label col-form-label-sm">Message
-                                                                    type:</label>
-                                                                <select ng-class="(form_snf.mnf_message.$invalid &&
-                                                                                        form_snf.mnf_message.$dirty) ?
-                                                                                        'form-control form-control-sm is-invalid'
-                                                                                        : 'form-control form-control-sm'"
-                                                                        name="mnf_message" ng-model="mnf_message" required="">
-                                                                    <option value=""> ----</option>
-                                                                    <option value="sync_message"> Synchronous message</option>
-                                                                    <option value="async_message"> Asynchronous message</option>
-                                                                </select>
-                                                                <div class="invalid-feedback">
-                                                                    Select a message type.
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                <form name="form_snf" ng-submit="addNormalFlow(form_snf)" class="uml-sequence-message-form">
+                                                    <div class="uml-sequence-message-grid">
+                                                        <label><span>Source operation</span><select class="form-control form-control-sm" name="nf_objectmethods1" ng-model="nf_objectmethods1"><option value="">Select operation</option><option ng-repeat="method in secuenceData.package[s_package].objects[s_object1].methods" ng-value="method.methodname">{{method.methodname}}</option></select></label>
+                                                        <label><span>Target operation</span><select class="form-control form-control-sm" name="nf_objectmethods2x" ng-model="nf_objectmethods2x"><option value="">Use when source has no method</option><option ng-repeat="method in secuenceData.package[s_package].objects[s_object2].methods" ng-value="method.methodname">{{method.methodname}}</option></select></label>
+                                                        <label><span>Message type</span><select ng-class="(form_snf.mnf_message.$invalid && form_snf.mnf_message.$dirty) ? 'form-control form-control-sm is-invalid' : 'form-control form-control-sm'" name="mnf_message" ng-model="mnf_message" required><option value="">Select type</option><option value="sync_message">Synchronous call</option><option value="async_message">Asynchronous message</option></select></label>
                                                     </div>
-                                                    <div ng-show="form_snf.mnf_message.$modelValue === 'sync_message'">
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label class="col-form-label col-form-label-sm">Object 2
-                                                                        response:</label>
-                                                                    <input class="form-control form-control-sm" type="text"
-                                                                           name="nf_objectresponse2" ng-model="nf_objectresponse2"
-                                                                           ng-value="{{form_snf.mnf_message.$modelValue === 'async_message' ? nf_objectmethods2 = '' : nf_objectmethods2}}">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label class="col-form-label col-form-label-sm">Response
-                                                                        type:</label>
-                                                                    <select class="form-control form-control-sm"
-                                                                            name="rnf_response" ng-model="rnf_response">
-                                                                        <option value=""> ----</option>
-                                                                        <option value="sync_response"> Synchronous response
-                                                                        </option>
-                                                                        <option value="async_response"> Asynchronous response
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                    <div class="uml-sequence-response" ng-show="form_snf.mnf_message.$modelValue === 'sync_message'">
+                                                        <span class="uml-sequence-return-icon"><i class="fas fa-reply"></i></span>
+                                                        <label><span>Response value</span><input class="form-control form-control-sm" type="text" name="nf_objectresponse2" ng-model="nf_objectresponse2" placeholder="Example: result, confirmation, data"></label>
+                                                        <label><span>Response type</span><select class="form-control form-control-sm" name="rnf_response" ng-model="rnf_response"><option value="">Select response</option><option value="sync_response">Synchronous response</option><option value="async_response">Asynchronous response</option></select></label>
                                                     </div>
-                                                    <button ng-disabled="form_snf.$invalid" type="submit"
-                                                            class="btn btn-sm btn-info w-100 mb-3">
-                                                        Add
-                                                    </button>
+                                                    <div class="uml-sequence-form-footer">
+                                                        <span><i class="fas fa-info-circle"></i> The interaction will be appended in chronological order.</span>
+                                                        <button ng-disabled="form_snf.$invalid || s_package === undefined || s_package === null || s_package === '' || s_object1 === undefined || s_object1 === null || s_object1 === '' || s_object2 === undefined || s_object2 === null || s_object2 === '' || (!nf_objectmethods1 && !nf_objectmethods2x)" type="submit" class="btn btn-sm btn-info"><i class="fas fa-plus"></i> Add interaction</button>
+                                                    </div>
                                                 </form>
-                                                <br>
-                                                <div class="w-100 overflow-auto">
-                                                    <table class="table table-bordered table-sm table-hover">
-                                                        <thead class="thead-dark">
-                                                            <tr>
-                                                                <th scope="col">Object from</th>
-                                                                <th scope="col">Object to</th>
-                                                                <th scope="col">Message/Call:messsage_type</th>
-                                                                <th scope="col">Response:response_type</th>
-                                                                <th></th>
-                                                            </tr>
-                                                        </thead>
+
+                                                <div class="uml-sequence-table-heading">
+                                                    <div><strong>Interaction flow</strong><small>{{table_normal_flow.length}} message{{table_normal_flow.length === 1 ? '' : 's'}} defined</small></div>
+                                                </div>
+                                                <div class="uml-sequence-empty" ng-show="table_normal_flow.length === 0"><i class="fas fa-exchange-alt"></i><div><strong>No interactions yet</strong><small>Select two objects and add the first message.</small></div></div>
+                                                <div class="uml-sequence-table-wrap" ng-show="table_normal_flow.length > 0">
+                                                    <table class="table table-sm uml-sequence-table">
+                                                        <thead><tr><th>#</th><th>From</th><th></th><th>To</th><th>Call / message</th><th>Response</th><th aria-label="Actions"></th></tr></thead>
                                                         <tbody>
                                                             <tr ng-repeat="dom_table_normal_flow in table_normal_flow">
-                                                                <td>{{dom_table_normal_flow.from}}</td>
-                                                                <td>{{dom_table_normal_flow.to}}</td>
-                                                                <td>
-                                                                    {{dom_table_normal_flow.message + ':' + dom_table_normal_flow.message_type}}
-                                                                </td>
-                                                                <td>
-                                                                    {{dom_table_normal_flow.message_type === "async_message" ? "No response needed" :
-                                                            (dom_table_normal_flow.response + ':' + dom_table_normal_flow.response_type)}}
-                                                                </td>
-                                                                <td>
-                                                                    <button class="btn btn-success btn-sm" style="font-size: 10px"
-                                                                            ng-click="updateStepSecuence()">
-                                                                        <i class="fas fa-pen"></i>
-                                                                    </button>
-                                                                    <button class="btn btn-danger btn-sm" style="font-size: 10px"
-                                                                            ng-click="deleteStepSecuence($index)">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </td>
+                                                                <td><span class="uml-sequence-index">{{$index + 1}}</span></td>
+                                                                <td><span class="uml-object-chip is-source"><i class="fas fa-cube"></i>{{dom_table_normal_flow.from}}</span></td>
+                                                                <td class="uml-sequence-table-arrow"><i class="fas fa-long-arrow-alt-right"></i></td>
+                                                                <td><span class="uml-object-chip is-target"><i class="fas fa-cube"></i>{{dom_table_normal_flow.to}}</span></td>
+                                                                <td><div class="uml-message-cell"><strong>{{dom_table_normal_flow.message}}</strong><span ng-class="dom_table_normal_flow.message_type === 'async_message' ? 'is-async' : 'is-sync'">{{dom_table_normal_flow.message_type === 'async_message' ? 'ASYNC' : 'SYNC'}}</span></div></td>
+                                                                <td><span class="uml-response-cell" ng-if="dom_table_normal_flow.message_type !== 'async_message'"><i class="fas fa-reply"></i>{{dom_table_normal_flow.response || 'No value'}}<small>{{dom_table_normal_flow.response_type === 'async_response' ? 'ASYNC RESPONSE' : 'SYNC RESPONSE'}}</small></span><span class="uml-no-response" ng-if="dom_table_normal_flow.message_type === 'async_message'">No response</span></td>
+                                                                <td><div class="uml-row-actions"><button type="button" ng-click="updateStepSecuence()" title="Edit interaction"><i class="fas fa-pen"></i></button><button type="button" class="is-danger" ng-click="deleteStepSecuence($index)" title="Delete interaction"><i class="fas fa-trash"></i></button></div></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -1264,7 +1327,7 @@
                                 </td>
                             </tr>
                             <tr class="table-active center-d">
-                                <td colspan="2" style="color: black"> <strong> Alternating Flow </strong> </td>
+                                <td colspan="2" style="color: black"> <strong> Alternative Flow </strong> </td>
                             </tr>
 
                             <tr>
@@ -1273,16 +1336,14 @@
                             </tr>
                             <tr ng-repeat="dom_alternative_flow in jsonUseCase.useCase[encontrado].alternative_flow">
                                 <td class="w-50">
-                                    <span ng-if="dom_alternative_flow.action_interpret === true">
-                                        <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
-                                        {{!showLS ? dom_alternative_flow.action_interpret : dom_alternative_flow.action_original}}
-                                    </span>
+                                    <strong>A{{(dom_alternative_flow.start_step || dom_alternative_flow.he_passed) + '.' + ($index + 1)}}</strong><br>
+                                    <small>From normal step {{dom_alternative_flow.start_step || dom_alternative_flow.he_passed}}</small><br>
+                                    {{dom_alternative_flow.condition || 'Alternative condition'}}
                                 </td>
                                 <td class="w-50">
-                                    <span ng-if="dom_alternative_flow.action_interpret !== ''">
-                                        <strong> {{dom_alternative_flow.he_passed + '.' + ($index + 1)}}</strong>
-                                        {{!showLS ? dom_alternative_flow.action_interpret : dom_alternative_flow.action_original}}
-                                    </span>
+                                    <strong>{{dom_alternative_flow.actor || 'System'}}:</strong>
+                                    {{!showLS ? dom_alternative_flow.action_interpret : dom_alternative_flow.action_original}}<br>
+                                    <small>{{dom_alternative_flow.outcome === 'end' ? 'Ends use case' : 'Returns to normal step ' + (dom_alternative_flow.return_step || dom_alternative_flow.return)}}</small>
                                 </td>
                             </tr>
                         </table>
@@ -2433,328 +2494,360 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
         </div>
 
         <div id="content-wrapper" class="d-flex flex-column" style="overflow: hidden">
-            <!-- Main Content -->
-            <div id="content" style="display: flex; width: 100%">
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow w-100">
-                    <div class="">
-                        <img class="" src="resources/img/logo-app/logoTDDT4IOTSicon.svg" width="50" alt="logo"/>
+            <section class="test-studio" ng-show="testStudioOpen" aria-label="Test Studio workspace">
+                <header class="test-studio-header">
+                    <div class="test-studio-heading">
+                        <span class="test-studio-mark"><i class="fas fa-vial"></i></span>
+                        <div>
+                            <small>QUALITY ENGINEERING</small>
+                            <h1>Test Studio</h1>
+                            <p>{{dataProject.name_mp || 'Untitled project'}} · Unit-test design workspace</p>
+                        </div>
                     </div>
-                    <div class="ml-3">
-                        <h5 class="position-absolute font-weight-bold" style="color: #39297C !important; margin-left: 2px">
-                            {{dataProject.name_mp}} - <span class="text-dark"> Permit : </span>
-                            <span class="badge badge-success">{{dataProject.permit_pm === 'A' ? 'OWNER' : dataProject.permit_pm === 'R' ? 'READER' : 'WRITER'}}</span>
-                        </h5>
-                        <div class="" style="margin-top: 25px">
-                            <button ng-click="saveModeling()" class="btn badge badge-light"><i class="fas fa-save"></i> Save all </button>
-                            <button class="btn badge badge-light" ng-click="openModalTdd()"><i class="fas fa-cog"></i>
-                                Generate Test
-                            </button>
-                            <!--<button class="btn badge badge-light"> <i class="fab fa-adversal"></i> Verbs and nouns</button>-->
-                            <button class="btn badge badge-light" id="Symbols_use_cases"><i class="fab fa-symfony"></i> Symbols
-                                to
-                                describe use cases
-                            </button>
-                            <div class="btn-group">
-                                <button class="btn badge badge-light" id="dropdownMenu2" 
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fab fa-codepen"></i>
-                                    Generate project
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                    <button class="dropdown-item" type="button" ng-click="openModalCreateMavenProject()">
-                                        <img src="resources/img/img-app/logoSpring.png" width="15" style="margin-top: -2.5px" alt="spring"/>
-                                        Spring App</button>
-                                    <button class="dropdown-item" type="button" ng-click="createAngularProject()">
-                                        <img src="resources/img/img-app/logoAngular.svg" width="15" style="margin-top: -2.5px" alt="angular"/> 
-                                        Angular App</button>
-                                    <button class="dropdown-item" type="button" ng-click="packagePrjAll()"
-                                            ng-show="dataProject.download_ang === 'T' && dataProject.download === 'T'">
-                                        <i class="fa fa-file-archive"></i> 
-                                        ZIP all project files</button>
+                    <div class="test-studio-header-status">
+                        <span><i class="fas fa-code"></i>Java</span>
+                        <span><i class="fas fa-check-circle"></i>JUnit 5</span>
+                        <span class="is-pending"><i class="fas fa-circle"></i>Design mode</span>
+                    </div>
+                    <div class="test-studio-header-actions">
+                        <button type="button" ng-click="saveModeling()"><i class="fas fa-save"></i>Save changes</button>
+                        <button type="button" ng-click="downloadTestStudioReport()"><i class="fas fa-file-alt"></i>Download report</button>
+                        <button type="button" class="is-exit" ng-click="closeTestStudio()"><i class="fas fa-arrow-left"></i>Exit Test Studio</button>
+                    </div>
+                </header>
+
+                <div class="test-studio-summary">
+                    <article><span class="is-green"><i class="fas fa-cubes"></i></span><div><small>MODEL CLASSES</small><strong>{{testStudioClassesCount()}}</strong><em>Available for testing</em></div></article>
+                    <article><span class="is-blue"><i class="fas fa-cogs"></i></span><div><small>METHODS</small><strong>{{testStudioMethodsCount()}}</strong><em>{{testStudioConfiguredMethodsCount()}} configured</em></div></article>
+                    <article><span class="is-purple"><i class="fas fa-vial"></i></span><div><small>TEST CASES</small><strong>{{testStudioCasesCount()}}</strong><em>Designed · not executed</em></div></article>
+                    <article class="is-coverage"><div class="test-studio-coverage-copy"><small>DESIGN COVERAGE</small><strong>{{testStudioCoverage()}}%</strong><em>Methods with at least one case</em></div><div class="test-studio-progress"><i ng-style="{'width': testStudioCoverage() + '%'}"></i></div></article>
+                </div>
+
+                <div class="test-studio-workspace">
+                    <aside class="test-studio-explorer">
+                        <div class="test-studio-panel-title">
+                            <div><small>PROJECT MODEL</small><strong><i class="fas fa-sitemap"></i>Test explorer</strong></div>
+                            <span>{{testStudioMethodsCount()}}</span>
+                        </div>
+                        <label class="test-studio-search"><i class="fas fa-search"></i><input type="search" ng-model="testStudioSearch" placeholder="Search method…"/></label>
+                        <div class="test-studio-tree" ng-show="jsonClass.diagram.length">
+                            <section ng-repeat="packDiagram in jsonClass.diagram track by $index">
+                                <div class="test-studio-package"><i class="fas fa-box"></i><span>{{packDiagram.packName || 'default package'}}</span><small>{{packDiagram.class.length}}</small></div>
+                                <div class="test-studio-class" ng-repeat="classDiagram in packDiagram.class track by $index">
+                                    <div class="test-studio-class-name"><i class="fas fa-cube"></i><span>{{classDiagram.className}}</span><small>{{classDiagram.methods.length}}</small></div>
+                                    <button type="button" ng-repeat="methodsDiagram in classDiagram.methods | filter:testStudioSearch track by $index"
+                                            ng-click="selectTestStudioMethod(methodsDiagram, packDiagram.packName, classDiagram.className)"
+                                            ng-class="{'is-active': classNameSelected === classDiagram.className && methodSelected.name === methodsDiagram.name, 'has-tests': testStudioMethodHasTests(classDiagram.className, methodsDiagram.name)}">
+                                        <i class="fas fa-cog"></i>
+                                        <span><strong>{{methodsDiagram.name}}</strong><small>{{methodsDiagram.type}} · {{methodsDiagram.parameters.length}} parameter{{methodsDiagram.parameters.length === 1 ? '' : 's'}}</small></span>
+                                        <em title="{{testStudioMethodHasTests(classDiagram.className, methodsDiagram.name) ? 'Test configured' : 'No tests'}}"><i ng-class="testStudioMethodHasTests(classDiagram.className, methodsDiagram.name) ? 'fas fa-check' : 'far fa-circle'"></i></em>
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn badge badge-light" id="dropdownMenu3" 
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
-                                    <i class="fas fa-download"></i> 
-                                    Download project 
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenu3">
-                                    <button class="dropdown-item" type="button" 
-                                            ng-show="dataProject.download === 'T'" ng-click="downloadPrjMav()">
-                                        <img src="resources/img/img-app/logoSpring.png" width="15" style="margin-top: -2.5px" alt="spring"/>
-                                        Spring download</button>
-                                    <button class="dropdown-item" type="button" ng-click="downloadPrjAng()" ng-show="dataProject.download_ang === 'T'">
-                                        <img src="resources/img/img-app/logoAngular.svg" width="15" style="margin-top: -2.5px" alt="angular"/> 
-                                        Angular download</button>
-                                    <button class="dropdown-item" type="button" ng-click="downloadPrjAll()" ng-show="dataProject.download_all === 'T'">
-                                        <i class="fas fa-arrow-circle-down"></i> 
-                                        Download the project all</button>
-                                </div>
+                            </section>
+                        </div>
+                        <div class="test-studio-empty-tree" ng-hide="jsonClass.diagram.length"><i class="fas fa-project-diagram"></i><strong>No class model available</strong><small>Generate the class diagram before designing tests.</small></div>
+                        <footer><i class="fas fa-info-circle"></i><span>Green indicators identify methods with at least one designed case.</span></footer>
+                    </aside>
+
+                    <main class="test-studio-editor">
+                        <div class="test-studio-welcome" ng-hide="flagSelected">
+                            <span><i class="fas fa-mouse-pointer"></i></span>
+                            <small>TEST DESIGN</small>
+                            <h2>Select a method from the explorer</h2>
+                            <p>Configure its inputs and expected behavior. Test Studio will preserve the cases in the project model and generate the JUnit 5 source.</p>
+                            <div><em><i class="fas fa-check"></i>Typed inputs</em><em><i class="fas fa-check"></i>JUnit assertions</em><em><i class="fas fa-check"></i>Traceable report</em></div>
+                        </div>
+
+                        <div class="test-studio-form" ng-show="flagSelected">
+                            <div class="test-studio-method-heading">
+                                <div><small>SELECTED OPERATION</small><h2>{{classNameSelected}}<span>.</span>{{methodSelected.name}}</h2><p>{{methodSelected.visibility}} · returns <strong>{{methodSelected.type}}</strong></p></div>
+                                <span ng-class="testStudioMethodHasTests(classNameSelected, methodSelected.name) ? 'is-ready' : ''"><i class="fas fa-vial"></i>{{testStudioSelectedCases().length}} case{{testStudioSelectedCases().length === 1 ? '' : 's'}}</span>
                             </div>
 
-                            <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i
-                                    class="fas fa-sign-out-alt"></i> Close </a>
+                            <section class="test-studio-form-section">
+                                <div class="test-studio-section-title"><span>1</span><div><strong>Test identity</strong><small>Use a short name that describes the expected behavior.</small></div></div>
+                                <label><span>Case name</span><input class="form-control form-control-sm" type="text" ng-model="testStudioCase.name" placeholder="Example: returns reminder when schedule is valid"/></label>
+                            </section>
+
+                            <section class="test-studio-form-section">
+                                <div class="test-studio-section-title"><span>2</span><div><strong>Arrange · method inputs</strong><small>Values are converted according to the types declared in the UML model.</small></div></div>
+                                <div class="test-studio-input-grid" ng-show="methodSelected.parameters.length">
+                                    <label ng-repeat="param in methodSelected.parameters track by $index"><span>{{param.name}} <em>{{param.type}}</em></span><input class="form-control form-control-sm" type="text" ng-model="testStudioInputs[param.name]" placeholder="Input value"/></label>
+                                </div>
+                                <div class="test-studio-no-inputs" ng-hide="methodSelected.parameters.length"><i class="fas fa-check-circle"></i><span>This method has no parameters. No input preparation is required.</span></div>
+                            </section>
+
+                            <section class="test-studio-form-section">
+                                <div class="test-studio-section-title"><span>3</span><div><strong>Assert · expected behavior</strong><small>Choose how the result of the operation should be verified.</small></div></div>
+                                <div class="test-studio-assert-grid">
+                                    <label><span>Assertion</span><select class="form-control form-control-sm" ng-model="testStudioCase.assertion">
+                                        <option value="equals" ng-if="methodSelected.type !== 'void'">Equals expected value</option>
+                                        <option value="notNull" ng-if="methodSelected.type !== 'void'">Result is not null</option>
+                                        <option value="completes" ng-if="methodSelected.type === 'void'">Completes without exception</option>
+                                        <option value="throws">Throws an exception</option>
+                                    </select></label>
+                                    <label ng-show="testStudioCase.assertion === 'equals'"><span>Expected result <em>{{methodSelected.type}}</em></span><input class="form-control form-control-sm" type="text" ng-model="testStudioCase.expected" placeholder="Expected value"/></label>
+                                    <div class="test-studio-assert-note" ng-hide="testStudioCase.assertion === 'equals'"><i class="fas fa-shield-alt"></i><span>{{testStudioCase.assertion === 'throws' ? 'The generated test expects the operation to throw an exception.' : testStudioCase.assertion === 'notNull' ? 'The generated test verifies that the returned object exists.' : 'The generated test verifies that the operation completes successfully.'}}</span></div>
+                                </div>
+                                <div class="test-studio-form-actions"><button type="button" ng-click="testStudioInputs = {}; testStudioCase.expected = ''" class="is-secondary">Clear</button><button type="button" ng-click="addTestFromStudio(methodSelected)" class="is-primary"><i class="fas fa-plus"></i>Add test case</button></div>
+                            </section>
+
+                            <section class="test-studio-cases">
+                                <div class="test-studio-cases-heading"><div><small>DESIGNED CASES</small><strong>{{methodSelected.name}}</strong></div><span>{{testStudioSelectedCases().length}}</span></div>
+                                <div class="test-studio-case-empty" ng-hide="testStudioSelectedCases().length"><i class="far fa-clipboard"></i><span><strong>No cases for this method</strong><small>Complete the form above to add the first test.</small></span></div>
+                                <article ng-repeat="test in testStudioSelectedCases() track by $index">
+                                    <span>{{$index + 1}}</span>
+                                    <div><strong>{{testStudioCaseMetadata($index).name || ('Case ' + ($index + 1))}}</strong><small><em ng-repeat="value in test track by $index">{{value.name}}={{value.value}}{{$last ? '' : ' · '}}</em><em ng-if="testStudioCaseMetadata($index).assertion === 'equals'"> → {{testStudioSelectedMethodData().return[$index].value}}</em></small></div>
+                                    <label>{{testStudioCaseMetadata($index).assertion || 'equals'}}</label>
+                                    <button type="button" ng-click="deleteTestStudioCase(methodSelected.name, $index)" title="Delete case"><i class="fas fa-trash-alt"></i></button>
+                                </article>
+                            </section>
+                        </div>
+                    </main>
+
+                    <aside class="test-studio-preview">
+                        <div class="test-studio-preview-heading"><div><small>GENERATED ARTIFACT</small><strong><i class="fas fa-code"></i>JUnit 5 preview</strong></div><button type="button" ng-click="downloadTestStudioCode()" title="Download Java test"><i class="fas fa-download"></i></button></div>
+                        <div class="test-studio-file"><i class="fab fa-java"></i><span>{{classNameSelected ? classNameSelected + 'Test.java' : 'GeneratedTest.java'}}</span><em>read only</em></div>
+                        <pre class="test-studio-code"><code>{{testStudioCode}}</code></pre>
+                        <footer><span><i class="fas fa-circle"></i>Generated locally</span><em>Execution engine not connected</em></footer>
+                    </aside>
+                </div>
+            </section>
+            <!-- Main Content -->
+            <div id="content" style="display: flex; width: 100%" ng-show="!testStudioOpen">
+                <!-- Topbar -->
+                <nav class="uml-workspace-header w-100" aria-label="UML workspace commands">
+                    <div class="uml-workspace-context">
+                        <span class="uml-workspace-brand">
+                            <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt="TDDT4IoTS"/>
+                        </span>
+                        <div class="uml-project-copy">
+                            <span class="uml-workspace-kicker">UML engineering workspace</span>
+                            <div class="uml-project-title-row">
+                                <h1 title="{{dataProject.name_mp}}">{{dataProject.name_mp || 'Untitled project'}}</h1>
+                                <span ng-class="dataProject.permit_pm === 'A' ? 'uml-permission-badge is-owner' : dataProject.permit_pm === 'R' ? 'uml-permission-badge is-reader' : 'uml-permission-badge is-writer'">
+                                    <i ng-class="dataProject.permit_pm === 'A' ? 'fas fa-crown' : dataProject.permit_pm === 'R' ? 'fas fa-eye' : 'fas fa-pen'"></i>
+                                    {{dataProject.permit_pm === 'A' ? 'Owner' : dataProject.permit_pm === 'R' ? 'Reader' : 'Writer'}}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
+                    <div class="uml-command-bar" role="toolbar" aria-label="Project actions">
+                        <button type="button" ng-click="saveModeling()" class="uml-command is-primary" title="Save all modeling changes">
+                            <i class="fas fa-save"></i><span>Save all</span>
+                        </button>
+                        <button type="button" class="uml-command" ng-click="openModalTdd()" title="Generate tests from the UML model">
+                            <i class="fas fa-vial"></i><span>Generate test</span>
+                        </button>
+                        <button type="button" class="uml-command" id="Symbols_use_cases" title="Open the use case symbol reference">
+                            <i class="fas fa-code"></i><span>Symbol guide</span>
+                        </button>
+                        <button type="button" class="uml-command" ng-click="openCaseWorkspaceImport()" title="Import diagrams, actors and use cases from JSON">
+                            <i class="fas fa-file-import"></i><span>Import JSON</span>
+                        </button>
+                        <button type="button" class="uml-command" ng-click="openDocumentWorkspace()" title="Generate the complete CASE model from natural-language documents">
+                            <i class="fas fa-brain"></i><span>Requirements AI</span>
+                        </button>
 
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" id="searchDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                 aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                               placeholder="Search for..." aria-label="Search"
-                                               aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
+                        <span class="uml-command-divider" aria-hidden="true"></span>
 
-                        <li class="nav-item dropdown no-arrow mx-1" style="align-items: center;display: grid;">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="activateOpenAi" ng-model="activateOpenAi" ng-click="activateOpenAiApi()"/>
-                                <label class="custom-control-label" for="activateOpenAi">Activate OpenAi</label>
+                        <div class="btn-group uml-command-group">
+                            <button type="button" class="uml-command dropdown-toggle" id="dropdownMenu2"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-cubes"></i><span>Generate</span>
+                            </button>
+                            <div class="dropdown-menu uml-command-menu" aria-labelledby="dropdownMenu2">
+                                <span class="uml-menu-label">Generate application</span>
+                                <button class="dropdown-item" type="button" ng-click="openModalCreateMavenProject()">
+                                    <span class="uml-menu-icon"><img src="resources/img/img-app/logoSpring.png" alt=""/></span>
+                                    <span><strong>Spring application</strong><small>Generate the backend project</small></span>
+                                </button>
+                                <button class="dropdown-item" type="button" ng-click="createAngularProject()">
+                                    <span class="uml-menu-icon"><img src="resources/img/img-app/logoAngular.svg" alt=""/></span>
+                                    <span><strong>Angular application</strong><small>Generate the frontend project</small></span>
+                                </button>
+                                <div class="dropdown-divider" ng-show="dataProject.download_ang === 'T' && dataProject.download === 'T'"></div>
+                                <button class="dropdown-item" type="button" ng-click="packagePrjAll()"
+                                        ng-show="dataProject.download_ang === 'T' && dataProject.download === 'T'">
+                                    <span class="uml-menu-icon"><i class="fas fa-file-archive"></i></span>
+                                    <span><strong>Package all files</strong><small>Create a complete ZIP package</small></span>
+                                </button>
                             </div>
-                         </li>
-                        
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        </div>
+
+                        <div class="btn-group uml-command-group">
+                            <button type="button" class="uml-command dropdown-toggle" id="dropdownMenu3"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-download"></i><span>Download</span>
+                            </button>
+                            <div class="dropdown-menu uml-command-menu" aria-labelledby="dropdownMenu3">
+                                <span class="uml-menu-label">Available artifacts</span>
+                                <button class="dropdown-item" type="button" ng-show="dataProject.download === 'T'" ng-click="downloadPrjMav()">
+                                    <span class="uml-menu-icon"><img src="resources/img/img-app/logoSpring.png" alt=""/></span>
+                                    <span><strong>Spring project</strong><small>Download backend sources</small></span>
+                                </button>
+                                <button class="dropdown-item" type="button" ng-click="downloadPrjAng()" ng-show="dataProject.download_ang === 'T'">
+                                    <span class="uml-menu-icon"><img src="resources/img/img-app/logoAngular.svg" alt=""/></span>
+                                    <span><strong>Angular project</strong><small>Download frontend sources</small></span>
+                                </button>
+                                <button class="dropdown-item" type="button" ng-click="downloadPrjAll()" ng-show="dataProject.download_all === 'T'">
+                                    <span class="uml-menu-icon"><i class="fas fa-box-open"></i></span>
+                                    <span><strong>Complete project</strong><small>Download all generated artifacts</small></span>
+                                </button>
+                                <div class="uml-menu-empty" ng-show="dataProject.download !== 'T' && dataProject.download_ang !== 'T' && dataProject.download_all !== 'T'">
+                                    <i class="fas fa-info-circle"></i><span>Generate a project to enable downloads.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="app.html#!/myprojects" class="uml-command is-exit" title="Close workspace and return to projects">
+                            <i class="fas fa-times"></i><span>Close</span>
+                        </a>
+                    </div>
+
+                    <div class="uml-workspace-status">
+                        <button id="sidebarToggleTop" class="uml-icon-button d-md-none" type="button" aria-label="Toggle modeling tools">
+                            <i class="fas fa-bars"></i>
+                        </button>
+
+                        <label class="uml-ai-toggle" for="activateOpenAi" title="Enable OpenAI assistance">
+                            <input type="checkbox" id="activateOpenAi" ng-model="activateOpenAi" ng-change="activateOpenAiApi()" ng-disabled="aiToggleSaving"/>
+                            <span class="uml-ai-switch" aria-hidden="true"></span>
+                            <span class="uml-ai-copy"><small>{{aiToggleSaving ? 'Updating…' : (activateOpenAi ? 'AI analysis' : 'Local parser')}}</small><strong>{{activateOpenAi ? 'OpenAI' : 'Symbols'}}</strong></span>
+                        </label>
+
+                        <div class="dropdown no-arrow">
+                            <button type="button" class="uml-icon-button uml-collaborators-button dropdown-toggle" id="alertsDropdown"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Connected collaborators">
                                 <i class="fas fa-users"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{usersConected.length}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                 aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Users connected
-                                </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#" type=""
-                                   ng-repeat="dom_usersConected in usersConected">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-user text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{dom_usersConected.usr.email}}</div>
-                                        <span class="font-weight-bold">
-                                            {{dom_usersConected.usr.name}}
-                                            <i ng-show="dom_usersConected.host" class="fas fa-crown" style="color: #EFB810"></i>
-                                        </span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">🔃</a>
+                                <span>{{usersConected.length || 0}}</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right uml-people-menu" aria-labelledby="alertsDropdown">
+                                <div class="uml-people-menu-header">
+                                    <div><span>Live collaboration</span><strong>Connected users</strong></div>
+                                    <span class="uml-live-indicator"><i></i>{{usersConected.length || 0}} online</span>
+                                </div>
+                                <div class="uml-people-empty" ng-show="usersConected.length === 0">
+                                    <i class="far fa-user"></i><span>No other collaborators are connected.</span>
+                                </div>
+                                <div class="uml-person-row" ng-repeat="dom_usersConected in usersConected">
+                                    <span class="uml-person-avatar"><i class="fas fa-user"></i></span>
+                                    <div><strong>{{dom_usersConected.usr.name}}</strong><small>{{dom_usersConected.usr.email}}</small></div>
+                                    <span class="uml-host-badge" ng-show="dom_usersConected.host"><i class="fas fa-crown"></i>Host</span>
+                                </div>
                             </div>
-                        </li>
-                        
-                        <div class="topbar-divider d-none d-sm-block"></div>
+                        </div>
 
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" id="userDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    {{DatoUsuario.name_person + ' ' + DatoUsuario.lastname_person}}</span>
-                                <!-- img class="img-profile rounded-circle" alt="..."
-                                     ng-src="{{rutaImgUser + DatoUsuario.pathimg_person}}" -->
-                                <img class="img-profile rounded-circle" alt="..."
-                                     src="resources/img/img-app/userMale.png">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" ng-click="logOut()">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
+                        <div class="uml-user-summary" title="{{workspaceUserName(DatoUsuario)}}">
+                            <span class="uml-user-avatar">{{workspaceUserInitials(DatoUsuario)}}<i></i></span>
+                            <span class="uml-user-identity"><strong>{{workspaceUserName(DatoUsuario)}}</strong><small>{{workspaceUserRole(DatoUsuario)}}</small></span>
+                        </div>
+                    </div>
                 </nav>
                 <!-- End of Topbar -->
 
             </div>
-            <div style="display: inherit; height: 100%; overflow: hidden; width: 100%">
-                <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion p-3" style="width: 5rem !important;">
-
-                    <li ng-show="showTool === 'UMLUseCaseDiagram'" class="nav-item">
-                        <div class="sidebar-heading p-0 text-center mb-2">
-                            Tools
-                        </div>
-                        <div ng-show="editionClasDiagram === false" class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml" id="btnactor" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Actor">
-                                <img class="m-auto" src="resources/img/img-uml/actor.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btninheritanceactor" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Inheritance  Actor">
-                                <img class="m-auto" src="resources/img/img-uml/herenciaActor.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnusecase" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Use case">
-                                <img class="m-auto" src="resources/img/img-uml/useCase.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnassociationusecase" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Assosiation Use case">
-                                <img class="m-auto" src="resources/img/img-uml/relUseCaseuml.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btninclusion" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Include">
-                                <img class="m-auto" src="resources/img/img-uml/include.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnextend" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Extends">
-                                <img class="m-auto" src="resources/img/img-uml/extends.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btngeneralization" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Generalization">
-                                <img class="m-auto" src="resources/img/img-uml/general.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnasosition" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Association">
-                                <img class="m-auto" src="resources/img/img-uml/assoc.svg" alt="">
-                            </div>
-                        </div>
-
-                        <div class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml"
-                                 data-toggle="tooltip" data-placement="right" title="Export image png">
-                                <i class="fas fa-file-image" ng-click="exportImage()"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                        </div>
-
-                    </li>
-
-                    <!-- Nav Item - Utilities Collapse Menu -->
-                    <li ng-show="showTool === 'UMLClassDiagram'" class="nav-item">
-                        <div class="sidebar-heading p-0 text-center mb-2">
-                            Tools
-                        </div>
-                        <div ng-show="editionClasDiagram === true"
-                             class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml" id="btnclass" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Class">
-                                <img class="m-auto" src="resources/img/img-uml/classDiagram/classicon.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnagregation" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Agregation">
-                                <img class="m-auto" src="resources/img/img-uml/classDiagram/agregaicon.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btndependecy" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Dependency">
-                                <img class="m-auto" src="resources/img/img-uml/include.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btngeneralizationc" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Generalization">
-                                <img class="m-auto" src="resources/img/img-uml/general.svg" alt="">
-                            </div>
-                            <div class="row p-2 toolUml" id="btnasositionc" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Association">
-                                <img class="m-auto" src="resources/img/img-uml/assoc.svg" alt="">
-                            </div>
-                        </div>
-
-                        <div class="bg-white col rounded mb-2">
-                            <div ng-show="editionClasDiagram === true" class="row p-2 toolUml"
-                                 data-toggle="tooltip" data-placement="right" title="Restore">
-                                <i class="fas fa-undo" ng-click="restoreClassDiagram()"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                            <div ng-show="editionClasDiagram === false" class="row p-2 toolUml"
-                                 data-toggle="tooltip" data-placement="right" title="Activate edition">
-                                <i class="fas fa-play-circle" ng-click="activateEditionClassDiagram()"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                            <div class="row p-2 toolUml"
-                                 data-toggle="tooltip" data-placement="right" title="Export image png">
-                                <i class="fas fa-file-image" ng-click="exportImage()"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                        </div>
-
-                    </li>
-
-                    <!-- Nav Item - Utilities Collapse Menu -->
-                    <li ng-show="showTool === 'UMLSequenceDiagram'" class="nav-item">
-                        <div class="sidebar-heading p-0 text-center mb-2">
-                            Tools
-                        </div>
-                        <div class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml" draggable="true"
-                                 data-toggle="tooltip" data-placement="right" title="Tools in construction">
-                                <i class="fas fa-hammer"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                        </div>
-
-                        <div class="bg-white col rounded mb-2">
-                            <div class="row p-2 toolUml"
-                                 data-toggle="tooltip" data-placement="right" title="Export image png">
-                                <i class="fas fa-file-image" ng-click="exportImage()"
-                                   style="color: black; margin: auto; font-size: 2rem"></i>
-                            </div>
-                        </div>
-                    </li>
-
-                </ul>
-                <div class="w-100 p-3" style="overflow: auto;display: flow-root;">
-                    <div style="height: 100%">
-                        <div class="w-100">
-                            <button ng-repeat="buttonUml in btnDiagramUml" ng-show="buttonUml.type !== 'UMLSequenceDiagram'"
-                                    ng-class="buttonUml.btnactive" ng-click="changeDiagramA(buttonUml)"> {{buttonUml.name}}
-                            </button>
-                            <button class="btn btn-sm button-dt mr-2 mt-1" id="dropdownMenuButton"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Sequence diagrams
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" ng-repeat="buttonUml in btnDiagramUml" href="#"
-                                   ng-click="changeDiagramA(buttonUml)" ng-show="buttonUml.type === 'UMLSequenceDiagram'">{{buttonUml.name}}</a>
-                            </div>
-                        </div>
-                        <span style="position: absolute; right: 18px; margin-top: -28px;" ng-if="showMessageOpenAi"> 
-                            <img src="resources/img/img-app/cargandoia.gif" width="20" height="20" />
-                            <strong> Analyzing use case </strong> 
-                        </span>
-                        <!-- End of Sidebar -->
-                        <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true"
-                             style="max-width: 2000px; max-height: 2000px ;margin-top: 4px; height: 94%">
-                            <canvas id="mac">
-                            </canvas>
-                            <canvas id="mot">
-                            </canvas>
+            <div class="uml-case-shell" ng-show="!testStudioOpen" ng-class="{'explorer-collapsed': modelExplorerCollapsed, 'tools-collapsed': toolRailCollapsed}">
+                <aside class="uml-model-explorer" ng-class="{'is-collapsed': modelExplorerCollapsed}">
+                    <div class="uml-panel-heading">
+                        <div class="uml-panel-title"><span>PROJECT</span><strong><i class="fas fa-sitemap"></i> Model Explorer</strong></div>
+                        <div class="uml-explorer-heading-actions">
+                            <button type="button" ng-click="exportAllBehaviorDiagrams()" title="Export all use case and sequence diagrams"><i class="fas fa-images"></i><span>Export all</span></button>
+                            <button type="button" ng-click="modelExplorerCollapsed = !modelExplorerCollapsed" title="Collapse explorer"><i class="fas fa-chevron-left"></i></button>
                         </div>
                     </div>
-                </div>
+                    <div class="uml-explorer-body">
+                        <section class="uml-tree-section is-usecases">
+                            <div class="uml-tree-section-title">
+                                <span><i class="far fa-folder-open"></i> Use case diagrams</span>
+                                <button type="button" ng-click="createUseCaseDiagram()" title="New use case diagram"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <div class="uml-tree-diagram" ng-repeat="diagramEntry in useCaseDiagrams track by diagramEntry.id">
+                                <div class="uml-tree-row is-diagram" ng-class="{'is-active': activeUseCaseDiagram.id === diagramEntry.id && showTool === 'UMLUseCaseDiagram'}" ng-click="openUseCaseDiagram(diagramEntry)">
+                                    <button type="button" class="uml-tree-toggle" ng-click="diagramEntry.expanded = !diagramEntry.expanded; $event.stopPropagation()"><i ng-class="diagramEntry.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i></button>
+                                    <i class="fas fa-project-diagram"></i><span title="{{diagramEntry.name}}">{{diagramEntry.name}}</span>
+                                    <small>{{diagramEntry.data.useCase.length}}</small>
+                                    <button type="button" class="uml-tree-more" ng-click="renameUseCaseDiagram(diagramEntry, $event)" title="Rename"><i class="fas fa-pen"></i></button>
+                                </div>
+                                <div class="uml-tree-children" ng-show="diagramEntry.expanded">
+                                    <div ng-repeat="useCase in diagramEntry.data.useCase track by useCase.id" class="uml-usecase-branch">
+                                        <button type="button" class="uml-tree-row is-child" ng-click="focusUseCase(diagramEntry, useCase)"><i class="far fa-circle"></i><span>{{useCase.name_i || useCase.name}}</span></button>
+                                        <button type="button" class="uml-tree-row is-actor" ng-repeat="actor in actorsForUseCase(diagramEntry, useCase) track by actor.name" ng-click="focusActor(diagramEntry, actor)"><i class="far fa-user"></i><span>{{actor.name}}</span></button>
+                                    </div>
+                                    <div class="uml-tree-empty" ng-show="diagramEntry.data.useCase.length === 0">Drop a use case onto the canvas.</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="uml-tree-section is-classes">
+                            <div class="uml-tree-section-title"><span><i class="far fa-folder-open"></i> Structural model</span></div>
+                            <button type="button" class="uml-tree-row is-root" ng-class="{'is-active': showTool === 'UMLClassDiagram'}" ng-click="openClassDiagram()"><i class="fas fa-th-large"></i><span>Project class diagram</span><small>1</small></button>
+                        </section>
+
+                        <section class="uml-tree-section is-sequences">
+                            <div class="uml-tree-section-title"><span><i class="far fa-folder-open"></i> Sequence diagrams</span><small>{{(btnDiagramUml | filter:{type:'UMLSequenceDiagram'}).length}}</small></div>
+                            <div class="uml-tree-diagram" ng-repeat="diagramEntry in useCaseDiagrams track by diagramEntry.id">
+                                <button type="button" class="uml-tree-row is-sequence-group" ng-click="diagramEntry.sequencesExpanded = !diagramEntry.sequencesExpanded"><i ng-class="diagramEntry.sequencesExpanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i><span>{{diagramEntry.name}}</span></button>
+                                <div class="uml-tree-children" ng-show="diagramEntry.sequencesExpanded">
+                                    <button type="button" class="uml-tree-row is-child" ng-repeat="useCase in diagramEntry.data.useCase track by useCase.id" ng-click="openSequenceDiagram(diagramEntry, useCase)"><i class="fas fa-stream"></i><span>{{useCase.name_i || useCase.name}}</span></button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="uml-explorer-summary"><i class="fas fa-layer-group"></i><span>{{useCaseDiagrams.length}} diagrams · {{(btnDiagramUml | filter:{type:'UMLSequenceDiagram'}).length}} sequences</span></div>
+                </aside>
+
+                <aside class="uml-tool-rail" ng-class="{'is-collapsed': toolRailCollapsed}">
+                    <div class="uml-tool-heading"><span>TOOLBOX</span><button type="button" ng-click="toolRailCollapsed = !toolRailCollapsed"><i class="fas fa-angle-double-left"></i></button></div>
+                    <div class="uml-tool-list" ng-show="showTool === 'UMLUseCaseDiagram' && editionClasDiagram === false">
+                        <div class="toolUml" id="btnactor" draggable="true" title="Actor"><img src="resources/img/img-uml/actor.svg" alt=""><span>Actor</span></div>
+                        <div class="toolUml" id="btnusecase" draggable="true" title="Use case"><img src="resources/img/img-uml/useCase.svg" alt=""><span>Use case</span></div>
+                        <div class="toolUml" id="btnassociationusecase" draggable="true" title="Actor association"><img src="resources/img/img-uml/relUseCaseuml.svg" alt=""><span>Actor link</span></div>
+                        <div class="toolUml" id="btninclusion" draggable="true" title="Include"><img src="resources/img/img-uml/include.svg" alt=""><span>Include</span></div>
+                        <div class="toolUml" id="btnextend" draggable="true" title="Extend"><img src="resources/img/img-uml/extends.svg" alt=""><span>Extend</span></div>
+                        <div class="toolUml" id="btninheritanceactor" draggable="true" title="Actor inheritance"><img src="resources/img/img-uml/herenciaActor.svg" alt=""><span>Inheritance</span></div>
+                        <div class="toolUml" id="btngeneralization" draggable="true" title="Generalization"><img src="resources/img/img-uml/general.svg" alt=""><span>Generalize</span></div>
+                        <div class="toolUml" id="btnasosition" draggable="true" title="Association"><img src="resources/img/img-uml/assoc.svg" alt=""><span>Association</span></div>
+                    </div>
+                    <div class="uml-tool-list" ng-show="showTool === 'UMLClassDiagram' && editionClasDiagram === true">
+                        <div class="toolUml" id="btnclass" draggable="true" title="Class"><img src="resources/img/img-uml/classDiagram/classicon.svg" alt=""><span>Class</span></div>
+                        <div class="toolUml" id="btnagregation" draggable="true" title="Aggregation"><img src="resources/img/img-uml/classDiagram/agregaicon.svg" alt=""><span>Aggregation</span></div>
+                        <div class="toolUml" id="btndependecy" draggable="true" title="Dependency"><img src="resources/img/img-uml/include.svg" alt=""><span>Dependency</span></div>
+                        <div class="toolUml" id="btngeneralizationc" draggable="true" title="Generalization"><img src="resources/img/img-uml/general.svg" alt=""><span>Generalize</span></div>
+                        <div class="toolUml" id="btnasositionc" draggable="true" title="Association"><img src="resources/img/img-uml/assoc.svg" alt=""><span>Association</span></div>
+                    </div>
+                    <div class="uml-tool-empty" ng-show="showTool === 'UMLSequenceDiagram'"><i class="fas fa-stream"></i><span>Generated from the use case flow</span></div>
+                    <div class="uml-tool-actions">
+                        <button type="button" ng-show="showTool === 'UMLClassDiagram' && editionClasDiagram === true" ng-click="restoreClassDiagram()" title="Restore generated diagram"><i class="fas fa-undo"></i><span>Restore</span></button>
+                        <button type="button" ng-show="showTool === 'UMLClassDiagram' && editionClasDiagram === false" ng-click="activateEditionClassDiagram()" title="Edit class diagram"><i class="fas fa-pen"></i><span>Edit</span></button>
+                        <button type="button" ng-click="exportImage()" title="Export PNG"><i class="far fa-image"></i><span>Export</span></button>
+                    </div>
+                </aside>
+
+                <main class="uml-canvas-pane">
+                    <div class="uml-canvas-heading">
+                        <div><span class="uml-canvas-type">{{showTool === 'UMLUseCaseDiagram' ? 'USE CASE MODEL' : showTool === 'UMLClassDiagram' ? 'STRUCTURAL MODEL' : 'BEHAVIOR MODEL'}}</span><strong>{{showTool === 'UMLUseCaseDiagram' ? activeUseCaseDiagram.name : (btnDiagramUml | filter:{status:'O'})[0].name}}</strong></div>
+                        <div class="uml-layout-control" ng-show="showTool === 'UMLClassDiagram'" role="group" aria-label="Class diagram layout">
+                            <button type="button" ng-click="applyClassLayout('straight')" ng-class="{'is-active': classLayoutMode === 'straight'}" title="Hierarchical layout with straight relations">
+                                <i class="fas fa-grip-horizontal"></i><span>Straight</span>
+                            </button>
+                            <button type="button" ng-click="applyClassLayout('orthogonal')" ng-class="{'is-active': classLayoutMode === 'orthogonal'}" title="Hierarchical layout with automatically routed bends">
+                                <i class="fas fa-random"></i><span>Routed</span>
+                            </button>
+                        </div>
+                        <div class="uml-zoom-control" role="group" aria-label="Canvas zoom">
+                            <button type="button" ng-click="zoomCanvasOut()" ng-disabled="canvasZoom <= 25" title="Zoom out"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="uml-zoom-value" ng-click="resetCanvasZoom()" title="{{showTool === 'UMLClassDiagram' ? 'Fit the complete class diagram' : 'Reset zoom to 100%'}}">{{canvasZoom}}%</button>
+                            <button type="button" ng-click="zoomCanvasIn()" ng-disabled="canvasZoom >= 150" title="Zoom in"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="uml-canvas-hint"><i class="fas fa-mouse-pointer"></i><span>Drag tools · right-click for options · Ctrl/⌘ + wheel to zoom</span></div>
+                    </div>
+                    <div id="areaDiagram" class="ud_diagram_div overflow-hidden" draggable="true">
+                        <canvas id="mac"></canvas>
+                        <canvas id="mot"></canvas>
+                    </div>
+                </main>
             </div>
 
         </div>
@@ -2776,7 +2869,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
         <script src="resources/js/js-angularproject/js_angularproject.js" ></script>
         <!--end: mavenproject-->
 
-        <script src="resources/js/js-tdd/js_tdd.js" ></script>
+        <script src="resources/js/js-tdd/js_tdd.js?v=20260819-test-studio-2" ></script>
         <script src="resources/js/js-library/armadillo.js"></script>
         <script src="resources/js/js-library/cycle.js" ></script>
         <script src="resources/js/js-library/JSONE.js" ></script>

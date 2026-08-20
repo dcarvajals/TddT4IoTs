@@ -1,4 +1,20 @@
 app = angular.module('app', []);
+
+app.directive('passwordMatch', function () {
+    return {
+        require: 'ngModel',
+        link: function (scope, element, attributes, ngModel) {
+            ngModel.$validators.passwordMatch = function (modelValue) {
+                return ngModel.$isEmpty(modelValue) || modelValue === scope.$eval(attributes.passwordMatch);
+            };
+
+            scope.$watch(attributes.passwordMatch, function () {
+                ngModel.$validate();
+            });
+        }
+    };
+});
+
 app.controller('controller', function ($scope, $http) {
 
     $scope.ResetVisible = true;
@@ -64,7 +80,7 @@ app.controller('controller', function ($scope, $http) {
             let dataChangePwd = {
                 "flag": "2",
                 "codigo": form.chpwd_code.$modelValue,
-                "contrasenia": form.chpwd_cpwd.$modelValue,
+                "contrasenia": form.chpwd_pwd.$modelValue,
                 "email": form.chpwd_email.$modelValue
             };
             wschangePwd(dataChangePwd, form);

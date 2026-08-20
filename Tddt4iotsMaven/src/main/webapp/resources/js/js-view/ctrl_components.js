@@ -2,7 +2,7 @@
 
 app.controller("component_controller", function ($scope, $http) {
     $(document).ready(() => {
-        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Component", true);
+        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("IoT Components", true);
     });
 
     let node = [];

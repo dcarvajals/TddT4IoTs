@@ -1,8 +1,8 @@
 app.controller("trainmodels_controller", function ($scope, $http) {
 
     $scope.optionsTrainModel = [
-        {name: "Create File", classActive: "btn btn-sm button-active mr-2 mt-1", showPanel: true},
-        {name: "Train Model", classActive: "btn btn-sm button-dt mr-2 mt-1", showPanel: false},
+        {name: "Create dataset", classActive: "training-step is-active", showPanel: true},
+        {name: "Start training", classActive: "training-step", showPanel: false},
     ];
 
     $scope.requestTrainingModel = {
@@ -188,11 +188,11 @@ app.controller("trainmodels_controller", function ($scope, $http) {
     $scope.changeOption = (optionActual) => {
         $scope.optionsTrainModel.forEach(option => {
             if (option.showPanel) {
-                option.classActive = "btn btn-sm button-dt mr-2 mt-1";
+                option.classActive = "training-step";
                 option.showPanel = false;
             }
         });
-        optionActual.classActive = "btn btn-sm button-active mr-2 mt-1";
+        optionActual.classActive = "training-step is-active";
         optionActual.showPanel = true;
     }
 

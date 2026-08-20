@@ -8,13 +8,20 @@
 
                 <div class="modal-body">
 
-                    <button ng-repeat="dom_optionsTrainModel in optionsTrainModel"
-                            ng-class="dom_optionsTrainModel.classActive"> {{dom_optionsTrainModel.name}}
-                    </button>
+                    <div class="training-stepper">
+                        <button type="button" ng-repeat="dom_optionsTrainModel in optionsTrainModel"
+                                ng-class="dom_optionsTrainModel.classActive">
+                            <span>{{$index + 1}}</span>{{dom_optionsTrainModel.name}}
+                        </button>
+                    </div>
 
-                    <div class="optionsTrainModelMarco" ng-if="optionsTrainModel[0].showPanel">
+                    <div class="optionsTrainModelMarco training-step-panel" ng-if="optionsTrainModel[0].showPanel">
                         <form name="formCreateFile" ng-submit="createFileModel(formCreateFile)">
-                            <strong> Select the date range from which existing project data will be extracted to create the training file. </strong>
+                            <div class="training-panel-intro">
+                                <i class="fas fa-database"></i>
+                                <div><strong>Create the training dataset</strong><span>Select the project date range used to build the JSONL file.</span></div>
+                            </div>
+                            <div class="training-date-grid">
                             <div class="form-group">
                                 <label for="ip_startDate">Start date:</label>
                                 <input class="" id="ip_startDate" type="date"
@@ -44,6 +51,7 @@
                                     Please enter the end date.
                                 </div>
                             </div>
+                            </div>
 
                             <div class="form-group">
                                 <label for="ip_commit"> Commit: </label>
@@ -72,15 +80,16 @@
                         </form>
                     </div>
 
-                    <div class="optionsTrainModelMarco" ng-if="optionsTrainModel[1].showPanel">
-                        <div class="alert alert-success" role="alert">
-                            <i class="bi bi-patch-check-fill"></i>
-                            The JSONL file containing the data for the respective model training has been successfully created.
+                    <div class="optionsTrainModelMarco training-step-panel" ng-if="optionsTrainModel[1].showPanel">
+                        <div class="training-ready-state">
+                            <div class="training-ready-icon"><i class="fas fa-check"></i></div>
+                            <div><strong>Training file ready</strong><span>The JSONL dataset was created successfully.</span></div>
                         </div>
 
-                        <span> To download the file, click <a ng-ref="requestTrainingModel.pathJson" >here</a> </span>
-
-                        <strong> The date range of the extracted projects is: from: {{requestTrainingModel.startDate}} to: {{requestTrainingModel.endDate}}. </strong>
+                        <div class="training-file-summary">
+                            <div><span>Date range</span><strong>{{requestTrainingModel.startDate}} — {{requestTrainingModel.endDate}}</strong></div>
+                            <a ng-ref="requestTrainingModel.pathJson"><i class="fas fa-download mr-1"></i>Download JSONL</a>
+                        </div>
 
                         <div style="text-align: right">
                             <button class="btn button-ds btn-sm"  type="button" ng-click="deleteTraining()">
@@ -115,72 +124,55 @@
 </div>
 
 
-<div class="container-fluid">
-
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Train Models</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/trainmodels" class="text-muted text-hover-primary">Train Models</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-    <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
-
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-dark">
-                Train Models </h6>
-            <button class="btn button-d btn-sm"
-                    type="button" id="newProtocol"
-                    ng-click="openModalTrainModel()">
-                New Train
+<div class="container-fluid train-models-view">
+    <div class="card projects-panel project-layout-width mb-4 m-auto">
+        <div class="projects-panel-header model-panel-header">
+            <div>
+                <span class="screen-kicker">AI models</span>
+                <h6 class="projects-panel-title">Training history</h6>
+                <p class="projects-panel-subtitle">Review dataset runs, resulting models and execution status.</p>
+            </div>
+            <button class="btn project-primary-btn btn-sm" type="button" id="newProtocol" ng-click="openModalTrainModel()">
+                <i class="fas fa-plus mr-2"></i>New training
             </button>
         </div>
 
-        <div class="card-body" style="height: auto; overflow: auto">
-            <div class="alert alert-primary" role="alert" id="component_table"
-                 ng-repeat="dom_listTrainingHistory in listTrainingHistory" ng-show="baseModels.length > 0">
-                <div class="media mb-2">
-                    <img src="resources/img/img-app/017-brain.png" class="align-self-center mr-3" alt="..." width="70">
-                    <div class="media-body">
-                        <div>
-                            <strong> STATUS: </strong>
-                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="badge badge-success">
-                                <i class="bi bi-check-circle-fill"></i>
-                                Succeeded
-                            </span>
-                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'ERROR'" class="badge badge-danger">
-                                <i class="bi bi-exclamation-octagon-fill"></i>
-                                Error
-                            </span>
-                            <br>
-                            <strong ng-if="dom_listTrainingHistory.resultJson.status === 'OK'"> MODEL: </strong>
-                            <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="badge badge-primary">
-                                {{dom_listTrainingHistory.resultJson.data.fine_tuned_model === null ?
-                                    dom_listTrainingHistory.resultJson.data.model : dom_listTrainingHistory.resultJson.data.fine_tuned_model}} </span> <br ng-if="dom_listTrainingHistory.resultJson.status === 'OK'">
-                            <strong> Commit: </strong> {{dom_listTrainingHistory.commit}} <br>
-                            <strong> Date creation: </strong> {{dom_listTrainingHistory.dateCreation}} <br>
-                            <strong> Date start training: </strong> {{dom_listTrainingHistory.dateStartTrining}} <br>
-                            <strong> Date end training: </strong> {{dom_listTrainingHistory.dateEndTrining}} <br>
-                        </div>
-                        <div class="row">
-                            <button class="btn button-dt btn-sm ml-2"
-                                    ng-click="openModalMoreInformation(dom_listTrainingHistory)">
-                                <i class="bi bi-braces"></i>
-                                More information
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <div class="card-body projects-panel-body">
+            <div class="component-list-toolbar" ng-show="listTrainingHistory.length > 0">
+                <div class="component-search"><i class="fas fa-search"></i><input ng-model="searchTraining" class="form-control form-control-sm" type="text" placeholder="Search training history"></div>
+                <span>{{listTrainingHistory.length}} training runs</span>
+            </div>
+
+            <div class="projects-empty-state text-center" ng-show="listTrainingHistory.length === 0">
+                <div class="model-empty-icon"><i class="fas fa-flask"></i></div>
+                <h5>No training history</h5>
+                <p>Create a dataset and start the first model training.</p>
+            </div>
+
+            <div class="table-responsive training-history-wrap" ng-show="listTrainingHistory.length > 0">
+                <table class="table model-table training-history-table mb-0">
+                    <thead><tr><th>Result</th><th>Model</th><th>Commit</th><th>Training period</th><th>Created</th><th class="text-right">Details</th></tr></thead>
+                    <tbody>
+                        <tr ng-repeat="dom_listTrainingHistory in listTrainingHistory | filter: searchTraining">
+                            <td>
+                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="training-status is-success"><i class="fas fa-check-circle"></i>Succeeded</span>
+                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'ERROR'" class="training-status is-error"><i class="fas fa-exclamation-circle"></i>Error</span>
+                            </td>
+                            <td class="training-model-cell">
+                                <i class="fas fa-brain"></i>
+                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'">
+                                    {{dom_listTrainingHistory.resultJson.data.fine_tuned_model === null ? dom_listTrainingHistory.resultJson.data.model : dom_listTrainingHistory.resultJson.data.fine_tuned_model}}
+                                </span>
+                                <span ng-if="dom_listTrainingHistory.resultJson.status !== 'OK'">Not generated</span>
+                            </td>
+                            <td class="training-commit-cell">{{dom_listTrainingHistory.commit}}</td>
+                            <td class="training-period-cell"><span>{{dom_listTrainingHistory.dateStartTrining || '—'}}</span><i class="fas fa-arrow-right"></i><span>{{dom_listTrainingHistory.dateEndTrining || '—'}}</span></td>
+                            <td class="component-date-cell"><i class="far fa-calendar mr-1"></i>{{dom_listTrainingHistory.dateCreation}}</td>
+                            <td><div class="component-row-actions"><button class="model-details-btn" ng-click="openModalMoreInformation(dom_listTrainingHistory)"><i class="fas fa-code mr-1"></i>View response</button></div></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </div>
-
 </div>

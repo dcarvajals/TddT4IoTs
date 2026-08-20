@@ -69,8 +69,4 @@ app.controller("interpret_controller", function ($scope, $http) {
         mergeClassDiagram(bigDiagram, mindiagram);
     };
 
-    $("#Symbols_use_cases").click(function () {
-        $("#modal_Symbols").modal();
-    });
-
 });

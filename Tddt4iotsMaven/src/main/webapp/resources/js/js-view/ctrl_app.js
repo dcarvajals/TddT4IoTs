@@ -68,7 +68,8 @@ app.config(function ($routeProvider) {
 
 app.controller("application", function ($scope, $http) {
 
-    $scope.DatoUsuario = {};
+    const sessionUser = getDataSession();
+    $scope.DatoUsuario = sessionUser && sessionUser !== "undefined" ? sessionUser : {};
     $scope.rutaImgUser = location.origin + rutasStorage.imguser;
     $scope.responseHasSecretKey = {secretKey: "", hasSecretKey: false};
     $scope.baseModels = [];
@@ -84,6 +85,7 @@ app.controller("application", function ($scope, $http) {
 
     $scope.suggestion_type = null;
     $scope.observation = null;
+    $scope.currentYear = new Date().getFullYear();
 
     $scope.appPage = {
         tittle: "Home",
@@ -91,19 +93,39 @@ app.controller("application", function ($scope, $http) {
     };
 
     $scope.validatePermit = (DatoUsuario) => {
-        return  DatoUsuario["type_person"] === "U" ? "Usuario" :
-            DatoUsuario["type_person"] === "A" ? "Administrator" :
-                DatoUsuario["type_person"] === "R" ? "Root" : "Inactive";
+        const userType = DatoUsuario && DatoUsuario.type_person;
+        return userType === "U" ? "User" :
+            userType === "A" ? "Administrator" :
+                userType === "R" ? "Root administrator" : "Inactive";
     };
 
     $scope.nameUser = (DatoUsuario) => {
-      return DatoUsuario.name_person + ' ' + DatoUsuario.lastname_person;
+        if (!DatoUsuario) {
+            return "Application user";
+        }
+        const fullName = [DatoUsuario.name_person, DatoUsuario.lastname_person]
+                .filter(Boolean).join(" ").trim();
+        return fullName || DatoUsuario.email_person || "Application user";
+    };
+
+    $scope.userInitials = (DatoUsuario) => {
+        if (!DatoUsuario) {
+            return "US";
+        }
+        const initials = [DatoUsuario.name_person, DatoUsuario.lastname_person]
+                .filter(Boolean).map(value => value.trim().charAt(0)).join("").slice(0, 2);
+        return initials.toUpperCase() || "US";
+    };
+
+    $scope.userRoleClass = (DatoUsuario) => {
+        const userType = DatoUsuario && DatoUsuario.type_person;
+        return userType === "R" ? "is-root" : userType === "A" ? "is-admin" :
+            userType === "U" ? "is-user" : "is-inactive";
     };
 
     $(document).ready(function () {
         $scope.validateSecretKey();
         $scope.loadBaseModels();
-        $scope.validatePermissoModel();
     });
 
     $scope.changeTittlePage = function (tittle, apply) {
@@ -238,11 +260,6 @@ app.controller("application", function ($scope, $http) {
                 $scope.$apply(function() { // Asegura que AngularJS se entere de los cambios
                     $scope.responseHasSecretKey.hasSecretKey = data.data.hasSecretKey;
                     $scope.DatoUsuario = getDataSession();
-                    let permitUser = document.getElementById("permitUser");
-                    let nameUser = document.getElementById("nameUser");
-                    permitUser.innerHTML = $scope.validatePermit($scope.DatoUsuario);
-                    let iconoCheck = $scope.responseHasSecretKey.hasSecretKey ? "<i class=\"fas fa-check-circle text-success-400 mr-1\"></i>" : "";
-                    nameUser.innerHTML = iconoCheck + $scope.nameUser($scope.DatoUsuario);
                     if($scope.responseHasSecretKey.hasSecretKey) {
                         $scope.responseHasSecretKey.secretKey = data.data.secretKey;
                         $scope.ip_secretKey = $scope.responseHasSecretKey.secretKey
@@ -267,14 +284,16 @@ app.controller("application", function ($scope, $http) {
             },
             success: function (response) {
                 $scope.$apply(function  () {
-                    $scope.baseModels = response.data;
+                    $scope.baseModels = response.data || [];
                     $scope.baseModels.forEach(model => {
                        model["background"] = "alert alert-light border-primary cursorPointer";
                        model["selected"] = false;
                     });
                 });
+                $scope.validatePermissoModel();
             },
             error: function (objXMLHttpRequest) {
+                swal.close();
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
@@ -295,7 +314,7 @@ app.controller("application", function ($scope, $http) {
             },
             success: function (data) {
                 swal.close();
-                $scope.closeModalNewSecretKey();
+                $scope.closeModalSettings();
                 $scope.validateSecretKey();
                 alertAll(data);
             },
@@ -319,20 +338,28 @@ app.controller("application", function ($scope, $http) {
                 loading();
             },
             success: function (response) {
-                data = response.data;
-                console.log("validatePermissoModel: ", data)
+                const data = response.data;
+                console.log("validatePermissoModel: ", data);
+                if (!data || !data.model) {
+                    swal.close();
+                    return;
+                }
                 $scope.$apply(function  () {
                    $scope.baseModels.forEach(model => {
                       if(model.id === data.model.id) {
                           model["selected"] = true;
                           model["background"] = "alert alert-primary border-primary";
+                          $scope.baseModelSelcted = model;
                       }
                    });
+                   $scope.useOpenAi.forEach(mode => mode.value = false);
                    if(data.canTrain) {
                        $scope.useOpenAi[0].value = data.canTrain;
+                       $scope.useOpenAiSelected = $scope.useOpenAi[0];
                        swal.close();
                    } else if (data.canUse) {
                        $scope.useOpenAi[1].value = data.canUse;
+                       $scope.useOpenAiSelected = $scope.useOpenAi[1];
 
                        var request = {
                            classDTO:
@@ -347,6 +374,7 @@ app.controller("application", function ($scope, $http) {
                 });
             },
             error: function (objXMLHttpRequest) {
+                swal.close();
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
@@ -365,13 +393,15 @@ app.controller("application", function ($scope, $http) {
             },
             success: function (response) {
                 console.log(response);
-                $scope.modelPermissions = response.data;
+                $scope.modelPermissions = response.data || [];
                 $scope.modelPermissions.forEach(model => {
                     model["selected"] = false;
                 });
+                $scope.$applyAsync();
                 $scope.apiTrainingHistoryValidate();
             },
             error: function (objXMLHttpRequest) {
+                swal.close();
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
@@ -391,17 +421,15 @@ app.controller("application", function ($scope, $http) {
             success: function (response) {
                 swal.close();
                 console.log("apitrainingFromBaseModels: ", response);
-                $scope.trainingHistoryFromBaseModel = response.data;
-                $scope.trainingHistoryFromBaseModel.forEach(item => {
-                    item["selected"] = false;
-                });
-                $scope.trainingHistoryFromBaseModel.forEach(item => {
-                    if(item.id === $scope.trainingHistoryValidate.id) {
-                        item["selected"] = true;
-                    }
+                $scope.$applyAsync(function () {
+                    $scope.trainingHistoryFromBaseModel = response.data || [];
+                    $scope.trainingHistoryFromBaseModel.forEach(item => {
+                        item["selected"] = item.id === $scope.trainingHistoryValidate.id;
+                    });
                 });
             },
             error: function (objXMLHttpRequest) {
+                swal.close();
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
@@ -420,6 +448,11 @@ app.controller("application", function ($scope, $http) {
             success: function (response) {
                 console.log(response);
                 $scope.trainingHistoryValidate = response.data;
+                if (!$scope.trainingHistoryValidate || !$scope.trainingHistoryValidate.model) {
+                    swal.close();
+                    return;
+                }
+                let historyRequested = false;
                 $scope.modelPermissions.forEach(modelPermission => {
                     if($scope.trainingHistoryValidate.model.id === modelPermission.id) {
                         modelPermission["selected"] = true;
@@ -430,11 +463,18 @@ app.controller("application", function ($scope, $http) {
                                     idPersonModelTraining: modelPermission.person.id
                                 }
                         }
+                        historyRequested = true;
                         $scope.apitrainingFromBaseModels(request);
                     }
                 });
+                if (!historyRequested) {
+                    $scope.trainingHistoryFromBaseModel = [];
+                    swal.close();
+                }
+                $scope.$applyAsync();
             },
             error: function (objXMLHttpRequest) {
+                swal.close();
                 console.log("Error: ", objXMLHttpRequest.responseText);
             }
         });
@@ -508,12 +548,6 @@ app.controller("application", function ($scope, $http) {
             controls[x].src = 'resources/img/img-opinions/estrella_black.svg';
     }
 
-
-
-    btn_move_suggestion();
-
-
-
 });
 
 function verpunto(val) {
@@ -582,33 +616,4 @@ function asignar_eventos()
         value.addEventListener('mouseout', (e)=>cambiarColor(e,imgsaux,index+1));
         value.addEventListener('click', (e)=>cambiarColor(e,imgsaux,index+1));
     });
-}
-
-let move_suggestion=false;
-
-function btn_move_suggestion()
-{
-    let btn_suggestion = document.querySelector(".btn-suggestion");
-    btn_suggestion.addEventListener("mousedown", function(e) {
-        move_suggestion=true;
-
-        //console.log(e.pageX+" - "+e.pageY);
-        //btn_suggestion.style.left=`${e.pageX}px`;
-        //btn_suggestion.style.top=`${e.pageY}px`;
-    });
-
-    btn_suggestion.addEventListener("mouseup", function(e) {
-        move_suggestion=false;
-    });
-
-
-    window.addEventListener("mousemove", function(e) {
-        if(move_suggestion)
-        {
-            btn_suggestion.style.left=`${e.clientX-30}px`;
-            btn_suggestion.style.top=`${e.clientY-25}px`;
-        }
-    });
-
-
 }

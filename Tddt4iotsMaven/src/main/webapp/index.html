@@ -2,15 +2,19 @@
 <html lang="en" ng-app="app">
 <head>
     <meta charset="UTF-8">
-    <title> TDDT4IoTS - LogIn </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TDDT4IoTS - Sign in</title>
     <link rel="shortcut icon" href="resources/img/logo-app/logoOficial.ico">
     <link rel="stylesheet" href="resources/css/css-library/bootstrap.css">
+    <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="resources/css/css-app/index-app.css">
+    <link rel="stylesheet" href="resources/css/css-app/auth.css">
     <link rel="stylesheet" href="resources/css/css-library/toastr.min.css" type="text/css">
+    <link rel="stylesheet" href="resources/css/css-app/system-feedback.css" type="text/css">
 
     <script src="resources/js/js-library/jquery.min.js"></script>
     <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
@@ -19,58 +23,69 @@
     <script src="resources/js/js-library/store2.min.js" type="text/javascript"></script>
     <script src="resources/js/js-library/toastr.min.js" type="text/javascript"></script>
 </head>
-<body ng-controller="controllerIndex" style="display: flex;justify-content: center;">
-<div class="container mt-4">
-    <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" width="150" alt="logo"/>
-</div>
-<div class="login" style="position: absolute;top: 50%;transform: translate(0, -50%);width: 500px;line-height: 30px">
-    <div class="text-left">
-        <!--                <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt="logoOficial" width="120">-->
-        <h2><strong> Sign in </strong></h2>
-    </div>
-    <form name="form_login" ng-submit="login(form_login)">
-        <div class="form-group">
-            <label class="col-form-label col-form-label-sm">Email:</label>
-            <input type="email"
-                   name="email_login"
-                   id="email_login"
-                   ng-model="email_login"
-                   ng-class="(form_login.email_login.$invalid &&
-                                                               form_login.email_login.$dirty) ?
-                                                               'form-control form-control-sm is-invalid'
-                                                               : 'form-control form-control-sm'"
-                   required>
-            <div class="invalid-feedback">
-                Please choose a email.
+<body class="auth-page" ng-controller="controllerIndex">
+    <main class="auth-shell">
+        <aside class="auth-showcase">
+            <a class="auth-brand" href="index.html" aria-label="TDDT4IoTS home">
+                <span class="auth-brand-mark"><img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt=""></span>
+                <span class="auth-brand-copy"><strong>TDDT4IoTS</strong><span>CASE workspace</span></span>
+            </a>
+
+            <div class="auth-showcase-content">
+                <span class="auth-showcase-kicker">Engineering by design</span>
+                <h1>Model software and IoT systems in one workspace.</h1>
+                <p class="auth-showcase-description">A structured CASE environment for projects, UML modeling, reusable IoT components and AI-assisted engineering.</p>
+                <div class="auth-capabilities">
+                    <div class="auth-capability"><i class="oi oi-project"></i><strong>Projects</strong><span>Organize engineering work.</span></div>
+                    <div class="auth-capability"><i class="oi oi-code"></i><strong>UML + IoT</strong><span>Design connected systems.</span></div>
+                    <div class="auth-capability"><i class="oi oi-flash"></i><strong>AI models</strong><span>Train and validate faster.</span></div>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="col-form-label col-form-label-sm">Password:</label>
-            <input type="password"
-                   name="password_login"
-                   id="password_login"
-                   ng-model="password_login"
-                   ng-class="(form_login.password_login.$invalid &&
-                                                               form_login.password_login.$dirty) ?
-                                                               'form-control form-control-sm is-invalid'
-                                                               : 'form-control form-control-sm'"
-                   required>
-            <div class="invalid-feedback">
-                Please choose a password.
+
+            <span class="auth-showcase-footer">TDDT4IoTS · Test-driven development for IoT systems</span>
+        </aside>
+
+        <section class="auth-content">
+            <div class="auth-card">
+                <header class="auth-card-header">
+                    <span class="auth-step">Secure access</span>
+                    <h2>Welcome back</h2>
+                    <p>Sign in to continue with your engineering workspace.</p>
+                </header>
+
+                <div class="auth-form-panel">
+                    <form name="form_login" ng-submit="login(form_login)">
+                        <div class="form-group">
+                            <label for="email_login">Email address</label>
+                            <input type="email" name="email_login" id="email_login" ng-model="email_login"
+                                   autocomplete="email" placeholder="engineer@example.com"
+                                   ng-class="(form_login.email_login.$invalid && form_login.email_login.$dirty) ? 'form-control is-invalid' : 'form-control'" required>
+                            <div class="invalid-feedback">Enter a valid email address.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password_login">Password</label>
+                            <input type="password" name="password_login" id="password_login" ng-model="password_login"
+                                   autocomplete="current-password" placeholder="Enter your password"
+                                   ng-class="(form_login.password_login.$invalid && form_login.password_login.$dirty) ? 'form-control is-invalid' : 'form-control'" required>
+                            <div class="invalid-feedback">Enter your password.</div>
+                        </div>
+                        <div class="auth-form-actions">
+                            <button ng-disabled="form_login.$invalid" type="submit" class="btn auth-primary-button">Sign in to workspace</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="auth-links">
+                    <a href="resetpassword.html">Forgot your password?</a>
+                    <span>·</span>
+                    New to TDDT4IoTS? <a href="singup.html">Create an account</a>
+                </div>
             </div>
-        </div>
-        <button ng-disabled="form_login.$invalid"
-                type="submit" class="btn button-d w-100"> Login
-        </button>
-    </form>
-    <div class="center-d" style="margin-top: 1rem; font-size: 12px !Important">
-        <a href="resetpassword.html"> Forgot your password ? </a> <br>
-        <span>Don't have an account ?</span>
-        <a href="singup.html"> Sign up.</a>
-    </div>
-</div>
-<script src="resources/js/js-global/js_global.js" type="text/javascript"></script>
-<script src="resources/js/js-global/jsAlertPersonalize.js" type="text/javascript"></script>
-<script src="resources/js/js-index.js" type="text/javascript"></script>
+        </section>
+    </main>
+
+    <script src="resources/js/js-global/js_global.js" type="text/javascript"></script>
+    <script src="resources/js/js-global/jsAlertPersonalize.js" type="text/javascript"></script>
+    <script src="resources/js/js-index.js" type="text/javascript"></script>
 </body>
 </html>

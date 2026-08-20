@@ -15,53 +15,83 @@ var mainContext;
 var canvas;
 var motionContext;
 
-var width = 2000;
-var height = 2000;
+window.umlWorkspaceZoom = window.umlWorkspaceZoom || 1;
 
-function exportImg() {
-    var url = lienzo.toDataURL('image/png');
+function diagramContentBounds(diagram, padding) {
+    const margin = Number.isFinite(padding) ? padding : 28;
+    const points = [];
+    (diagram._nodes || []).forEach(node => {
+        points.push({x: node._x || 0, y: node._y || 0});
+        points.push({x: (node._x || 0) + (node._width || 0), y: (node._y || 0) + (node._height || 0)});
+    });
+    (diagram._relations || []).forEach(relation => (relation._points || []).forEach(point => {
+        const x = typeof point.getX === "function" ? point.getX() : point.x;
+        const y = typeof point.getY === "function" ? point.getY() : point.y;
+        if (Number.isFinite(x) && Number.isFinite(y)) points.push({x: x, y: y});
+    }));
+    if (!points.length) return null;
+    const minX = Math.min.apply(null, points.map(point => point.x));
+    const minY = Math.min.apply(null, points.map(point => point.y));
+    const maxX = Math.max.apply(null, points.map(point => point.x));
+    const maxY = Math.max.apply(null, points.map(point => point.y));
+    return {
+        x: Math.max(0, Math.floor(minX - margin)),
+        y: Math.max(0, Math.floor(minY - margin)),
+        width: Math.max(1, Math.ceil(maxX - Math.max(0, minX - margin) + margin)),
+        height: Math.max(1, Math.ceil(maxY - Math.max(0, minY - margin) + margin))
+    };
+}
 
-    // crear un nuevo canvas
-    let newCanvas = document.createElement("canvas");
-    let ctx = newCanvas.getContext("2d");
-    let divContainer = document.getElementById("areaDiagram");
-    // asignar el tamanio deseado
-    newCanvas.width = divContainer.clientWidth;
-    newCanvas.height = divContainer.clientHeight;
-    var img = new Image();
-    img.src = url;
-    img.width = 150;
-    var marcaAgua = new Image();
-    marcaAgua.src = "resources/img/logo-app/logoGraficosicon.png";
+function safeDiagramFileName(name) {
+    return String(name || "uml-diagram").trim().replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ._-]+/g, "-").replace(/^-+|-+$/g, "") || "uml-diagram";
+}
 
-    marcaAgua.onload = function () {
-        ctx.drawImage(img, 0, 0);
-        ctx.drawImage(marcaAgua, 20, divContainer.clientHeight - 130);
-        url = newCanvas.toDataURL('image/png');
-        window.open(url, '_blank');
-    }
+function exportDiagramImage(diagram, fileName) {
+    if (!diagram || !diagram._mainContext || !diagram._mainContext.canvas) return false;
+    diagram.draw();
+    const source = diagram._mainContext.canvas;
+    const bounds = diagramContentBounds(diagram, 30);
+    if (!bounds) return false;
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = bounds.width;
+    exportCanvas.height = bounds.height;
+    const context = exportCanvas.getContext("2d");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    context.drawImage(source, bounds.x, bounds.y, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+    const link = document.createElement("a");
+    link.download = safeDiagramFileName(fileName || (diagram.getName && diagram.getName())) + ".png";
+    link.href = exportCanvas.toDataURL("image/png");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return true;
+}
+
+function exportImg(diagram, fileName) {
+    const activeDiagram = diagram || (document.getElementById("areaDiagram") || {})._activeUmlDiagram;
+    return exportDiagramImage(activeDiagram, fileName);
 }
 
 function createDiagram(attributes) {
-    let width = attributes.width;
-    let height = attributes.height;
     let div = document.getElementById(attributes.id_div);
     div.setAttribute('class', 'ud_diagram_div overflow-hidden');
-    div.style.width = width + '%';
-    div.style.height = height + 'vh';
+    const initialZoom = Number(attributes.zoom) || 1;
+    const logicalWidth = Math.max(320, Math.ceil((div.clientWidth || 900) / initialZoom));
+    const logicalHeight = Math.max(240, Math.ceil((div.clientHeight || 600) / initialZoom));
 
     lienzo = document.getElementById('mac');
 
     lienzo.setAttribute('class', 'ud_diagram_canvas');
-    lienzo.width = 2000;
-    lienzo.height = 2000;
+    lienzo.width = logicalWidth;
+    lienzo.height = logicalHeight;
 
     mainContext = lienzo.getContext('2d');
 
     canvas = document.getElementById('mot');
     canvas.setAttribute('class', 'ud_diagram_canvas');
-    canvas.width = 2000;
-    canvas.height = 2000;
+    canvas.width = logicalWidth;
+    canvas.height = logicalHeight;
     canvas.onmousedown = function () {
         return false;
     };
@@ -71,10 +101,26 @@ function createDiagram(attributes) {
     div.appendChild(canvas);
 
     let d1 = new attributes.diagram(); //UMLUseCaseDiagram UMLClassDiagram
-    d1.initialize(0, div, mainContext, motionContext, 2000, 2000);
+    d1.initialize(0, div, mainContext, motionContext, logicalWidth, logicalHeight);
+    if (typeof d1.setZoom === "function") {
+        d1.setZoom(initialZoom);
+    }
     d1.stopEvents();
     d1.interaction(attributes.interaction);
     d1.setName(attributes.name);
+    if (attributes.interaction || attributes.draw) {
+        div._activeUmlDiagram = d1;
+    }
+    if (!div._umlResizeObserver && typeof ResizeObserver !== "undefined") {
+        div._umlResizeObserver = new ResizeObserver(function () {
+            window.requestAnimationFrame(function () {
+                if (div._activeUmlDiagram && typeof div._activeUmlDiagram.draw === "function") {
+                    div._activeUmlDiagram.draw();
+                }
+            });
+        });
+        div._umlResizeObserver.observe(div);
+    }
     if (attributes.draw)
         d1.draw();
 
@@ -97,7 +143,7 @@ function importDiagram(diagram, xml, typeMenu) {
 
 
     let div = document.getElementById("areaDiagram");
-    diagram.initialize(0, div, mainContext, motionContext, width, height);
+    diagram.initialize(0, div, mainContext, motionContext, mainContext.canvas.width, mainContext.canvas.height);
 
 
     diagram.draw();
@@ -176,19 +222,24 @@ function setMenuClass(nodes, typeNode) {
 }
 
 function changeDiagram(diagrama1, diagram2) {
-    diagrama1.interaction(false);
+    if (diagrama1 && typeof diagrama1.interaction === "function") {
+        diagrama1.interaction(false);
+    }
 
     //Se limpian los lienzos de dibujo
-    mainContext.clearRect(0, 0, width, height);
-    motionContext.clearRect(0, 0, width, height);
+    mainContext.clearRect(0, 0, mainContext.canvas.width, mainContext.canvas.height);
+    motionContext.clearRect(0, 0, motionContext.canvas.width, motionContext.canvas.height);
 
-    diagram2.draw();
-    diagram2.interaction(true);
+    if (diagram2 && typeof diagram2.draw === "function") {
+        diagram2._div._activeUmlDiagram = diagram2;
+        diagram2.draw();
+        diagram2.interaction(true);
+    }
 }
 
 function clearDiagram() {
-    mainContext.clearRect(0, 0, width, height);
-    motionContext.clearRect(0, 0, width, height);
+    mainContext.clearRect(0, 0, mainContext.canvas.width, mainContext.canvas.height);
+    motionContext.clearRect(0, 0, motionContext.canvas.width, motionContext.canvas.height);
 }
 
 function createActorTools(attributes) {
@@ -377,8 +428,13 @@ function deleteObject(obj, type) {
             // 1 casos de uso - 2 actores - 3 relaciones de casos de uso - 4 clases - 5 relaciones de clases
             ac.$apply(function () {
                 if (type === 1) {
-                    index = searchTabName(ac, obj); // buscar el indice del tab de secuencia del caso de uso
                     indexobj = searchPositionEqualsObject(ac.jsonUseCase.useCase, "name", obj.getName()) // searchObjeEquals(type, ac, obj); // buscar los casos de uso o actores o relaciones
+                    if (indexobj[0] && ac.jsonUseCase.useCase[indexobj[1]].id) {
+                        const useCaseId = ac.jsonUseCase.useCase[indexobj[1]].id;
+                        index = ac.btnDiagramUml.findIndex(button => button.type === "UMLSequenceDiagram" && button.useCaseId === useCaseId);
+                    } else {
+                        index = searchTabName(ac, obj);
+                    }
                     if (index !== -1)
                         ac.btnDiagramUml.splice(index, 1);
 

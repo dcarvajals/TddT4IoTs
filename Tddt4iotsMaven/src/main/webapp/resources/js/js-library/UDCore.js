@@ -508,10 +508,10 @@ var SuperComponent = function (a) {
     this._activeChild = null;
     this._visibleSubComponents = true;
     this.setFontColor(a.text_color || "#000000");
-    this.setFontSize(a.font_size || "12");
+    this.setFontSize(a.font_size || "10");
     this._font_width = this.getFontSize() / 1.5;
     this.line_height = parseInt(this.getFontSize()) + 1;
-    this.setFontFamily(a.text_family || "monospace");
+    this.setFontFamily(a.text_family || "'Roboto Mono', monospace");
     this.setFontStyle(a.font_style || "normal");
     this.setFontWeight(a.font_weight || "normal")
 };
@@ -794,10 +794,10 @@ var Text = function (a) {
     a = a || {};
     Text.baseConstructor.call(this, a);
     this.setFontColor(a.text_color || "#000000");
-    this.setFontSize(a.font_size || "12");
+    this.setFontSize(a.font_size || "10");
     this._font_width = this.getFontSize() / 1.5;
     this._line_height = parseInt(this.getFontSize()) + 1;
-    this.setFontFamily(a.text_family || "monospace");
+    this.setFontFamily(a.text_family || "'Roboto Mono', monospace");
     this.setFontStyle(a.font_style || "normal");
     this.setFontWeight(a.font_weight || "normal");
     this.setText(a.text || "")
@@ -6482,7 +6482,9 @@ var Diagram = function (a) {
     this._element = null;
     this._lastElement = null;
     this._defineDragAndDrop();
-    this._updateCanvas = false
+    this._updateCanvas = false;
+    this._zoom = 1;
+    this._requestedZoom = 1
 };
 Diagram.prototype._generateStructure = function (b, d, a) {
     if (!d || d < 0) {
@@ -6532,6 +6534,111 @@ Diagram.prototype.initialize = function (f, e, b, d, c, a) {
     } else {
         return false
     }
+};
+Diagram.prototype.getZoom = function () {
+    return this._zoom || 1
+};
+Diagram.prototype.setZoom = function (a) {
+    a = parseFloat(a);
+    if (isNaN(a)) {
+        return false
+    }
+    this._requestedZoom = Math.max(0.25, Math.min(1.5, a));
+    this._zoom = this._requestedZoom;
+    if (this._div) {
+        this._div.setAttribute("data-uml-zoom", this._zoom);
+        var b = this._div.getElementsByTagName("canvas");
+        for (var c = 0; c < b.length; c++) {
+            b[c].style.width = (this._width * this._zoom) + "px";
+            b[c].style.height = (this._height * this._zoom) + "px"
+        }
+    }
+    return true
+};
+Diagram.prototype._eventPoint = function (a) {
+    var b = this._div.getBoundingClientRect();
+    var c = this.getZoom();
+    return {
+        x: (a.clientX - b.left + this._div.scrollLeft) / c,
+        y: (a.clientY - b.top + this._div.scrollTop) / c
+    }
+};
+Diagram.prototype.resizeToContainer = function () {
+    if (!this._div || !this._mainContext || !this._motionContext) {
+        return false
+    }
+    var a = this._requestedZoom || this.getZoom();
+    var b = Math.max(1, this._div.clientWidth);
+    var c = Math.max(1, this._div.clientHeight);
+    a = Math.max(0.25, Math.min(1.5, a));
+    var i = this._zoom;
+    this._zoom = a;
+    var d = 0;
+    var e = 0;
+    for (var f = 0; f < this._nodes.length; f++) {
+        d = Math.max(d, this._nodes[f]._x + this._nodes[f]._width + 55);
+        e = Math.max(e, this._nodes[f]._y + this._nodes[f]._height + 55)
+    }
+    for (var m = 0; m < this._relations.length; m++) {
+        for (var n = 0; n < this._relations[m]._points.length; n++) {
+            var o = this._relations[m]._points[n].getX();
+            var p = this._relations[m]._points[n].getY();
+            if (JSFun.isNumber(o)) d = Math.max(d, o + 35);
+            if (JSFun.isNumber(p)) e = Math.max(e, p + 35)
+        }
+    }
+    var g = Math.max(320, Math.ceil(b / a), Math.ceil(d));
+    var h = Math.max(240, Math.ceil(c / a), Math.ceil(e));
+    if (i == a && g == this._width && h == this._height &&
+            this._mainContext.canvas.width == g && this._mainContext.canvas.height == h &&
+            this._motionContext.canvas.width == g && this._motionContext.canvas.height == h) {
+        return false
+    }
+    this._width = g;
+    this._height = h;
+    this._minWidth = b;
+    this._mainContext.canvas.width = g;
+    this._mainContext.canvas.height = h;
+    this._motionContext.canvas.width = g;
+    this._motionContext.canvas.height = h;
+    this._div.setAttribute("data-uml-zoom", a);
+    var j = this._div.getElementsByTagName("canvas");
+    for (var k = 0; k < j.length; k++) {
+        j[k].style.width = Math.max(1, Math.floor(g * a)) + "px";
+        j[k].style.height = Math.max(1, Math.floor(h * a)) + "px"
+    }
+    this._div.setAttribute("data-uml-overflow-x", (g * a) > b + 1 ? "true" : "false");
+    this._div.setAttribute("data-uml-overflow-y", (h * a) > c + 1 ? "true" : "false");
+    if (i != a && typeof CustomEvent !== "undefined") {
+        this._div.dispatchEvent(new CustomEvent("umlzoomchange", {detail: {zoom: a}}))
+    }
+    return true
+};
+Diagram.prototype.fitToContent = function (a, b) {
+    if (!this._div || !this._nodes.length) {
+        return this.getZoom()
+    }
+    var c = Math.max(0.25, parseFloat(a) || 0.25);
+    var d = Math.min(1.5, parseFloat(b) || 0.85);
+    var e = Math.max(1, this._div.clientWidth);
+    var f = Math.max(1, this._div.clientHeight);
+    var g = 0;
+    var h = 0;
+    for (var i = 0; i < this._nodes.length; i++) {
+        g = Math.max(g, this._nodes[i]._x + this._nodes[i]._width + 55);
+        h = Math.max(h, this._nodes[i]._y + this._nodes[i]._height + 55)
+    }
+    for (var k = 0; k < this._relations.length; k++) {
+        for (var l = 0; l < this._relations[k]._points.length; l++) {
+            g = Math.max(g, this._relations[k]._points[l].getX() + 35);
+            h = Math.max(h, this._relations[k]._points[l].getY() + 35)
+        }
+    }
+    // Keep a small safety margin so rounding and scrollbar gutters do not
+    // create scrollbars while the diagram is in "fit" mode.
+    var j = Math.max(c, Math.min(d, (e / Math.max(g, 1)) * 0.98, (f / Math.max(h, 1)) * 0.98));
+    this.setZoom(j);
+    return j
 };
 Diagram.prototype.getId = function () {
     return this._id
@@ -6686,12 +6793,19 @@ Diagram.prototype._clearMain = function () {
     this._mainContext.save();
     this._mainContext.fillStyle = this._background;
     this._mainContext.fillRect(0, 0, this._width, this._height);
+    this._mainContext.fillStyle = "#d7e1dd";
+    for (var a = 12; a < this._width; a += 20) {
+        for (var b = 12; b < this._height; b += 20) {
+            this._mainContext.fillRect(a, b, 1.2, 1.2)
+        }
+    }
     this._mainContext.restore()
 };
 Diagram.prototype._clearMotion = function () {
     this._motionContext.clearRect(0, 0, this._width, this._height)
 };
 Diagram.prototype.draw = function () {
+    this.resizeToContainer();
     this._clearMain();
     this.updateHeightCanvas();
     this.updateWidthCanvas();
@@ -6850,8 +6964,9 @@ Diagram.prototype._defineDragAndDrop = function () {
         } else {
             a._pressMouse = true
         }
-        var d = e.pageX - a._div.offsetLeft;
-        var c = e.pageY - a._div.offsetTop;
+        var h = a._eventPoint(e);
+        var d = h.x;
+        var c = h.y;
         var f = false;
         var b;
         if (a._lastElement instanceof Relation) {
@@ -6890,8 +7005,9 @@ Diagram.prototype._defineDragAndDrop = function () {
         var e = c.touches[0];
         a._touch = true;
         a._hold = false;
-        a._startX = e.pageX - a._div.offsetLeft;
-        a._startY = e.pageY - a._div.offsetTop;
+        var f = a._eventPoint(e);
+        a._startX = f.x;
+        a._startY = f.y;
         var d = false;
         var b;
         if (a._lastElement instanceof Relation) {
@@ -6937,8 +7053,9 @@ Diagram.prototype._defineDragAndDrop = function () {
             return
         }
         if (a._element) {
-            var c = d.pageX - a._div.offsetLeft;
-            var b = d.pageY - a._div.offsetTop;
+            var e = a._eventPoint(d);
+            var c = e.x;
+            var b = e.y;
             if (c < 0) {
                 c = 0
             }
@@ -6963,8 +7080,9 @@ Diagram.prototype._defineDragAndDrop = function () {
         if (a._element) {
             a._div.style.cursor = "default";
             a._clearMotion();
-            var c = d.pageX - a._div.offsetLeft;
-            var b = d.pageY - a._div.offsetTop;
+            var e = a._eventPoint(d);
+            var c = e.x;
+            var b = e.y;
             a._element.drop(c, b);
             a._lastElement = a._element;
             a._element = null;
@@ -6984,8 +7102,9 @@ Diagram.prototype._defineDragAndDrop = function () {
             a._div.style.cursor = "default";
             a._clearMotion();
             var c = b.changedTouches[0];
-            a._startX = c.pageX - a._div.offsetLeft;
-            a._startY = c.pageY - a._div.offsetTop;
+            var d = a._eventPoint(c);
+            a._startX = d.x;
+            a._startY = d.y;
             a._element.drop(a._startX, a._startY);
             a._lastElement = a._element;
             a._element = null;
@@ -7007,8 +7126,9 @@ Diagram.prototype._defineDragAndDrop = function () {
             a._div.style.cursor = "default";
             a._clearMotion();
             var e = d.changedTouches[0];
-            var c = e.pageX - a._div.offsetLeft;
-            var b = e.pageY - a._div.offsetTop;
+            var f = a._eventPoint(e);
+            var c = f.x;
+            var b = f.y;
             if (c < 0) {
                 c = 0
             }
@@ -7038,8 +7158,9 @@ Diagram.prototype._defineDragAndDrop = function () {
         }
     };
     this._tapHold = function (d) {
-        var c = d.pageX - a._div.offsetLeft;
-        var b = d.pageY - a._div.offsetTop;
+        var e = a._eventPoint(d);
+        var c = e.x;
+        var b = e.y;
         a._touch = false;
         a._hold = true;
         if (a._element != null) {
@@ -7514,10 +7635,10 @@ var TextArea = function (a) {
     this.setText(a.text || "");
     this._active = false;
     this.setFontColor(a.text_color || "#000000");
-    this.setFontSize(a.font_size || "12");
+    this.setFontSize(a.font_size || "10");
     this._font_width = this.getFontSize() / 1.5;
     this.line_height = parseInt(this.getFontSize()) + 1;
-    this.setFontFamily(a.text_family || "monospace");
+    this.setFontFamily(a.text_family || "'Roboto Mono', monospace");
     this.setFontStyle(a.font_style || "normal");
     this.setFontWeight(a.font_weight || "normal")
 };

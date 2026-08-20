@@ -3,6 +3,7 @@
 app.controller("shareprojects_controller", function ($scope, $http) {
 
     $(document).ready(() => {
+        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Shared Projects", true);
         $scope.listShareProjects();
         $scope.listProjectsInvitations();
         $scope.appPage.Select = "shareprojects";

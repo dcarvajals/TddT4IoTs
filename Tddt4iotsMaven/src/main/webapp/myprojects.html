@@ -205,242 +205,189 @@
     </div>
 </div>
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Projects</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Projects</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-    <div class="card shadow mb-4 w-75 m-auto  mb-3" ng-show="flag_selected_project === false">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-dark">Projects List - Click on "Open Project" to see its respective
-                modules</h6>
-            <button type="button" ng-click="openInsertProject()" class="btn button-d btn-sm float-right">
-                New Project
+<div class="container-fluid my-projects-view">
+    <div class="card projects-panel project-layout-width mb-4 m-auto mb-3" ng-show="flag_selected_project === false">
+        <div class="projects-panel-header">
+            <div>
+                <span class="screen-kicker">Workspace</span>
+                <h6 class="projects-panel-title">My projects</h6>
+                <p class="projects-panel-subtitle">Review your CASE projects and continue working in UML or IoT.</p>
+            </div>
+            <button type="button" ng-click="openInsertProject()" class="btn project-primary-btn btn-sm">
+                <i class="fas fa-plus mr-2"></i>New project
             </button>
         </div>
 
-        <!-- Card Body -->
-        <div class="card-body">
+        <div class="card-body projects-panel-body">
             <div class="media" ng-show="myprojects.length === 0">
                 <div class="media-body">
-                    <div class="text-center">
+                    <div class="projects-empty-state text-center">
                         <img class="mb-4" src="resources/img/img-app/nodata.svg" alt="..." width="150">
                         <br>
-                        <h5>No data currently available</h5>
+                        <h5>No projects yet</h5>
+                        <p>Create your first project to begin modeling.</p>
                     </div>
                 </div>
             </div>
-            <div class="alert alert-primary" role="alert"
-                 ng-repeat="dom_myprojects in myprojects" ng-show="myprojects.length > 0">
-                <div class="media mb-2">
-                    <img src="resources/img/img-app/proyecto.svg" class="align-self-center mr-3" alt="..."
-                         width="70">
-                    <div class="media-body">
-                        <div style="font-size: 12px">
-                            <strong> Creation date: </strong> {{dom_myprojects.creationdate_mp.split('T')[0]}} -
-                            <strong> Update date: </strong> {{dom_myprojects.updatedate_mp.split('T')[0]}}
-                        </div>
-                        <h5 class="mt-0 text-dark"><strong> {{dom_myprojects.name_mp}} </strong></h5>
-                        <div class="row">
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-d btn-sm w-100" ng-click="selectProject(dom_myprojects)">
-                                    Open Project
-                                </button>
-                            </div>
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-dt btn-sm w-100" ng-click="openShareProject(dom_myprojects)">
-                                    Add collaborators
-                                </button>
-                            </div>
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-perc btn-sm w-100" ng-click="getGanttObjectts(dom_myprojects)">
-                                    Project Monitoring
-                                </button>
-                            </div>
-                        </div>
-                        <div class="row justify-content-start">
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-ds btn-sm w-100" ng-click="deleteProject(dom_myprojects)">
-                                    Delete Project
-                                </button>
-                            </div>
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-dt btn-sm w-100" ng-click="openSeeMembersInProject(dom_myprojects)">
-                                    List collaborators
-                                </button>
-                            </div>                            
-                        </div>
-                    </div>
-                </div>
+
+            <div class="table-responsive projects-table-wrap" ng-show="myprojects.length > 0">
+                <table class="table projects-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Modules</th>
+                            <th>Last update</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="dom_myprojects in myprojects">
+                            <td class="project-identity-cell">
+                                <div class="project-avatar"><i class="fas fa-project-diagram"></i></div>
+                                <div class="project-identity">
+                                    <strong>{{dom_myprojects.name_mp}}</strong>
+                                    <span>{{dom_myprojects.description_mp || 'CASE engineering project'}}</span>
+                                    <small>Created {{dom_myprojects.creationdate_mp.split('T')[0]}}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="module-status-list">
+                                    <span ng-class="dom_myprojects.status_uml === 'A' ? 'module-status is-ready' : 'module-status is-empty'">
+                                        <i ng-class="dom_myprojects.status_uml === 'A' ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                                        UML · {{dom_myprojects.status_uml === 'A' ? 'Ready' : 'Not created'}}
+                                    </span>
+                                    <span ng-class="dom_myprojects.status_iot === 'A' ? 'module-status is-ready' : 'module-status is-empty'">
+                                        <i ng-class="dom_myprojects.status_iot === 'A' ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                                        IoT · {{dom_myprojects.status_iot === 'A' ? 'Ready' : 'Not created'}}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="project-date-cell">
+                                <i class="far fa-clock mr-1"></i>{{dom_myprojects.updatedate_mp.split('T')[0]}}
+                            </td>
+                            <td>
+                                <div class="project-actions">
+                                    <button class="btn project-open-btn btn-sm" ng-click="selectProject(dom_myprojects)"
+                                            title="View UML and IoT modules">
+                                        View modules <i class="fas fa-arrow-right ml-2"></i>
+                                    </button>
+                                    <div class="project-quick-actions" aria-label="Project options">
+                                        <button class="project-icon-btn" ng-click="openShareProject(dom_myprojects)" title="Add collaborator">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                        <button class="project-icon-btn" ng-click="openSeeMembersInProject(dom_myprojects)" title="View collaborators">
+                                            <i class="fas fa-users"></i>
+                                        </button>
+                                        <button class="project-icon-btn" ng-click="getGanttObjectts(dom_myprojects)" title="Project monitoring">
+                                            <i class="fas fa-chart-line"></i>
+                                        </button>
+                                        <button class="project-icon-btn is-danger" ng-click="deleteProject(dom_myprojects)" title="Delete project">
+                                            <i class="far fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-   
-    <div class="card shadow mb-4 w-75 m-auto mb-3" ng-show="flag_selected_project === true">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <div class="float-left">
-                <h6 class="m-0 font-weight-bold text-dark start-0">Projects Modules</h6>
+
+    <div class="card modules-panel project-layout-width mb-4 m-auto mb-3" ng-show="flag_selected_project === true">
+        <div class="modules-panel-header">
+            <button type="button" ng-click="flag_selected_project = false" class="module-back-btn">
+                <i class="fas fa-arrow-left mr-2"></i>Projects
+            </button>
+            <div class="modules-project-heading">
+                <span>Project workspace</span>
+                <h5>{{selected_project.name_mp}}</h5>
+                <small>Updated {{selected_project.updatedate_mp.split('T')[0]}}</small>
             </div>
-            <div class="">
-                <button type="button" ng-click="flag_selected_project = false" class="btn button-ds btn-sm float-right">
-                    <i class="fas fa-chevron-circle-left float-end"></i> Return  
-                </button>
-                 <button type="button" ng-click="loadEntregablesProject()" class="btn button-d btn-sm float-right mr-4">
-                    <i class="fas fa-check-double"></i> Planning and Progress Control  
-                </button>
-            </div>
+            <button type="button" ng-click="loadEntregablesProject()" class="btn project-primary-btn btn-sm">
+                <i class="fas fa-tasks mr-2"></i>Planning &amp; progress
+            </button>
         </div>
-        <!-- Card Body -->
-        <div class="card-body">
-            <div class="media" ng-show="flag_selected_project === false">
-                <div class="media-body">
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/selelctProject.svg" alt="..." width="150">
-                        <br>
-                        <h5>Select Project</h5>
-                    </div>
+
+        <div class="card-body modules-panel-body">
+            <div class="modules-intro">
+                <div>
+                    <h6>Engineering modules</h6>
+                    <p>Choose a module to continue designing. Its status tells you what is ready to edit.</p>
+                </div>
+                <div class="modules-legend">
+                    <span><i class="fas fa-circle is-ready-dot"></i> Ready to edit</span>
+                    <span><i class="fas fa-circle is-empty-dot"></i> Not created</span>
                 </div>
             </div>
-            <div ng-show="flag_selected_project === true">
-                <div style="font-size: 12px">
-                    <strong> Creation date: </strong> {{selected_project.creationdate_mp.split('T')[0]}} -
-                    <strong> Update date: </strong> {{selected_project.updatedate_mp.split('T')[0]}}
-                </div>
-                <h5 class="mt-0 text-dark"><strong> Project name: {{selected_project.name_mp}} </strong></h5>
+
+            <div class="module-grid">
+                <article ng-class="selected_project.uml.data.length > 0 ? 'case-module-card is-created' : 'case-module-card'">
+                    <div class="module-card-top">
+                        <div class="module-card-icon uml"><i class="fas fa-sitemap"></i></div>
+                        <span ng-class="selected_project.uml.data.length > 0 ? 'module-status is-ready' : 'module-status is-empty'">
+                            <i ng-class="selected_project.uml.data.length > 0 ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                            {{selected_project.uml.data.length > 0 ? 'Ready to edit' : 'Not created'}}
+                        </span>
+                    </div>
+                    <div class="module-card-content">
+                        <span class="module-kicker">Software modeling</span>
+                        <h5>UML diagrams</h5>
+                        <p>Model use cases and generate or edit the class diagram for your software architecture.</p>
+                    </div>
+                    <div class="module-card-actions" ng-show="selected_project.uml.data.length === 0">
+                        <button class="btn module-create-btn btn-sm" ng-click="createModuleUml(selected_project)">
+                            <i class="fas fa-plus mr-2"></i>Create UML module
+                        </button>
+                    </div>
+                    <div class="module-card-actions" ng-show="selected_project.uml.data.length > 0">
+                        <button ng-click="openUml()" class="btn project-open-btn btn-sm">
+                            <i class="fas fa-pen mr-2"></i>Open &amp; edit
+                        </button>
+                        <button class="module-delete-btn" ng-click="deleteModule(selected_project, 1)" title="Delete UML module">
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </article>
+
+                <article ng-class="selected_project.iot.data.length > 0 ? 'case-module-card is-created' : 'case-module-card'">
+                    <div class="module-card-top">
+                        <div class="module-card-icon iot"><i class="fas fa-microchip"></i></div>
+                        <span ng-class="selected_project.iot.data.length > 0 ? 'module-status is-ready' : 'module-status is-empty'">
+                            <i ng-class="selected_project.iot.data.length > 0 ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                            {{selected_project.iot.data.length > 0 ? 'Ready to edit' : 'Not created'}}
+                        </span>
+                    </div>
+                    <div class="module-card-content">
+                        <span class="module-kicker">Device engineering</span>
+                        <h5>IoT system design</h5>
+                        <p>Design the device system, its components and connections, then generate the code base.</p>
+                    </div>
+                    <div class="module-card-actions" ng-show="selected_project.iot.data.length === 0">
+                        <button class="btn module-create-btn btn-sm" ng-click="createModuleIoT(selected_project)">
+                            <i class="fas fa-plus mr-2"></i>Create IoT module
+                        </button>
+                    </div>
+                    <div class="module-card-actions" ng-show="selected_project.iot.data.length > 0">
+                        <button ng-click="openIoT()" class="btn project-open-btn btn-sm">
+                            <i class="fas fa-pen mr-2"></i>Open &amp; edit
+                        </button>
+                        <button class="module-delete-btn" ng-click="deleteModule(selected_project, 2)" title="Delete IoT module">
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </article>
             </div>
-            <div class="media" ng-show="selected_project.uml.data.length === 0">
-                <div class="media-body">
-                    <h5 class="mt-0"><strong> Modeling UML Diagramas </strong></h5>
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/newModuleUml.svg" alt="..." width="225">
-                        <br>
-                        <button class="btn button-ds btn-sm" ng-click="createModuleUml(selected_project)">Create
-                            Uml
-                        </button>
-                    </div>
+
+            <div class="generated-output" ng-show="selected_project.download === 'T'">
+                <div class="generated-output-icon"><i class="fas fa-box-open"></i></div>
+                <div>
+                    <strong>Generated Spring Boot project</strong>
+                    <span>Java · Spring Boot · Maven</span>
                 </div>
-            </div>
-            <div class="media" ng-show="selected_project.uml.data.length > 0">
-                <div class="media-body">
-                    <div class="float-right" style="display: flex; margin-top: -3.3rem">
-                        <button ng-click="openUml()" class="btn button-d d-block mr-3">
-                            <i class="fas fa-folder-open mr-3"></i>
-                            Open module
-                        </button>
-                        <button class="btn button-ds d-block"
-                                ng-click="deleteModule(selected_project, 1)">
-                            <i class="fas fa-minus-square mr-3"></i>
-                            Delete module
-                        </button>
-                    </div>
-                    <h5 class="mt-0"><strong> Module Diagramas UML </strong></h5>
-                    <span>Generate and edit class diagrams by entering the respective descriptions of a use case diagram.</span>
-                    <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
-                        <div class="col-4 border mr-3 pl-0">
-                            <img src="resources/img/img-app/uml.png" class="w-100 border-dark" alt="useCaseExample">
-                        </div>
-                    </div>
-        
-                    <span ng-show="selected_project.download === 'T'">Download an executable project with the logic applied to the generated class diagram.</span>
-                    <div class="alert alert-success mt-2" role="alert" ng-show="selected_project.download === 'T'">
-                        <div class="media mb-2">
-                            <img src="resources/img/img-app/projectJava.png" class="align-self-center mr-3" alt="..."
-                                 width="70">
-                            <div class="media-body">
-                                <div style="font-size: 12px">
-                                    <strong> Language: </strong> Java /
-                                    <strong> Framework: </strong> Spring Boot /
-                                    <strong> Package management </strong> Maven /
-                                </div>
-                                <h5 class="mt-0 text-dark"><strong> Project Spring Boot</strong></h5>
-                                <div class="row">
-                                    <div class="col-xl-4 col-md-3 mb-2">
-                                        <button class="btn button-dt btn-sm w-100"
-                                                ng-click="downloadPrjMav()">
-                                            Download  Project
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="media" ng-show="selected_project.iot.data.length === 0">
-                <div class="media-body">
-                    <h5 class="mt-0"><strong> Desing IoT Device </strong></h5>
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/newModuleIoT.svg" alt="..." width="225">
-                        <br>
-                        <button class="btn button-ds btn-sm" ng-click="createModuleIoT(selected_project)">Create
-                            Desing
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="media" ng-show="selected_project.iot.data.length > 0">
-                <div class="media-body">
-                    <div ng-show="flag_selected_project === true">
-                        <div style="font-size: 12px">
-                            <strong> Creation date: </strong> {{selected_project.creationdate_mp.split('T')[0]}} -
-                            <strong> Update date: </strong> {{selected_project.updatedate_mp.split('T')[0]}}
-                        </div>
-                        <h5 class="mt-0 text-dark"><strong> Project name: {{selected_project.name_mp}} </strong></h5>
-                    </div>
-                    <div class="float-right" style="display: flex; margin-top: -3.3rem">
-                        <button ng-click="openIoT()" class="btn button-d d-block mr-3">
-                            <i class="fas fa-folder-open mr-3"></i>
-                            Open module
-                        </button>
-                        <button class="btn button-ds d-block"
-                                ng-click="deleteModule(selected_project, 2)">
-                            <i class="fas fa-minus-square mr-3"></i>
-                            Delete module
-                        </button>
-                    </div>
-                    <h5 class="mt-0"><strong> Desing System IoT </strong></h5>
-                    <span>Design the system of your IoT device and generate a code base for its operation.</span>
-                    <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
-                        <div class="col-4 border mr-3 pl-0">
-                            <img src="resources/img/img-app/iot.png" class="w-100 border-dark" alt="iotExample">
-                        </div>
-                    </div>
-                    <span>Download a file containing java code based on class diagram.</span>
-                    <div class="alert alert-success mt-2" role="alert">
-                        <div class="media mb-2">
-                            <img src="resources/img/img-app/projectArduino.png" class="align-self-center mr-3" alt="..."
-                                 width="70">
-                            <div class="media-body">
-                                <div style="font-size: 12px">
-                                    <strong> Language: </strong> C
-                                </div>
-                                <h5 class="mt-0 text-dark"><strong> Code Device IoT </strong></h5>
-                                <div class="row">
-                                    <div class="col-xl-4 col-md-3 mb-2">
-                                        <button class="btn button-dt btn-sm w-100" ng-click="openShareProject(dom_myprojects)">
-                                            Download  Code
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button class="btn output-download-btn btn-sm" ng-click="downloadPrjMav()">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
             </div>
         </div>
     </div>

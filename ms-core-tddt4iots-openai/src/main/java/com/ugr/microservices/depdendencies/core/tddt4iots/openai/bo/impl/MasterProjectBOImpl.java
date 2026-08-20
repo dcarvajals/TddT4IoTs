@@ -20,14 +20,25 @@ import com.ugr.microservices.dependencies.core.tddt4iots.util.Tddt4iotsUtil;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingHistory;
 import com.ugr.microservices.dependencies.scheme.tddt4iots.service.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -356,38 +367,154 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         log.info(responseGrpc);
 
         // 1. Extraer el JSON usando el Matcher que ya tienes
-        Pattern pattern = Pattern.compile("Processing result: (\\{.*\\})");
+        Pattern pattern = Pattern.compile("Processing result:\\s*(\\{.*\\})", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(responseGrpc);
 
-        if (matcher.find()) {
-            String jsonExtraido = matcher.group(1);
-            ObjectMapper objectMapper = new ObjectMapper();
+        if (!matcher.find()) {
+            log.error("No se encontró un resultado JSON en la respuesta gRPC");
+            throw new GenericException("El servicio de IA no devolvió una estructura de diagrama reconocible.");
+        }
 
-            try {
-                // 1. Leemos el envoltorio externo de gRPC
-                JsonNode rootNode = objectMapper.readTree(jsonExtraido);
+        String jsonExtraido = matcher.group(1);
+        ObjectMapper objectMapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-                // 2. Extraemos el contenido del campo "data" como texto crudo
-                String rawData = rootNode.get("data").asText();
+        try {
+            JsonNode rootNode = objectMapper.readTree(jsonExtraido);
+            JsonNode dataNode = rootNode.get("data");
 
-                // ESTRATEGIA DE MITIGACIÓN (Requerida por el revisor):
-                // Verificación de integridad del cierre de la cadena
-                if (rawData == null || !rawData.trim().endsWith("}")) {
-                    log.error("Detección de JSON truncado en el campo data");
-                    throw new GenericException("Error de robustez: La respuesta de la IA llegó incompleta (Unterminated JSON).");
-                }
-
-                // 4. EL MAPEO CLAVE: Convertimos el String de 'data' a nuestro objeto DTO
-                // Aquí es donde se llenan: List<PackageDTO> diagram, relationships, etc.
-                response = objectMapper.readValue(rawData, DiagramDataResDTO.class);
-
-            } catch (JsonProcessingException e) {
-                log.error("Error en la estructura del diagrama: " + e.getMessage());
-                throw new GenericException("La IA generó una estructura incompatible con el estándar UML.");
+            if (dataNode == null || dataNode.isNull()) {
+                throw new GenericException("La respuesta de la IA no contiene datos para generar el diagrama.");
             }
+
+            String rawData = dataNode.isTextual() ? dataNode.asText() : dataNode.toString();
+            rawData = rawData.trim()
+                    .replaceFirst("^```(?:json)?\\s*", "")
+                    .replaceFirst("\\s*```$", "")
+                    .trim();
+
+            if (!rawData.startsWith("{") || !rawData.endsWith("}")) {
+                log.error("Detección de JSON truncado o inválido en el campo data");
+                throw new GenericException("La respuesta de la IA llegó incompleta y no puede convertirse en un diagrama.");
+            }
+
+            response = objectMapper.readValue(rawData, DiagramDataResDTO.class);
+            if (response.getDiagram() == null || response.getDiagram().isEmpty()) {
+                throw new GenericException("La IA devolvió un modelo sin clases o paquetes para representar.");
+            }
+        } catch (JsonProcessingException e) {
+            log.error("Error en la estructura del diagrama: {}", e.getMessage());
+            throw new GenericException("La IA generó una estructura incompatible con el estándar UML.");
         }
 
         return response;
+    }
+
+    @Override
+    public JsonNode generateCaseWorkspace(GenericTddt4iotsReqDTO<GenerateCaseWorkspaceReqDTO> request)
+            throws GenericException, IOException, InterruptedException {
+        GenerateCaseWorkspaceReqDTO input = request.getClassDTO();
+        if (input == null) throw new GenericException("No se recibió información para analizar.");
+
+        StringBuilder naturalLanguage = new StringBuilder();
+        if (input.getDescription() != null && !input.getDescription().isBlank()) {
+            naturalLanguage.append("DESCRIPCIÓN ADICIONAL:\n").append(input.getDescription().trim()).append("\n\n");
+        }
+        List<NaturalLanguageDocumentDTO> documents = input.getDocuments() == null ? List.of() : input.getDocuments();
+        for (NaturalLanguageDocumentDTO document : documents) {
+            String extracted = extractNaturalLanguageDocument(document);
+            if (!extracted.isBlank()) {
+                naturalLanguage.append("DOCUMENTO: ").append(document.getFileName()).append("\n")
+                        .append(extracted).append("\n\n");
+            }
+        }
+        if (naturalLanguage.toString().isBlank()) {
+            throw new GenericException("Agregue una descripción o al menos un documento con texto.");
+        }
+        if (naturalLanguage.length() > 250_000) {
+            throw new GenericException("El contenido combinado supera el límite de 250.000 caracteres.");
+        }
+
+        PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
+        ModelUseToolDto modelUseToolDto = modelUseToolMapper.modelUseToolDtoTo(modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
+        GrpcTrainModelResDTO trainedModel = Tddt4iotsUtil.fetchDataFromJsonString(
+                modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
+
+        String workspacePrompt = """
+                You are a senior CASE analyst. Convert the supplied natural-language requirements into one valid JSON object.
+                Return JSON only. The root contract is:
+                {"format":"TDDT4IOTS_CASE_WORKSPACE","schemaVersion":"1.0","project":{"name":"..."},"diagrams":[...]}
+                Each diagram contains id, name, actors[{id,name,position:{x,y}}], useCases[] and relations[].
+                Each use case contains id, name, position, purpose, precondition, postcondition, description,
+                mainFlow[{actor,action}], alternativeFlows[{id,startStep,condition,actor,action,outcome,returnStep}],
+                and sequence:{participants:[{id,name,type}],messages:[{from,to,message,type,response,responseType}]}.
+                Relation types are association, include, extend or generalization. Actor references use actor ids; System is allowed.
+                Sequence message type is sync or async. Every from/to references a participant id.
+                Generate multiple use-case diagrams when requirements describe distinct functional areas and one sequence per use case.
+                All purpose, condition, description and action texts must remain readable natural language AND include the modeling symbols
+                required to derive the class diagram, such as (Class &-attribute=string [+operation=void]),
+                *¡ClassA 1>[relation]<n ClassB! and *¿Enumeration »Value1 »Value2 ?.
+                Use stable kebab-case ids. Do not include Markdown fences or explanations.
+                """;
+        List<MessageDTO> messages = new ArrayList<>();
+        messages.add(MessageDTO.builder().role(Tddt4iotsCons.SYSTEM).content(workspacePrompt).build());
+        messages.add(MessageDTO.builder().role(Tddt4iotsCons.USER).content(naturalLanguage.toString()).build());
+        GrpcUseModelReqDTO grpcRequest = GrpcUseModelReqDTO.builder()
+                .openAiSecretKey(personDTO.getOpenaiSecretKey())
+                .model(trainedModel.getData().getFineTunedModel() == null
+                        ? trainedModel.getData().getModel() : trainedModel.getData().getFineTunedModel())
+                .messages(messages)
+                .build();
+        String responseGrpc = grpcTrainingModelOpenAi.useModel(Tddt4iotsUtil.convertObjectToJsonString(grpcRequest));
+        Pattern pattern = Pattern.compile("Processing result:\\s*(\\{.*\\})", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(responseGrpc);
+        if (!matcher.find()) throw new GenericException("El servicio de IA no devolvió un JSON de proyecto reconocible.");
+
+        try {
+            JsonNode envelope = JSON_MAPPER.readTree(matcher.group(1));
+            JsonNode dataNode = envelope.get("data");
+            if (dataNode == null || dataNode.isNull()) throw new GenericException("La IA devolvió una respuesta sin datos.");
+            String rawData = dataNode.isTextual() ? dataNode.asText() : dataNode.toString();
+            rawData = rawData.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "").trim();
+            JsonNode workspace = JSON_MAPPER.readTree(rawData);
+            if (!"TDDT4IOTS_CASE_WORKSPACE".equals(workspace.path("format").asText()) || !workspace.path("diagrams").isArray()) {
+                throw new GenericException("La IA devolvió datos que no cumplen el contrato del espacio CASE.");
+            }
+            return workspace;
+        } catch (JsonProcessingException exception) {
+            log.error("Invalid CASE workspace generated by AI: {}", exception.getMessage());
+            throw new GenericException("La IA generó un JSON incompleto o inválido.");
+        }
+    }
+
+    private String extractNaturalLanguageDocument(NaturalLanguageDocumentDTO document) throws GenericException {
+        if (document == null || document.getBase64Content() == null || document.getFileName() == null) return "";
+        try {
+            String encoded = document.getBase64Content().replaceFirst("^data:[^,]+,", "");
+            byte[] bytes = Base64.getDecoder().decode(encoded);
+            if (bytes.length > 10 * 1024 * 1024) throw new GenericException("El documento " + document.getFileName() + " supera 10 MB.");
+            String fileName = document.getFileName().toLowerCase(Locale.ROOT);
+            if (fileName.endsWith(".txt")) return new String(bytes, StandardCharsets.UTF_8);
+            if (fileName.endsWith(".pdf")) {
+                try (PDDocument pdf = Loader.loadPDF(bytes)) {
+                    return new PDFTextStripper().getText(pdf);
+                }
+            }
+            if (fileName.endsWith(".docx")) {
+                try (XWPFDocument word = new XWPFDocument(new ByteArrayInputStream(bytes))) {
+                    return word.getParagraphs().stream().map(XWPFParagraph::getText).reduce("", (left, right) -> left + right + "\n");
+                }
+            }
+            if (fileName.endsWith(".doc")) {
+                try (HWPFDocument word = new HWPFDocument(new ByteArrayInputStream(bytes));
+                     WordExtractor extractor = new WordExtractor(word)) {
+                    return extractor.getText();
+                }
+            }
+            throw new GenericException("Formato no compatible: " + document.getFileName());
+        } catch (IllegalArgumentException | IOException exception) {
+            throw new GenericException("No se pudo leer " + document.getFileName() + ". Verifique que el archivo no esté dañado.");
+        }
     }
 
     @Override

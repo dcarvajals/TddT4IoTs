@@ -1,160 +1,159 @@
-<div class="container-fluid m-auto w-75">
+<div class="container-fluid dashboard-view">
+    <div class="project-layout-width m-auto">
+        <header class="dashboard-intro">
+            <h1>Engineering dashboard</h1>
+            <p>Monitor your CASE workspace, recent projects and reusable modeling resources.</p>
+        </header>
 
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Dashboard</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Dashboard</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
+        <section class="dashboard-metrics">
+            <article class="metric-card metric-green">
+                <div class="metric-icon"><i class="fas fa-cubes"></i></div>
+                <div class="metric-content">
+                    <span>My projects</span>
+                    <strong>{{queryHome.countproject}}</strong>
+                    <small>Owned projects</small>
+                </div>
+            </article>
 
-    <div class="row">
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                My Projects
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{queryHome.countproject}}</div>
+            <article class="metric-card metric-blue">
+                <div class="metric-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="metric-content">
+                    <span>Total projects</span>
+                    <strong>{{queryHome.counttotalproject}}</strong>
+                    <small>Available in the platform</small>
+                </div>
+            </article>
+
+            <article class="metric-card metric-amber">
+                <div class="metric-icon"><i class="fas fa-microchip"></i></div>
+                <div class="metric-content">
+                    <span>IoT components</span>
+                    <strong>{{queryHome.countcomponents}}</strong>
+                    <small>Reusable components</small>
+                </div>
+            </article>
+
+            <article class="metric-card metric-slate">
+                <div class="metric-icon"><i class="fas fa-users"></i></div>
+                <div class="metric-content">
+                    <span>Registered users</span>
+                    <strong>{{queryHome.userregister}}</strong>
+                    <small>Engineering community</small>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-content-grid">
+            <article class="dashboard-panel recent-projects-panel">
+                <header class="dashboard-panel-header">
+                    <div>
+                        <span class="dashboard-eyebrow">Recent activity</span>
+                        <h6>Latest projects</h6>
+                    </div>
+                    <span class="panel-count">{{projects_recent.length}}</span>
+                </header>
+                <div class="dashboard-panel-body">
+                    <div class="dashboard-empty" ng-show="projects_recent.length === 0">
+                        <i class="far fa-folder-open"></i>
+                        <span>No recent projects</span>
+                    </div>
+                    <div class="recent-project-row" ng-repeat="dom_myprojects in projects_recent">
+                        <div class="project-avatar"><i class="fas fa-project-diagram"></i></div>
+                        <div class="recent-project-info">
+                            <strong>{{dom_myprojects.name_mp}}</strong>
+                            <span>{{dom_myprojects.description_mp}}</span>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-cubes fa-2x text-gray-300"></i>
-                        </div>
+                        <time>
+                            <i class="far fa-calendar mr-1"></i>{{dom_myprojects.creationdate_mp.split("T")[0]}}
+                        </time>
                     </div>
                 </div>
-            </div>
-        </div>
+            </article>
 
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Projects
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{queryHome.counttotalproject}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-share-alt fa-2x text-gray-300"></i>
-                        </div>
+            <article class="dashboard-panel symbols-panel">
+                <header class="dashboard-panel-header">
+                    <div>
+                        <span class="dashboard-eyebrow">Quick reference</span>
+                        <h6>Use-case symbols</h6>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info mb-1">COMPONENTS IoT 
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{queryHome.countcomponents}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-wrench fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Requests Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Registered Users
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{queryHome.userregister}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Area Simbol -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4" style="max-height: 535px;">
-                <!-- Card Header - Dropdown -->
-                <div
-                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-dark">News Highlights - Latest projects</h6>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body" style="overflow: auto;">
-                    <div class="media mb-2" ng-repeat="dom_myprojects in projects_recent">
-                        <img src="resources/img/img-app/proyecto.svg" class="align-self-center mr-3" alt="..."
-                             width="70">
-                        <div class="media-body">
-                            <div style="font-size: 12px">
-                                <strong> Creation date: </strong> {{dom_myprojects.creationdate_mp.split("T")[0]}}
-                            </div>
-                            <h5 class="mt-0 text-dark" style="margin-bottom: -5px;"><strong> {{dom_myprojects.name_mp}} </strong></h5>
-                            <span style="font-size: 12px"> {{dom_myprojects.description_mp}} </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4" style="max-height: 535px">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-dark">Symbols to describe use cases</h6>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body" style="overflow: auto;">
-                    <table class="table table-sm table-bordered table-hover">
-                        <thead class="thead-dark">
+                    <span class="panel-hint">Select a row for an example</span>
+                </header>
+                <div class="dashboard-panel-body symbols-table-wrap">
+                    <table class="table symbols-table mb-0">
+                        <thead>
                             <tr>
-                                <th scope="col">Symbols</th>
-                                <th scope="col">Description</th>              
+                                <th>Symbol</th>
+                                <th>Description</th>
+                                <th aria-label="Open example"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            
-                            <tr ng-repeat="keyinterpret in interpret" ng-click="loadExample(keyinterpret)" style="cursor: pointer">
-                                <th scope="row" style="text-align: center">
-                                    <span class="badge badge-light">
-                                        {{keyinterpret.simbol}}
-                                    </span>
-                                </th>
-                                <td> 
-                                    <!-- span class="badge badge-success"> 
-                                        {{keyinterpret.ascii.trim()}} 
-                                    </span -->
-                                    <span style="font-size: 75%">
-                                         {{keyinterpret.description}}
-                                    </span>
-                                </td>
+                            <tr ng-repeat="keyinterpret in interpret" ng-click="loadExample(keyinterpret)"
+                                ng-keydown="$event.keyCode === 13 && loadExample(keyinterpret)"
+                                tabindex="0" role="button" title="View example">
+                                <td><code>{{keyinterpret.simbol}}</code></td>
+                                <td>{{keyinterpret.description}}</td>
+                                <td><i class="fas fa-chevron-right"></i></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </article>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade symbol-example-modal" id="symbolExampleModal" tabindex="-1" role="dialog"
+     aria-labelledby="symbolExampleTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="symbol-modal-header">
+                <div class="symbol-modal-heading">
+                    <div class="symbol-modal-icon"><i class="fas fa-code"></i></div>
+                    <div>
+                        <span>Symbol language reference</span>
+                        <h5 id="symbolExampleTitle">{{selectedSymbolExample.description}}</h5>
+                    </div>
+                </div>
+                <button type="button" class="symbol-modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="symbol-modal-body">
+                <aside class="symbol-definition-card">
+                    <span class="symbol-modal-label">Selected symbol</span>
+                    <code class="symbol-modal-token">{{selectedSymbolExample.simbol}}</code>
+                    <div class="symbol-definition-copy">
+                        <span>Meaning</span>
+                        <strong>{{selectedSymbolExample.description}}</strong>
+                    </div>
+                    <div class="symbol-ascii" ng-show="selectedSymbolExample.ascii">
+                        <span>ASCII equivalent</span>
+                        <code>{{selectedSymbolExample.ascii}}</code>
+                    </div>
+                </aside>
+
+                <section class="symbol-example-workspace">
+                    <div class="symbol-example-heading">
+                        <div>
+                            <span class="symbol-modal-label">Syntax example</span>
+                            <h6>How to use it</h6>
+                        </div>
+                        <span class="example-language"><i class="fas fa-terminal mr-1"></i>TDDT syntax</span>
+                    </div>
+                    <div class="symbol-code-example" id="symbolExampleContent"></div>
+                    <div class="symbol-example-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Highlighted tokens indicate where the selected symbol is applied.</span>
+                    </div>
+                </section>
+            </div>
+
+            <div class="symbol-modal-footer">
+                <span><i class="far fa-lightbulb mr-1"></i>Use this pattern in your use-case description.</span>
+                <button type="button" class="btn project-primary-btn btn-sm" data-dismiss="modal">Done</button>
             </div>
         </div>
     </div>
 </div>
-

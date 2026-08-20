@@ -26,6 +26,11 @@ app.expandControllerIoT = function ($scope) {
 
     $scope.openModalLoadCode = function () {
         $scope.codeLoad.setValue(codeGeneral.getValue());
+        $("#modalLoadCode").one("shown.bs.modal", function () {
+            // Ace is initialized while the modal is hidden; refresh it after the new layout is visible.
+            $scope.codeLoad.resize(true);
+            $scope.codeLoad.renderer.updateFull();
+        });
         $("#modalLoadCode").modal();
     }
 

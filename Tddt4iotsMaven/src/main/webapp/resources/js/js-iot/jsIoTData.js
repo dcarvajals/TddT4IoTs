@@ -24,6 +24,20 @@ app.controller('controllerWorkIoT', function ($scope, $http) {
     var loadBlocky = false;
     $scope.dataProject = {};
 
+    $scope.iotWorkspaceUserName = user => {
+        const fullName = [user && user.name_person, user && user.lastname_person].filter(Boolean).join(" ").trim();
+        return fullName || (user && user.email_person) || "Application user";
+    };
+
+    $scope.iotWorkspaceUserInitials = user => {
+        const initials = [user && user.name_person, user && user.lastname_person]
+            .filter(Boolean).map(value => String(value).trim().charAt(0)).join("").toUpperCase();
+        return initials || "US";
+    };
+
+    $scope.iotWorkspaceUserRole = user => user && user.type_person === "R" ? "Root administrator" :
+        user && user.type_person === "A" ? "Administrator" : "Application user";
+
     $scope.arrayParameters = [];
     $scope.jsonCode = [];
 

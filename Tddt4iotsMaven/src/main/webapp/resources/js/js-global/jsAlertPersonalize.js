@@ -151,7 +151,7 @@ alertAll = function(obj) {
  * @returns {undefined} this function has no returns.
  */
 function allMessageXD(obj) {
-    let nameAplication = "EasyIoT";
+    let nameAplication = "TDDT4IoTS";
 //    console.log(obj);
     if (obj.status === 2)
     {
@@ -198,7 +198,7 @@ function toastrDelay(datalert, destino) {
  */
 function swalDelay(obj, destino) {
     swal.fire({
-        title: (obj.tittle === undefined) ? "Xiloteca UTEQ" : obj.tittle,
+        title: (obj.tittle === undefined) ? "TDDT4IoTS" : obj.tittle,
         icon: (obj.status === 1) ? "info" : (obj.status === 2) ? "success" : (obj.status === 3) ? "warning" : "error",
         text: obj.information,
         timer: 3000,

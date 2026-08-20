@@ -1,7 +1,7 @@
 app.controller("settings_controller", function ($scope, $http) {
 
     $(document).ready(() => {
-        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Settings Procotol", true);
+        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Protocol Configuration", true);
     });
 
     $scope.selectedTechnology = {

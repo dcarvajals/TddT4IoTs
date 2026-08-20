@@ -133,4 +133,3 @@ app.expandControllerAngularProject = function ($scope) {
     }
     
 };
-

@@ -13,7 +13,7 @@
         <java.version>19</java.version>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.release>11</maven.compiler.release>
     </properties>
     
     <dependencies>

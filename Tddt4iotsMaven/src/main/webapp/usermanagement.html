@@ -1,81 +1,186 @@
-<div class="container-fluid">
+<div class="container-fluid user-management-view">
+    <div class="user-summary-grid project-layout-width mx-auto">
+        <div class="user-summary-card">
+            <span class="user-summary-icon all"><i class="fas fa-users"></i></span>
+            <div>
+                <span>Total accounts</span>
+                <strong>{{arrayAdmins.length + arrayUsers.length}}</strong>
+            </div>
+        </div>
+        <div class="user-summary-card">
+            <span class="user-summary-icon admins"><i class="fas fa-user-shield"></i></span>
+            <div>
+                <span>Administrators</span>
+                <strong>{{arrayAdmins.length}}</strong>
+            </div>
+        </div>
+        <div class="user-summary-card">
+            <span class="user-summary-icon members"><i class="fas fa-user"></i></span>
+            <div>
+                <span>Application users</span>
+                <strong>{{arrayUsers.length}}</strong>
+            </div>
+        </div>
+    </div>
 
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Users Management</h1>
-    </div>
-    <div class="form-group">
-        <label class="col-form-label col-form-label-sm"> Search: </label>
-        <input name="name_user" id="name_user" class="form-control form-control-sm" type="text">
-    </div>
-    <div id="listComponent">
-        <h4><span class="badge badge-primary">Administrators</span></h4>
-        <div style="overflow:scroll; height:300px; ">
-            <table id="administratos_table" class="table table-sm table-striped table-bordered user_table">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Last Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Fecha Registro</th>
-                        <th scope="col" ng-show="DatoUsuario.type_person === 'R'"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="arraayadmins in arrayAdmins">
-                        <td >{{arraayadmins.name_person}}</td>
-                        <td>{{arraayadmins.lastname_person}}</td>
-                        <td>{{arraayadmins.email_person}}</td>
-                        <td>{{arraayadmins.datereg_person}}</td>
-                        <td>
-                            <button ng-show="DatoUsuario.type_person === 'R'" ng-click="stateUser('DEGRADE', arraayadmins.id_person)" 
-                                    class="btn btn-outline-danger btn-sm"> Degrade
-                            </button>                            
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <section id="listComponent" class="projects-panel project-layout-width mx-auto mb-4">
+        <div class="projects-panel-header user-management-header">
+            <div>
+                <span class="screen-kicker">Administration</span>
+                <h2 class="projects-panel-title">Application users</h2>
+                <p class="projects-panel-subtitle">Find an account and manage its access without leaving this view.</p>
+            </div>
+            <div class="user-search-box">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input name="name_user" id="name_user" type="text"
+                       ng-model="userFilters.global"
+                       class="form-control form-control-sm" placeholder="Search all users"
+                       aria-label="Search users">
+            </div>
         </div>
-        <br>
-        <hr>
-        <br>
-        <h4><span class="badge badge-success">Usuarios</span></h4>
-        <div style="overflow:scroll; height:300px; ">
-            <table id="users_tableAll" class="table table-sm table-striped table-bordered user_table">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Last Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Fecha Registro</th>
-                        <th scope="col">Rol</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="arrayusers in arrayUsers">
-                        <td >{{arrayusers.name_person}}</td>
-                        <td>{{arrayusers.lastname_person}}</td>
-                        <td>{{arrayusers.email_person}}</td>
-                        <td>{{arrayusers.datereg_person}}</td>                     
-                        <td> 
-                            <h5 ng-show="arrayusers.type_person === 'U'"><span class="badge badge-pill badge-success"> User </span></h5>
-                            <h5 ng-show="arrayusers.type_person === 'S'"><span class="badge badge-pill badge-info"> On hold </span></h5>
-                            <h5 ng-show="arrayusers.type_person === 'I'"><span class="badge badge-pill badge-danger"> Inactive </span></h5>
-                        </td>
-                        <td>
-                            <button ng-show="arrayusers.type_person === 'U' && DatoUsuario.type_person === 'R'" ng-click="stateUser('PROMOTE', arrayusers.id_person)" 
-                                    class="btn btn-outline-success btn-sm"> Promote </button>
-                            <button ng-show="arrayusers.type_person === 'I'"  ng-click="stateUser('ACTIVATE', arrayusers.id_person)" 
-                                    class="btn btn-outline-primary btn-sm"> Activate </button>     
-                            <button ng-show="arrayusers.type_person === 'S'"  ng-click="stateUser('ACTIVATE', arrayusers.id_person)" 
-                                    class="btn btn-outline-primary btn-sm"> Activate </button> 
-                            <button ng-show="arrayusers.type_person === 'U'"  ng-click="stateUser('INACTIVATE', arrayusers.id_person)" 
-                                    class="btn btn-outline-danger btn-sm"> Inactivate </button>     
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <div class="user-section">
+            <div class="user-section-header">
+                <div>
+                    <span class="user-section-icon admin"><i class="fas fa-user-shield"></i></span>
+                    <div>
+                        <h3>Administrators <span>{{arrayAdmins.length}}</span></h3>
+                        <p>Accounts with application administration permissions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive user-table-wrap">
+                <table id="administratos_table" class="table mb-0 user_table user-management-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Administrator</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Registered</th>
+                            <th scope="col">Role</th>
+                            <th scope="col" class="text-right" ng-show="DatoUsuario.type_person === 'R'">Actions</th>
+                        </tr>
+                        <tr class="user-filter-row">
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.admin.name" placeholder="Filter by name" aria-label="Filter administrators by name"></th>
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.admin.email" placeholder="Filter by email" aria-label="Filter administrators by email"></th>
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.admin.date" placeholder="Filter by date" aria-label="Filter administrators by registration date"></th>
+                            <th><span class="user-filter-spacer">Administrator</span></th>
+                            <th ng-show="DatoUsuario.type_person === 'R'"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="arraayadmins in arrayAdmins | filter:filterAdminRow">
+                            <td>
+                                <div class="user-identity-cell">
+                                    <span class="user-avatar admin"><i class="fas fa-user-shield"></i></span>
+                                    <div class="user-identity">
+                                        <strong>{{arraayadmins.name_person}} {{arraayadmins.lastname_person}}</strong>
+                                        <small>Administrator account</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="user-email-cell">{{arraayadmins.email_person}}</td>
+                            <td class="user-date-cell">{{arraayadmins.datereg_person}}</td>
+                            <td><span class="user-role-badge admin">Administrator</span></td>
+                            <td class="text-right" ng-show="DatoUsuario.type_person === 'R'">
+                                <button type="button" ng-click="stateUser('DEGRADE', arraayadmins.id_person)"
+                                        class="user-action-btn danger">
+                                    <i class="fas fa-level-down-alt"></i> Degrade
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="user-empty-row" ng-if="arrayAdmins.length === 0">
+                            <td colspan="5"><i class="fas fa-user-shield"></i> No administrators found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+
+        <div class="user-section user-section-members">
+            <div class="user-section-header">
+                <div>
+                    <span class="user-section-icon member"><i class="fas fa-users"></i></span>
+                    <div>
+                        <h3>Users <span>{{arrayUsers.length}}</span></h3>
+                        <p>Standard, pending and inactive application accounts.</p>
+                    </div>
+                </div>
+                <div class="user-status-legend">
+                    <span><i class="active"></i> Active</span>
+                    <span><i class="pending"></i> On hold</span>
+                    <span><i class="inactive"></i> Inactive</span>
+                </div>
+            </div>
+
+            <div class="table-responsive user-table-wrap">
+                <table id="users_tableAll" class="table mb-0 user_table user-management-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Registered</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-right">Actions</th>
+                        </tr>
+                        <tr class="user-filter-row">
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.user.name" placeholder="Filter by name" aria-label="Filter users by name"></th>
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.user.email" placeholder="Filter by email" aria-label="Filter users by email"></th>
+                            <th><input class="user-column-filter" type="text" ng-model="userFilters.user.date" placeholder="Filter by date" aria-label="Filter users by registration date"></th>
+                            <th>
+                                <select class="user-column-filter" ng-model="userFilters.user.status" aria-label="Filter users by status">
+                                    <option value="">All statuses</option>
+                                    <option value="U">Active</option>
+                                    <option value="S">On hold</option>
+                                    <option value="I">Inactive</option>
+                                </select>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="arrayusers in arrayUsers | filter:filterUserRow">
+                            <td>
+                                <div class="user-identity-cell">
+                                    <span class="user-avatar"><i class="fas fa-user"></i></span>
+                                    <div class="user-identity">
+                                        <strong>{{arrayusers.name_person}} {{arrayusers.lastname_person}}</strong>
+                                        <small>Application user</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="user-email-cell">{{arrayusers.email_person}}</td>
+                            <td class="user-date-cell">{{arrayusers.datereg_person}}</td>
+                            <td>
+                                <span ng-show="arrayusers.type_person === 'U'" class="user-role-badge active"><i></i> Active</span>
+                                <span ng-show="arrayusers.type_person === 'S'" class="user-role-badge pending"><i></i> On hold</span>
+                                <span ng-show="arrayusers.type_person === 'I'" class="user-role-badge inactive"><i></i> Inactive</span>
+                            </td>
+                            <td class="text-right user-actions-cell">
+                                <button type="button" ng-show="arrayusers.type_person === 'U' && DatoUsuario.type_person === 'R'"
+                                        ng-click="stateUser('PROMOTE', arrayusers.id_person)" class="user-action-btn success">
+                                    <i class="fas fa-level-up-alt"></i> Promote
+                                </button>
+                                <button type="button" ng-show="arrayusers.type_person === 'I'"
+                                        ng-click="stateUser('ACTIVATE', arrayusers.id_person)" class="user-action-btn primary">
+                                    <i class="fas fa-check"></i> Activate
+                                </button>
+                                <button type="button" ng-show="arrayusers.type_person === 'S'"
+                                        ng-click="stateUser('ACTIVATE', arrayusers.id_person)" class="user-action-btn primary">
+                                    <i class="fas fa-check"></i> Activate
+                                </button>
+                                <button type="button" ng-show="arrayusers.type_person === 'U'"
+                                        ng-click="stateUser('INACTIVATE', arrayusers.id_person)" class="user-action-btn danger">
+                                    <i class="fas fa-user-slash"></i> Inactivate
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="user-empty-row" ng-if="arrayUsers.length === 0">
+                            <td colspan="5"><i class="fas fa-users"></i> No users found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>

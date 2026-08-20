@@ -2,8 +2,52 @@
 
 app.controller("users_controller", function ($scope, $http) {
 
+    angular.element($('[ng-controller="application"]')).scope().changeTittlePage("User Administration", false);
+    $scope.appPage.Select = "usermanagement";
+
     $scope.arrayAdmins = [];
     $scope.arrayUsers = [];
+    $scope.userFilters = {
+        global: "",
+        admin: {name: "", email: "", date: ""},
+        user: {name: "", email: "", date: "", status: ""}
+    };
+
+    const containsText = (value, search) => {
+        return String(value || "").toLowerCase().indexOf(String(search || "").toLowerCase()) !== -1;
+    };
+
+    const matchesIdentity = (person, search) => {
+        return containsText(`${person.name_person || ""} ${person.lastname_person || ""}`, search);
+    };
+
+    const matchesGlobal = (person) => {
+        const search = $scope.userFilters.global;
+        const statusLabels = {U: "active user", S: "on hold pending", I: "inactive"};
+        return matchesIdentity(person, search)
+                || containsText(person.email_person, search)
+                || containsText(person.datereg_person, search)
+                || containsText(statusLabels[person.type_person], search)
+                || (containsText("administrator", search) && person.type_person !== "U"
+                && person.type_person !== "S" && person.type_person !== "I");
+    };
+
+    $scope.filterAdminRow = (person) => {
+        const filters = $scope.userFilters.admin;
+        return matchesGlobal(person)
+                && matchesIdentity(person, filters.name)
+                && containsText(person.email_person, filters.email)
+                && containsText(person.datereg_person, filters.date);
+    };
+
+    $scope.filterUserRow = (person) => {
+        const filters = $scope.userFilters.user;
+        return matchesGlobal(person)
+                && matchesIdentity(person, filters.name)
+                && containsText(person.email_person, filters.email)
+                && containsText(person.datereg_person, filters.date)
+                && (!filters.status || person.type_person === filters.status);
+    };
 
     $(document).ready(() => {
         $scope.loadUsers();
@@ -86,14 +130,4 @@ app.controller("users_controller", function ($scope, $http) {
         });
     };
 
-    $("#name_user").keyup(function () {
-        _this = this;
-        // Show only matching TR, hide rest of them
-        $.each($(".user_table tbody tr"), function () {
-            if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
-                $(this).hide();
-            else
-                $(this).show();
-        });
-    });
 });

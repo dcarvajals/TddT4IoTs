@@ -231,25 +231,10 @@
     </div>
 </div>
 
-<div class="container-fluid">
-
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">IoT Components</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">IoT Components</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
+<div class="container-fluid iot-components-view">
     <div id="newComponent" class="card shadow mb-4 w-75 m-auto">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">New component</h6>
+            <div><span class="screen-kicker">IoT engineering</span><h6 class="m-0 font-weight-bold text-primary">New component</h6></div>
         </div>
         <!-- Card Body -->
         <div class="card-body" style="height: auto; overflow: auto">
@@ -431,157 +416,111 @@
         </div>
     </div>
 
-    <div id="listComponent">
+    <div id="listComponent" class="component-lists">
         <!--lista de los componentes ingresados por el usuario logeado-->
-        <div ng-show="viewMyComponents" class="card shadow mb-4 w-75 m-auto">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-dark">My component list -
-                    (Rows) {{arrayComponentes.length}} </h6>
-                <button type="button" ng-click="clickViewComponentAdmin()"
-                        style="position: absolute;right: 0;margin-right: 19rem;"
-                        ng-show="DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R'"
-                        class="btn button-dt btn-sm"><i class="fas fa-stopwatch"></i> Proposals
-                </button>
-                <button type="button" ng-click="clickViewComunityComponents()"
-                        style="position: absolute;right: 0;margin-right: 11rem;"
-                        class="btn button-ds btn-sm"><i class="fas fa-globe-americas"></i> Comunity
-                </button>
-                <button type="button" ng-click="openFormNewComponent()"
-                        class="btn button-d btn-sm"> New Component
-                </button>
+        <div ng-show="viewMyComponents" class="card projects-panel project-layout-width mb-4 m-auto">
+            <div class="projects-panel-header component-panel-header">
+                <div>
+                    <span class="screen-kicker">IoT engineering</span>
+                    <h6 class="projects-panel-title">My components</h6>
+                    <p class="projects-panel-subtitle">Manage the IoT components created in your workspace.</p>
+                </div>
+                <div class="component-view-actions">
+                    <button type="button" ng-click="clickViewComponentAdmin()"
+                            ng-show="DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R'"
+                            class="btn component-secondary-btn btn-sm">
+                        <i class="fas fa-clipboard-check mr-1"></i>Proposals
+                        <span class="component-count">{{arrayComponentesEvaluate.length}}</span>
+                    </button>
+                    <button type="button" ng-click="clickViewComunityComponents()"
+                            class="btn component-secondary-btn btn-sm">
+                        <i class="fas fa-globe-americas mr-1"></i>Community
+                    </button>
+                    <button type="button" ng-click="openFormNewComponent()" class="btn project-primary-btn btn-sm">
+                        <i class="fas fa-plus mr-2"></i>New component
+                    </button>
+                </div>
             </div>
-            <!-- Card Body -->
-            <div class="card-body" style="height: 460px; overflow: auto">
-
-                <div class="text-center" ng-show="arrayComponentes.length === 0">
+            <div class="card-body projects-panel-body">
+                <div class="projects-empty-state text-center" ng-show="arrayComponentes.length === 0">
                     <img class="mb-4" src="resources/img/img-app/nodata.svg" alt="..." width="150">
                     <br>
-                    <h5>No data currently available</h5>
+                    <h5>No components yet</h5>
+                    <p>Create your first reusable IoT component.</p>
                 </div>
 
-                <div class="form-group" ng-show="arrayComponentes.length > 0">
-                    <label class="col-form-label col-form-label-sm"> Search component: </label>
-                    <input name="name_component_mycom" ng-model="searchComponentMyCom" id="name_component_mycom" class="form-control form-control-sm" type="text">
-                </div>
-
-                <div class="alert alert-primary" role="alert" id="component_table"
-                     ng-repeat="dom_array_components in arrayComponentes | filter: {name_component: searchComponentMyCom}" ng-show="arrayComponentes.length > 0">
-                    <div class="media mb-2">
-                        <img src="resources/img/img-app/037-processor.png" class="align-self-center mr-3" alt="..."
-                             width="70">
-                        <div class="media-body">
-                            <div style="font-size: 12px">
-                                <strong> Update date: </strong> {{dom_array_components.uploaddate_component}}
-                                <div class="float-right" style="font-size: 14px">
-                                    <strong> Status: </strong>
-                                    <span ng-show="dom_array_components.active_component === 'A'"><span
-                                            class="badge badge-pill badge-success"> APPROVED </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'R'"><span
-                                            class="badge badge-pill badge-danger"> REJECTED </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'S'"><span
-                                            class="badge badge-pill badge-info"> IN REVIEW </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'I'"><span
-                                            class="badge badge-pill badge-dark"> REMOVED </span></span>
-                                </div>
-                            </div>
-                            <h5 class="mt-0 text-dark"><strong> {{dom_array_components.name_component}} </strong></h5>
-                            <div style="line-height: 10px;margin-top: -10px;margin-bottom: 10px;text-align: justify;">
-                                <span style="font-size: 12px"> {{dom_array_components.description_component}} </span>
-                            </div>
-                            <div class="row">
-                                <div class="col-xl-4 col-md-3 mb-2">
-                                    <div class="dropdown">
-                                        <button class="btn button-dt btn-sm w-100"
-                                                ng-click="selectProject(dom_myprojects)"
-                                                type="button" id="actions{{dom_array_components.id_component}}"
-                                                data-toggle="dropdown" aria-haspopup="true"
-                                                aria-expanded="false">
-                                            Actions <i class="fas fa-chevron-down ml-4"></i>
-                                        </button>
-                                        <div class="dropdown-menu"
-                                             aria-labelledby="actions{{dom_array_components.id_component}}">
-                                            <button ng-show="dom_array_components.active_component === 'S'"
-                                                    ng-click="stateComponent('DELETE', dom_array_components.id_component)"
-                                                    class="dropdown-item"><i class="fas fa-trash-alt"></i> Delete
-                                            </button>
-                                            <button ng-show="dom_array_components.active_component !== 'A'"
-                                                    ng-click="updateComponent(dom_array_components.id_component)"
-                                                    class="dropdown-item"><i class="fas fa-pen-square"></i> Update
-                                            </button>
-                                            <button class="dropdown-item"
-                                                    ng-click="selectedComponent(dom_array_components, 'M')">
-                                                <i class="fas fa-info-circle"></i>
-                                                Details
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="component-list-toolbar" ng-show="arrayComponentes.length > 0">
+                    <div class="component-search">
+                        <i class="fas fa-search"></i>
+                        <input name="name_component_mycom" ng-model="searchComponentMyCom" id="name_component_mycom"
+                               class="form-control form-control-sm" type="text" placeholder="Search components">
                     </div>
+                    <span>{{arrayComponentes.length}} components</span>
+                </div>
+
+                <div class="table-responsive component-table-wrap" ng-show="arrayComponentes.length > 0">
+                    <table class="table component-table mb-0">
+                        <thead><tr><th>Component</th><th>Status</th><th>Last update</th><th class="text-right">Actions</th></tr></thead>
+                        <tbody>
+                            <tr ng-repeat="dom_array_components in arrayComponentes | filter: {name_component: searchComponentMyCom}">
+                                <td class="component-identity-cell">
+                                    <div class="component-avatar"><i class="fas fa-microchip"></i></div>
+                                    <div class="component-identity">
+                                        <strong>{{dom_array_components.name_component}}</strong>
+                                        <span>{{dom_array_components.description_component}}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span ng-show="dom_array_components.active_component === 'A'" class="component-status is-approved"><i class="fas fa-check-circle"></i>Approved</span>
+                                    <span ng-show="dom_array_components.active_component === 'R'" class="component-status is-rejected"><i class="fas fa-times-circle"></i>Rejected</span>
+                                    <span ng-show="dom_array_components.active_component === 'S'" class="component-status is-review"><i class="far fa-clock"></i>In review</span>
+                                    <span ng-show="dom_array_components.active_component === 'I'" class="component-status is-removed"><i class="fas fa-ban"></i>Removed</span>
+                                </td>
+                                <td class="component-date-cell"><i class="far fa-calendar mr-1"></i>{{dom_array_components.uploaddate_component}}</td>
+                                <td>
+                                    <div class="component-row-actions">
+                                        <button class="component-action-btn" ng-click="selectedComponent(dom_array_components, 'M')" title="Component details"><i class="far fa-eye"></i></button>
+                                        <button class="component-action-btn" ng-show="dom_array_components.active_component !== 'A'"
+                                                ng-click="updateComponent(dom_array_components.id_component)" title="Update component"><i class="fas fa-pen"></i></button>
+                                        <button class="component-action-btn is-danger" ng-show="dom_array_components.active_component === 'S'"
+                                                ng-click="stateComponent('DELETE', dom_array_components.id_component)" title="Delete component"><i class="far fa-trash-alt"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <!--lista de componentes ingresados por toda la comunidad de usuarios-->
-        <div ng-show="viewComunityComponents" class="card shadow mb-4 w-75 m-auto">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-dark">Comunity component list - (Rows)
-                    {{arrayComponentesAll.length}}</h6>
-                <button type="button" ng-click="clickViewMyComponents()" class="btn button-ds btn-sm float-right">
-                    <i class="fas fa-chevron-circle-left"></i> Return
-                </button>
-            </div>
-            <!-- Card Body -->
-            <div class="card-body" style="height: 460px; overflow: auto">
-                <div class="form-group">
-                    <label class="col-form-label col-form-label-sm"> Search component </label>
-                    <input name="searchComponent" ng-model="searchComponent" class="form-control form-control-sm" type="text">
+        <div ng-show="viewComunityComponents" class="card projects-panel project-layout-width mb-4 m-auto">
+            <div class="projects-panel-header component-panel-header">
+                <div>
+                    <span class="screen-kicker">IoT engineering</span>
+                    <h6 class="projects-panel-title">Community components</h6>
+                    <p class="projects-panel-subtitle">Browse components published by the engineering community.</p>
                 </div>
-
-                <div class="alert alert-primary" role="alert"
-                     ng-repeat="dom_array_components in arrayComponentesAll | filter: {name_component: searchComponent}">
-                    <div class="media mb-2">
-                        <img src="resources/img/img-app/037-processor.png" class="align-self-center mr-3" alt="..."
-                             width="70">
-                        <div class="media-body">
-                            <div style="font-size: 12px">
-                                <strong> Update date: </strong> {{dom_array_components.uploaddate_component}} <br>
-                                <strong> Owner: </strong>
-                                {{dom_array_components.lastname_person + ' ' + dom_array_components.name_person}}
-                            </div>
-                            <h5 class="mt-0 text-dark"><strong> {{dom_array_components.name_component}} </strong></h5>
-                            <div style="line-height: 10px;margin-top: -10px;margin-bottom: 10px;text-align: justify;">
-                                <span style="font-size: 12px"> {{dom_array_components.description_component}} </span>
-                            </div>
-                            <div class="row">
-                                <div class="col-xl-4 col-md-3 mb-2">
-                                    <div class="dropdown">
-                                        <button class="btn button-dt btn-sm w-100"
-                                                ng-click="selectProject(dom_myprojects)"
-                                                type="button" id="actions{{dom_array_components.id_component}}"
-                                                data-toggle="dropdown" aria-haspopup="true"
-                                                aria-expanded="false">
-                                            Actions <i class="fas fa-chevron-down ml-4"></i>
-                                        </button>
-                                        <div class="dropdown-menu"
-                                             aria-labelledby="actions{{dom_array_components.id_component}}">
-                                            <button class="dropdown-item"
-                                                    ng-click="selectedComponent(dom_array_components, 'C')">
-                                                <i class="fas fa-info-circle"></i>
-                                                Details
-                                            </button>
-                                            <button class="dropdown-item"
-                                                    ng-click="updateComponent(dom_array_components.id_component)">
-                                                <i class="fas fa-pen"></i>
-                                                Update
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <button type="button" ng-click="clickViewMyComponents()" class="module-back-btn"><i class="fas fa-arrow-left mr-2"></i>My components</button>
+            </div>
+            <div class="card-body projects-panel-body">
+                <div class="component-list-toolbar">
+                    <div class="component-search"><i class="fas fa-search"></i><input name="searchComponent" ng-model="searchComponent" class="form-control form-control-sm" type="text" placeholder="Search community components"></div>
+                    <span>{{arrayComponentesAll.length}} components</span>
+                </div>
+                <div class="projects-empty-state text-center" ng-show="arrayComponentesAll.length === 0"><h5>No community components</h5></div>
+                <div class="table-responsive component-table-wrap" ng-show="arrayComponentesAll.length > 0">
+                    <table class="table component-table community-component-table mb-0">
+                        <thead><tr><th>Component</th><th>Owner</th><th>Last update</th><th class="text-right">Actions</th></tr></thead>
+                        <tbody>
+                            <tr ng-repeat="dom_array_components in arrayComponentesAll | filter: {name_component: searchComponent}">
+                                <td class="component-identity-cell"><div class="component-avatar community"><i class="fas fa-microchip"></i></div><div class="component-identity"><strong>{{dom_array_components.name_component}}</strong><span>{{dom_array_components.description_component}}</span></div></td>
+                                <td class="component-owner-cell"><i class="far fa-user mr-1"></i>{{dom_array_components.lastname_person + ' ' + dom_array_components.name_person}}</td>
+                                <td class="component-date-cell"><i class="far fa-calendar mr-1"></i>{{dom_array_components.uploaddate_component}}</td>
+                                <td><div class="component-row-actions"><button class="component-action-btn" ng-click="selectedComponent(dom_array_components, 'C')" title="Component details"><i class="far fa-eye"></i></button><button class="component-action-btn" ng-click="updateComponent(dom_array_components.id_component)" title="Update component"><i class="fas fa-pen"></i></button></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -617,74 +556,35 @@
         <!--lista de componentes que solo visualizara el usuario administador para evaluar los componentes-->
         <div ng-show="viewComponentsProposals &&
         (DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R')"
-             class="card shadow mb-4 w-75 m-auto">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-dark">Component proposals for review -
-                    (Rows) {{arrayComponentesEvaluate.length}} </h6>
-                <button type="button" ng-click="clickViewMyComponents()" class="btn button-ds btn-sm float-right">
-                    <i class="fas fa-chevron-circle-left"></i> Return
-                </button>
+             class="card projects-panel project-layout-width mb-4 m-auto">
+            <div class="projects-panel-header component-panel-header">
+                <div><span class="screen-kicker">IoT engineering</span><h6 class="projects-panel-title">Component proposals</h6><p class="projects-panel-subtitle">Review community submissions before they become available.</p></div>
+                <button type="button" ng-click="clickViewMyComponents()" class="module-back-btn"><i class="fas fa-arrow-left mr-2"></i>My components</button>
             </div>
-            <!-- Card Body -->
-            <div class="card-body" style="height: 460px; overflow: auto">
-                <div class="form-group">
-                    <label class="col-form-label col-form-label-sm"> Search component: </label>
-                    <input name="name_component_compPro" ng-model="searchComponentComPro" class="form-control form-control-sm" type="text" />
+            <div class="card-body projects-panel-body">
+                <div class="component-list-toolbar">
+                    <div class="component-search"><i class="fas fa-search"></i><input name="name_component_compPro" ng-model="searchComponentComPro" class="form-control form-control-sm" type="text" placeholder="Search proposals"></div>
+                    <span>{{arrayComponentesEvaluate.length}} proposals</span>
                 </div>
-
-                <div class="alert alert-primary" role="alert" id=""
-                     ng-repeat="dom_array_components in arrayComponentesEvaluate | filter: {name_component: searchComponentComPro}">
-                    <div class="media mb-2">
-                        <img src="resources/img/img-app/037-processor.png" class="align-self-center mr-3" alt="..."
-                             width="70">
-                        <div class="media-body">
-                            <div style="font-size: 12px">
-                                <strong> Update date: </strong> {{dom_array_components.uploaddate_component}} <br>
-                                <strong> Owner: </strong>
-                                {{dom_array_components.lastname_person + ' ' + dom_array_components.name_person}}
-                                <div class="float-right" style="font-size: 14px">
-                                    <strong> Status: </strong>
-                                    <span ng-show="dom_array_components.active_component === 'A'"><span
-                                            class="badge badge-pill badge-success"> APPROVED </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'R'"><span
-                                            class="badge badge-pill badge-danger"> REJECTED </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'S'"><span
-                                            class="badge badge-pill badge-info"> IN REVIEW </span></span>
-                                    <span ng-show="dom_array_components.active_component === 'I'"><span
-                                            class="badge badge-pill badge-dark"> REMOVED </span></span>
-                                </div>
-                            </div>
-                            <h5 class="mt-0 text-dark"><strong> {{dom_array_components.name_component}} </strong></h5>
-                            <div style="line-height: 10px;margin-top: -10px;margin-bottom: 10px;text-align: justify;">
-                                <span style="font-size: 12px"> {{dom_array_components.description_component}} </span>
-                            </div>
-                            <div class="row">
-                                <div class="col-xl-4 col-md-3 mb-2">
-                                    <div class="dropdown">
-                                        <button class="btn button-dt btn-sm w-100"
-                                                ng-click="selectProject(dom_myprojects)"
-                                                type="button" id="actions_ad{{dom_array_components.id_component}}"
-                                                data-toggle="dropdown" aria-haspopup="true"
-                                                aria-expanded="false">
-                                            Actions <i class="fas fa-chevron-down ml-4"></i>
-                                        </button>
-                                        <div class="dropdown-menu"
-                                             aria-labelledby="actions_ad{{dom_array_components.id_component}}">
-                                            <button ng-click="stateComponent('APROBE', dom_array_components.id_component)"
-                                                    class="dropdown-item"> <i class="fas fa-check-circle"></i> Approve
-                                            </button>
-                                            <button ng-click="stateComponent('REJECT', dom_array_components.id_component)"
-                                                    class="dropdown-item"> <i class="fas fa-times-circle"></i> Reject
-                                            </button>
-                                            <button ng-click="updateComponent(dom_array_components.id_component)"
-                                                    class="dropdown-item"> <i class="fas fa-eye"></i> View
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="projects-empty-state text-center" ng-show="arrayComponentesEvaluate.length === 0"><h5>No proposals pending</h5></div>
+                <div class="table-responsive component-table-wrap" ng-show="arrayComponentesEvaluate.length > 0">
+                    <table class="table component-table proposal-component-table mb-0">
+                        <thead><tr><th>Component</th><th>Owner</th><th>Status</th><th>Last update</th><th class="text-right">Review</th></tr></thead>
+                        <tbody>
+                            <tr ng-repeat="dom_array_components in arrayComponentesEvaluate | filter: {name_component: searchComponentComPro}">
+                                <td class="component-identity-cell"><div class="component-avatar proposal"><i class="fas fa-microchip"></i></div><div class="component-identity"><strong>{{dom_array_components.name_component}}</strong><span>{{dom_array_components.description_component}}</span></div></td>
+                                <td class="component-owner-cell"><i class="far fa-user mr-1"></i>{{dom_array_components.lastname_person + ' ' + dom_array_components.name_person}}</td>
+                                <td>
+                                    <span ng-show="dom_array_components.active_component === 'A'" class="component-status is-approved"><i class="fas fa-check-circle"></i>Approved</span>
+                                    <span ng-show="dom_array_components.active_component === 'R'" class="component-status is-rejected"><i class="fas fa-times-circle"></i>Rejected</span>
+                                    <span ng-show="dom_array_components.active_component === 'S'" class="component-status is-review"><i class="far fa-clock"></i>In review</span>
+                                    <span ng-show="dom_array_components.active_component === 'I'" class="component-status is-removed"><i class="fas fa-ban"></i>Removed</span>
+                                </td>
+                                <td class="component-date-cell"><i class="far fa-calendar mr-1"></i>{{dom_array_components.uploaddate_component}}</td>
+                                <td><div class="component-review-actions"><button class="review-btn is-approve" ng-click="stateComponent('APROBE', dom_array_components.id_component)"><i class="fas fa-check mr-1"></i>Approve</button><button class="review-btn is-reject" ng-click="stateComponent('REJECT', dom_array_components.id_component)"><i class="fas fa-times mr-1"></i>Reject</button><button class="component-action-btn" ng-click="updateComponent(dom_array_components.id_component)" title="View proposal"><i class="far fa-eye"></i></button></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

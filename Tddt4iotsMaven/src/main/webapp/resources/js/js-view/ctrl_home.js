@@ -3,7 +3,7 @@
 app.controller("home_controller", function ($scope, $http) {
 
     $(document).ready(() => {
-        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Shared Projects", true);
+        angular.element($('[ng-controller="application"]')).scope().changeTittlePage("Dashboard", true);
         $scope.loadInterpret();
         $scope.loadProjects();
         $scope.loadHome();
@@ -88,6 +88,7 @@ app.controller("home_controller", function ($scope, $http) {
     };
 
     $scope.interpret = [];
+    $scope.selectedSymbolExample = {};
     $scope.loadInterpret = function () {
 //        // console.log("buscar el:"+valuex);
         $.getJSON("resources/json/interpret.json", function (data) {
@@ -99,13 +100,9 @@ app.controller("home_controller", function ($scope, $http) {
     };
 
     $scope.loadExample = (simbol) => {
-        // console.log(simbol);
-        let message = '<div style="font-family: math;font-size: 16px;">' + simbol.example + '<div>';
-        Swal.fire({
-            title: '<strong>' + simbol.description + ' example <span class="badge badge-info">' + simbol.simbol + '</span> </strong>',
-            icon: 'info',
-            html: message
-        });
+        $scope.selectedSymbolExample = simbol;
+        $("#symbolExampleContent").html(simbol.example);
+        $("#symbolExampleModal").modal("show");
     };
 
 });

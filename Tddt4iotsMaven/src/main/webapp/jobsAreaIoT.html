@@ -8,7 +8,7 @@
         <link rel="shortcut icon" href="resources/img/logo-app/logoOficial.ico">
 
         <link rel="stylesheet" href="resources/css/css-library/sb-admin-2.css" type="text/css"/>
-        <link rel="stylesheet" href="resources/css/css-app/jobsAreaIoT.css" type="text/css">
+        <link rel="stylesheet" href="resources/css/css-app/jobsAreaIoT.css?v=20260819-iot-canvas" type="text/css">
         <link href="resources/css/css-library/animations.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
@@ -20,6 +20,8 @@
         <link href="resources/css/css-viewcode/view_code_we.css" rel="stylesheet" type="text/css"/>
 
         <link href="resources/css/css-app/utils.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/css-app/modal-system.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/css/css-app/system-feedback.css" rel="stylesheet" type="text/css"/>
 
 
         <link rel="stylesheet" href="resources/codemirror/codemirror.css" type="text/css">
@@ -98,143 +100,195 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalLoadCode" tabindex="-1" role="dialog" aria-labelledby="modalLoadCode"
+        <div class="modal fade" id="modalLoadCode" tabindex="-1" role="dialog" aria-labelledby="modalLoadCodeTitle"
              aria-hidden="true" data-backdrop="static" data-keyboard="false">
-            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Load Code Board <span class="badge {{dataDevice.css}}"> {{dataDevice.status}} </span>  </h6>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="bg-gray-200" ng-show="dataDevice.status === 'Connected'" style="font-size: 12px">
-                            <strong> Operating system: </strong> {{dataDevice.so}}
-                            <strong> User Device: </strong> {{dataDevice.userDevice}}
+            <div class="modal-dialog modal-xl modal-dialog-centered iot-board-dialog" role="document">
+                <div class="modal-content iot-board-modal">
+                    <header class="iot-board-modal-header">
+                        <div class="iot-board-modal-heading">
+                            <span class="iot-board-modal-icon"><i class="fas fa-microchip"></i></span>
+                            <div>
+                                <span class="iot-board-modal-kicker">DEVICE DEPLOYMENT</span>
+                                <h2 id="modalLoadCodeTitle">Board deployment console</h2>
+                                <p>Review, compile and upload the generated Arduino source.</p>
+                            </div>
                         </div>
-                        <div>
-                            <span ng-show="dataDevice.status !== 'Connected'" class="badge badge-warning text-dark mb-1"> Please login to the desktop application to access the board you wish to connect. Click
-                                <a href="{{downloadDaemon()}}"> here </a>
-                                to download the application. </span>
-                            <input ng-disabled="dataDevice.status !== 'Connected'" ng-keypress="checkEnter($event)" ng-model="command" name="command" class="form-control form-control-sm mb-1" type="text" placeholder="You can enter arduino-cli commands...">
-                            <button ng-disabled="dataDevice.status !== 'Connected'" class="btn badge badge-primary text-white" ng-click="compile()"> <i class="fas fa-check-circle"></i> Compile </button>
-                            <button ng-disabled="dataDevice.status !== 'Connected'" class="btn badge badge-primary text-white" ng-click="loadCodeBoard()"> <i class="fas fa-play"></i> Upload </button>
+                        <div class="iot-board-modal-heading-actions">
+                            <span class="iot-board-connection-pill" ng-class="{'is-connected': dataDevice.status === 'Connected'}">
+                                <i></i>{{dataDevice.status === 'Connected' ? 'Board connected' : 'Board disconnected'}}
+                            </span>
+                            <button type="button" class="iot-board-modal-close" data-dismiss="modal" aria-label="Close deployment console" title="Close">
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <div id="editrCodeComplete" class="mt-2 border border-dark" style="height: 250px"> </div>
-                        <button ng-click="clearConsole()" class="btn btn-outline-danger btn-sm" style="position: absolute;right: 0;margin-right: 2rem;margin-top: 1rem;">  <i class="fas fa-trash"></i> Clear console</button>
-                        <div id="mi_terminal" class="border border-dark bg-gray-200 scroll" style="height: 250px">  </div>
+                    </header>
+
+                    <div class="iot-board-modal-body">
+                        <div class="iot-device-information" ng-show="dataDevice.status === 'Connected'">
+                            <div class="iot-device-information-title">
+                                <span><i class="fas fa-desktop"></i></span>
+                                <div><small>DESKTOP BRIDGE</small><strong>Deployment agent available</strong></div>
+                            </div>
+                            <div class="iot-device-detail"><small>OPERATING SYSTEM</small><strong>{{dataDevice.so || 'Not reported'}}</strong></div>
+                            <div class="iot-device-detail"><small>DEVICE USER</small><strong>{{dataDevice.userDevice || 'Not reported'}}</strong></div>
+                        </div>
+
+                        <div class="iot-device-warning" ng-show="dataDevice.status !== 'Connected'">
+                            <span><i class="fas fa-exclamation-triangle"></i></span>
+                            <div>
+                                <strong>Desktop bridge not connected</strong>
+                                <p>Sign in to the desktop application to access the board and execute Arduino CLI commands.</p>
+                            </div>
+                            <a href="{{downloadDaemon()}}"><i class="fas fa-download"></i> Download bridge</a>
+                        </div>
+
+                        <section class="iot-cli-panel" aria-label="Arduino CLI command controls">
+                            <div class="iot-cli-panel-label">
+                                <span><i class="fas fa-terminal"></i></span>
+                                <div><small>ARDUINO CLI</small><strong>Command pipeline</strong></div>
+                            </div>
+                            <div class="iot-cli-command">
+                                <input ng-disabled="dataDevice.status !== 'Connected'" ng-keypress="checkEnter($event)" ng-model="command" name="command" type="text" placeholder="Enter an arduino-cli command and press Enter..." aria-label="Arduino CLI command">
+                                <button type="button" ng-disabled="dataDevice.status !== 'Connected'" ng-click="sendCommand()" class="iot-board-action is-neutral" title="Run command">
+                                    <i class="fas fa-chevron-right"></i><span>Run</span>
+                                </button>
+                            </div>
+                            <div class="iot-deployment-actions">
+                                <button type="button" ng-disabled="dataDevice.status !== 'Connected'" ng-click="compile()" class="iot-board-action is-compile">
+                                    <i class="fas fa-check-circle"></i><span>Compile</span>
+                                </button>
+                                <button type="button" ng-disabled="dataDevice.status !== 'Connected'" ng-click="loadCodeBoard()" class="iot-board-action is-upload">
+                                    <i class="fas fa-cloud-upload-alt"></i><span>Upload to board</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <div class="iot-deployment-workbench">
+                            <section class="iot-deployment-panel is-source">
+                                <header>
+                                    <div><span><i class="fas fa-code"></i></span><div><small>GENERATED ARTIFACT</small><strong>Arduino source</strong></div></div>
+                                    <span class="iot-file-type">SCRIPT.INO</span>
+                                </header>
+                                <div id="editrCodeComplete" class="iot-code-editor"></div>
+                            </section>
+                            <section class="iot-deployment-panel is-console">
+                                <header>
+                                    <div><span><i class="fas fa-terminal"></i></span><div><small>EXECUTION OUTPUT</small><strong>Build console</strong></div></div>
+                                    <button type="button" ng-click="clearConsole()" class="iot-clear-console" title="Clear console output">
+                                        <i class="fas fa-trash-alt"></i><span>Clear</span>
+                                    </button>
+                                </header>
+                                <div id="mi_terminal" class="iot-build-console scroll"></div>
+                            </section>
+                        </div>
                     </div>
-                    <div class="modal-footer"> </div>
+
+                    <footer class="iot-board-modal-footer">
+                        <span><i class="fas fa-info-circle"></i> Compilation and upload commands are executed through the connected desktop bridge.</span>
+                        <button type="button" class="iot-board-footer-close" data-dismiss="modal">Close console</button>
+                    </footer>
                 </div>
             </div>
         </div>
         
         <div id="wrapper">
-            <div id="content-wrapper" class="d-flex flex-column" style="height: 100vh">
+            <div id="content-wrapper" class="d-flex flex-column iot-content-wrapper">
                 <!-- Main Content -->
-                <div id="content">
+                <div id="content" class="iot-header-container">
                     <!-- Topbar -->
-                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow" style="z-index: 1000;">
-                        <div class="">
-                            <img class="" src="resources/img/logo-app/logoTDDT4IOTSicon.svg" width="50" alt="logo"/>
-                        </div>
-                        <div class="ml-3" >
-                            <h5 class="position-absolute font-weight-bold" style="color: #39297C !important; margin-left: 2px">
-                                {{dataProject.name_mp}} - <span class="text-dark"> Permit : </span>
-                                <span class="badge badge-success">{{dataProject.permit_pm === 'A' ? 'OWNER' : dataProject.permit_pm === 'R' ? 'READER' : 'WRITER'}}</span>
-                            </h5>
-                            <div class="" style="margin-top: 25px">
-                                <button ng-click="saveDispositive()" class="btn badge badge-light">
-                                    <i class="fas fa-save"></i> Save Device</button>
-                                <button ng-click="exportPng()" class="btn badge badge-light"> <i class="fas fa-file-image"></i> Export file.png</button>
-                                <button class="btn badge badge-light"> <i class="fas fa-code"></i> View Code</button>
-                                <button class="btn badge badge-light" ng-click="downloadCode()"> <i class="fas fa-download"></i> Download Code</button>
-                                <button class="btn badge badge-success text-white" ng-click="openModalLoadCode()"> <i class="fas fa-arrow-circle-up"></i> Upload Code to Board</button>
-                                <a onclick="location.href = 'app.html#!/myprojects'" class="btn badge badge-danger"> <i class="fas fa-sign-out-alt"></i> Exit</a>
+                    <nav class="iot-workspace-header" aria-label="IoT workspace commands">
+                        <div class="iot-workspace-context">
+                            <span class="iot-workspace-brand"><img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt="TDDT4IoTS"/></span>
+                            <div class="iot-project-copy">
+                                <span class="iot-workspace-kicker">IoT engineering workspace</span>
+                                <div class="iot-project-title-row">
+                                    <h1 title="{{dataProject.name_mp}}">{{dataProject.name_mp || 'Untitled IoT project'}}</h1>
+                                    <span ng-class="dataProject.permit_pm === 'A' ? 'iot-permission-badge is-owner' : dataProject.permit_pm === 'R' ? 'iot-permission-badge is-reader' : 'iot-permission-badge is-writer'">
+                                        <i ng-class="dataProject.permit_pm === 'A' ? 'fas fa-crown' : dataProject.permit_pm === 'R' ? 'fas fa-eye' : 'fas fa-pen'"></i>
+                                        {{dataProject.permit_pm === 'A' ? 'Owner' : dataProject.permit_pm === 'R' ? 'Reader' : 'Writer'}}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sidebar Toggle (Topbar) -->
-                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                            <i class="fa fa-bars"></i>
-                        </button>
+                        <div class="iot-command-bar" role="toolbar" aria-label="IoT project actions">
+                            <button type="button" ng-click="saveDispositive()" class="iot-command is-primary" title="Save the IoT device model">
+                                <i class="fas fa-save"></i><span>Save device</span>
+                            </button>
+                            <button type="button" ng-click="exportPng()" class="iot-command" title="Export the complete IoT diagram as PNG">
+                                <i class="far fa-image"></i><span>Export PNG</span>
+                            </button>
+                            <button type="button" class="iot-command" title="View the generated source code">
+                                <i class="fas fa-code"></i><span>View code</span>
+                            </button>
+                            <button type="button" ng-click="downloadCode()" class="iot-command" title="Download the generated Arduino source code">
+                                <i class="fas fa-download"></i><span>Download code</span>
+                            </button>
+                            <span class="iot-command-divider" aria-hidden="true"></span>
+                            <button type="button" ng-click="openModalLoadCode()" class="iot-command is-board" title="Compile and upload code to the connected board">
+                                <i class="fas fa-microchip"></i><span>Upload to board</span>
+                            </button>
+                            <a href="app.html#!/myprojects" class="iot-command is-exit" title="Close workspace and return to projects">
+                                <i class="fas fa-times"></i><span>Close</span>
+                            </a>
+                        </div>
 
-                        <!-- Topbar Tittle -->
-                        <!--<h1 class="h3 mb-0 text-gray-800">{{appPage.tittle}}</h1>-->
-                        <!-- Topbar Navbar -->
-                        <ul class="navbar-nav ml-auto">
-
-                            <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                            <li class="nav-item dropdown no-arrow d-sm-none">
-                                <a class="nav-link dropdown-toggle" id="searchDropdown" role="button"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-search fa-fw"></i>
-                                </a>
-                                <!-- Dropdown - Messages -->
-                                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                     aria-labelledby="searchDropdown">
-                                    <form class="form-inline mr-auto w-100 navbar-search">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control bg-light border-0 small"
-                                                   placeholder="Search for..." aria-label="Search"
-                                                   aria-describedby="basic-addon2">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-primary" type="button">
-                                                    <i class="fas fa-search fa-sm"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </li>
-
-                            <!-- Nav Item - User Information -->
-                            <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" id="userDropdown" role="button"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                        {{DatoUsuario.name_person + ' ' + DatoUsuario.lastname_person}}</span>
-                                    <img class="img-profile rounded-circle" alt="..."
-                                         src="resources/img/img-app/userMale.png">
-                                    <!-- img class="img-profile rounded-circle" alt="..."
-                                         ng-src="{{rutaImgUser + DatoUsuario.pathimg_person}}" -->
-                                </a>
-                                <!-- Dropdown - User Information -->
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                     aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="#">
-                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Profile
-                                    </a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" ng-click="logOut()">
-                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Logout
-                                    </a>
-                                </div>
-                            </li>
-                        </ul>
+                        <div class="iot-workspace-status">
+                            <button id="sidebarToggleTop" class="iot-icon-button d-md-none" type="button" aria-label="Toggle IoT tools"><i class="fas fa-bars"></i></button>
+                            <div class="iot-board-status" ng-class="{'is-connected': dataDevice.status === 'Connected'}" title="Board connection status">
+                                <span><i class="fas fa-microchip"></i></span>
+                                <div><small>BOARD</small><strong>{{dataDevice.status === 'Connected' ? 'Connected' : 'Not connected'}}</strong></div>
+                                <i></i>
+                            </div>
+                            <div class="iot-user-summary" title="{{iotWorkspaceUserName(DatoUsuario)}}">
+                                <span class="iot-user-avatar">{{iotWorkspaceUserInitials(DatoUsuario)}}<i></i></span>
+                                <span class="iot-user-identity"><strong>{{iotWorkspaceUserName(DatoUsuario)}}</strong><small>{{iotWorkspaceUserRole(DatoUsuario)}}</small></span>
+                            </div>
+                        </div>
                     </nav>
                     <!-- End of Topbar -->
                 </div>
-                <div style="margin-right: 0px; height: 100%" class="row">
-                    <div style="padding: 0px; width: 20%;z-index: 1000" class="col-md-3 col-xl-2 bd-sidebar">
-                        <div id="myPalette" style=" height: 80%; border-right: 1px solid #DDE0E6; border-top: 1px solid #DDE0E6;">
+                <div class="iot-workspace-body">
+                    <aside class="iot-component-panel" aria-label="IoT component library">
+                        <div class="iot-palette-header">
+                            <div>
+                                <span class="iot-panel-kicker">DEVICE LIBRARY</span>
+                                <h2>Components</h2>
+                            </div>
+                            <span id="paletteResultCount" class="iot-result-count">0 devices</span>
                         </div>
-                        <div id="overView"
-                             style=" height: 20%; border-top: 1px solid #DDE0E6; border-right: 1px solid #DDE0E6;
-                             border-bottom: 1px solid #DDE0E6">
+                        <label class="iot-component-search" for="searchBox">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input id="searchBox" type="search" placeholder="Search by name or type..." autocomplete="off" oninput="searchComponentPalette()">
+                            <button id="clearPaletteSearch" type="button" aria-label="Clear component search" title="Clear search" onclick="clearComponentPaletteSearch()">
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                            </button>
+                        </label>
+                        <p class="iot-palette-help"><i class="fas fa-hand-pointer"></i> Drag a device onto the canvas</p>
+                        <div class="iot-palette-stage">
+                            <div id="myPalette"></div>
+                            <div id="paletteEmptyState" class="iot-palette-empty" aria-live="polite">
+                                <span><i class="fas fa-search"></i></span>
+                                <strong>No devices found</strong>
+                                <small>Try another name or component type.</small>
+                            </div>
                         </div>
-                    </div>
-                    <main style="padding: 0px !important; width: 80%; height: 100%" class="col-md-9 col-xl-10 py-md-3 pl-md-5 bd-content">
-                        <div style="width: 100%; padding: 5px; background: #F8F9FC; display: flex; z-index: 100;
-                             position: relative; height: 5%">
-                            <input class="form form-control form-control-sm" id="searchBox" type="text" placeholder="Search component palette..." oninput="searchComponentPalette()">
-                            <button class="btn btn-sm"> <i class="fas fa-undo-alt"></i> </button>
-                            <button class="btn btn-sm"> <i class="fas fa-redo-alt"></i> </button>
+                        <div class="iot-overview-panel">
+                            <span><i class="fas fa-map"></i> Diagram overview</span>
+                            <div id="overView"></div>
+                        </div>
+                    </aside>
+                    <main class="iot-diagram-pane">
+                        <div class="iot-canvas-toolbar">
+                            <div class="iot-canvas-context">
+                                <span><i class="fas fa-project-diagram"></i></span>
+                                <div><small>DESIGN CANVAS</small><strong>IoT device architecture</strong></div>
+                            </div>
+                            <div class="iot-canvas-actions">
+                            <button type="button" class="iot-tool-button" onclick="undoIoTDiagram()" title="Undo last action"> <i class="fas fa-undo-alt"></i><span>Undo</span></button>
+                            <button type="button" class="iot-tool-button" onclick="redoIoTDiagram()" title="Redo last action"> <i class="fas fa-redo-alt"></i><span>Redo</span></button>
                             <div class="dropdown">
-                                <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenu2"
+                                <button class="iot-tool-button dropdown-toggle" type="button" id="dropdownMenu2"
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-square"></i> Cable color
                                 </button>
@@ -245,6 +299,7 @@
                                         {{domArrayColors.name}}
                                     </button>
                                 </div>
+                            </div>
                             </div>
                         </div>
                         <!-- BLOQUES PARA CONFIGURAR LOS DISPOSITIVOS -->
@@ -366,11 +421,7 @@
                         </div>
 
                         <!-- BLOQUES PARA DIBUJAR LOS DISPOSITIVOS -->
-                        <div style="height: 95%; width: 100%; position: relative;border-bottom: 1px solid #DDE0E6;
-                             border-top: 1px solid #DDE0E6;" id="lienzo">
-
-
-                        </div>
+                        <div id="lienzo" class="iot-diagram-canvas"></div>
                         <!-- BLOQUES PARA GENERAR EL CODIGO -->
                     </main>
                 </div>

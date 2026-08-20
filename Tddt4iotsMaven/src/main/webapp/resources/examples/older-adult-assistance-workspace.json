@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "1.0",
+  "format": "TDDT4IOTS_CASE_WORKSPACE",
+  "project": {
+    "name": "Acompaña Senior",
+    "description": "Plataforma de asistencia, seguridad y seguimiento cotidiano para personas mayores.",
+    "symbolLanguageRequired": true
+  },
+  "diagrams": [
+    {
+      "id": "ucd-emergency-monitoring",
+      "name": "Seguridad y monitoreo",
+      "actors": [
+        {"id": "actor-older-adult-safety", "name": "Persona mayor", "position": {"x": 125, "y": 120}},
+        {"id": "actor-family-contact", "name": "Contacto de confianza", "position": {"x": 125, "y": 300}},
+        {"id": "actor-emergency-operator", "name": "Operador de emergencias", "position": {"x": 1040, "y": 205}}
+      ],
+      "useCases": [
+        {
+          "id": "uc-request-help",
+          "name": "Solicitar ayuda urgente",
+          "position": {"x": 600, "y": 115},
+          "purpose": "Permitir una petición accesible y trazable de ayuda mediante (SolicitudAsistencia &-id=string &-fechaHora=Date &-ubicacion=string &-estado=EstadoSolicitud [+crear=void] [+confirmar=void]).",
+          "precondition": "La persona dispone de (PerfilPersonaMayor &-id=string &-nombre=string &-telefono=string &-direccion=string) y el dispositivo mantiene conexión.",
+          "postcondition": "La atención queda registrada en (AtencionEmergencia &-id=string &-horaInicio=Date &-horaFin=Date &-resultado=string [+cerrar=void]) y la solicitud cambia de estado.",
+          "description": "La persona activa una alerta; el sistema crea (SolicitudAsistencia &-id=string &-fechaHora=Date &-ubicacion=string &-estado=EstadoSolicitud [+crear=void] [+confirmar=void]) y clasifica *¿EstadoSolicitud »Creada »Notificada »Atendida »Cerrada ?. La persona está relacionada con sus solicitudes mediante *¡PerfilPersonaMayor 1>[solicita]<n SolicitudAsistencia!.",
+          "mainFlow": [
+            {"actor": "actor-older-adult-safety", "action": "La persona pulsa el botón de ayuda y el sistema ejecuta (SolicitudAsistencia [+crear=void])."},
+            {"actor": "System", "action": "El sistema obtiene la posición desde (Ubicacion &-latitud=double &-longitud=double &-precision=double [+capturar=void])."},
+            {"actor": "System", "action": "El sistema registra el evento en (SolicitudAsistencia &-ubicacion=string &-estado=EstadoSolicitud [+confirmar=void])."},
+            {"actor": "System", "action": "El sistema genera (Notificacion &-id=string &-mensaje=string &-fechaEnvio=Date &-leida=boolean [+enviar=void]) y relaciona *¡SolicitudAsistencia 1>[genera]<n Notificacion!."},
+            {"actor": "actor-emergency-operator", "action": "El operador acepta la atención en (AtencionEmergencia &-id=string &-resultado=string [+iniciar=void])."},
+            {"actor": "System", "action": "El sistema confirma a la persona mediante (Notificacion [+confirmarLectura=void])."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-help-no-location",
+              "startStep": 2,
+              "condition": "No se puede obtener una ubicación precisa.",
+              "actor": "System",
+              "action": "El sistema usa la dirección del (PerfilPersonaMayor &-direccion=string [+obtenerDireccion=string]) y marca (Ubicacion &-precision=double [+marcarAproximada=void]).",
+              "outcome": "return",
+              "returnStep": 3
+            },
+            {
+              "id": "af-help-no-answer",
+              "startStep": 5,
+              "condition": "Ningún operador acepta dentro del tiempo máximo.",
+              "actor": "System",
+              "action": "El sistema crea un (Escalamiento &-id=string &-nivel=int &-motivo=string [+activar=void]) y relaciona *¡SolicitudAsistencia 1>[escala]<1 Escalamiento!.",
+              "outcome": "end"
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "person", "name": "Persona mayor", "type": "actor"},
+              {"id": "assistance", "name": "assistance:SolicitudAsistencia", "type": "object"},
+              {"id": "operator", "name": "Operador de emergencias", "type": "actor"}
+            ],
+            "messages": [
+              {"from": "person", "to": "assistance", "message": "solicitarAyuda()", "type": "sync", "response": "solicitudRegistrada", "responseType": "sync"},
+              {"from": "assistance", "to": "operator", "message": "notificarEmergencia()", "type": "async", "response": ""}
+            ]
+          }
+        },
+        {
+          "id": "uc-monitor-vitals",
+          "name": "Monitorear signos vitales",
+          "position": {"x": 600, "y": 265},
+          "purpose": "Detectar cambios relevantes usando (LecturaVital &-id=string &-tipo=TipoSignoVital &-valor=double &-fechaHora=Date [+registrar=void]).",
+          "precondition": "Existe un (DispositivoSalud &-id=string &-nombre=string &-estado=EstadoDispositivo [+sincronizar=void]) vinculado a la persona.",
+          "postcondition": "Las lecturas válidas quedan guardadas y cualquier anomalía crea (AlertaSalud &-id=string &-nivel=NivelAlerta &-mensaje=string [+activar=void]).",
+          "description": "El sistema recibe (LecturaVital &-id=string &-tipo=TipoSignoVital &-valor=double &-fechaHora=Date [+evaluar=void]), utiliza *¿TipoSignoVital »FrecuenciaCardiaca »PresionArterial »SaturacionOxigeno ? y *¿NivelAlerta »Informativa »Preventiva »Critica ?. El dispositivo aporta muchas lecturas con *¡DispositivoSalud 1>[registra]<n LecturaVital!.",
+          "mainFlow": [
+            {"actor": "System", "action": "El sistema sincroniza el (DispositivoSalud &-ultimaSincronizacion=Date [+sincronizar=void])."},
+            {"actor": "System", "action": "El sistema recibe y valida (LecturaVital &-valor=double [+validar=boolean])."},
+            {"actor": "System", "action": "El sistema compara el valor con (RangoSalud &-minimo=double &-maximo=double &-tipo=TipoSignoVital [+contiene=boolean])."},
+            {"actor": "System", "action": "El sistema guarda la lectura y relaciona *¡PerfilPersonaMayor 1>[posee]<n LecturaVital!."},
+            {"actor": "actor-family-contact", "action": "El contacto consulta el resumen desde (ResumenSalud &-fecha=Date &-observacion=string [+generar=void])."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-vital-critical",
+              "startStep": 3,
+              "condition": "El valor está fuera del rango crítico.",
+              "actor": "System",
+              "action": "El sistema crea (AlertaSalud &-id=string &-nivel=NivelAlerta &-mensaje=string [+activar=void]) y relaciona *¡LecturaVital 1>[origina]<1 AlertaSalud!.",
+              "outcome": "return",
+              "returnStep": 4
+            },
+            {
+              "id": "af-device-offline",
+              "startStep": 1,
+              "condition": "El dispositivo no responde.",
+              "actor": "System",
+              "action": "El sistema actualiza (DispositivoSalud &-estado=EstadoDispositivo [+marcarSinConexion=void]) con *¿EstadoDispositivo »Activo »SinConexion »Mantenimiento ?.",
+              "outcome": "end"
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "device", "name": "device:DispositivoSalud", "type": "object"},
+              {"id": "monitor", "name": "monitor:LecturaVital", "type": "object"},
+              {"id": "contact", "name": "Contacto familiar", "type": "actor"}
+            ],
+            "messages": [
+              {"from": "device", "to": "monitor", "message": "registrarLectura()", "type": "async", "response": ""},
+              {"from": "contact", "to": "monitor", "message": "consultarResumen()", "type": "sync", "response": "resumenSalud", "responseType": "sync"}
+            ]
+          }
+        },
+        {
+          "id": "uc-notify-trusted-contact",
+          "name": "Notificar contacto de confianza",
+          "position": {"x": 600, "y": 410},
+          "purpose": "Mantener informada a la red de apoyo por medio de (Notificacion &-id=string &-mensaje=string &-fechaEnvio=Date [+enviar=void]).",
+          "precondition": "Existe un (ContactoConfianza &-id=string &-nombre=string &-telefono=string &-prioridad=int) activo.",
+          "postcondition": "El envío queda trazado en (EntregaNotificacion &-id=string &-canal=CanalNotificacion &-estado=string [+registrar=void]).",
+          "description": "Una (Notificacion &-id=string &-mensaje=string &-fechaEnvio=Date [+enviar=void]) se entrega mediante *¿CanalNotificacion »Aplicacion »SMS »Llamada ?. La persona configura sus contactos con *¡PerfilPersonaMayor 1>[configura]<n ContactoConfianza!.",
+          "mainFlow": [
+            {"actor": "System", "action": "El sistema selecciona el (ContactoConfianza &-prioridad=int [+seleccionarPrioritario=void])."},
+            {"actor": "System", "action": "El sistema compone la (Notificacion &-mensaje=string [+preparar=void])."},
+            {"actor": "System", "action": "El sistema envía y crea (EntregaNotificacion &-canal=CanalNotificacion &-estado=string [+registrar=void])."},
+            {"actor": "actor-family-contact", "action": "El contacto confirma la recepción mediante (EntregaNotificacion [+confirmar=void])."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-notification-fallback",
+              "startStep": 3,
+              "condition": "El canal principal falla.",
+              "actor": "System",
+              "action": "El sistema cambia (EntregaNotificacion &-canal=CanalNotificacion [+usarCanalAlternativo=void]) y reintenta el envío.",
+              "outcome": "return",
+              "returnStep": 3
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "notification", "name": "notification:Notificacion", "type": "object"},
+              {"id": "delivery", "name": "delivery:EntregaNotificacion", "type": "object"},
+              {"id": "trusted-contact", "name": "Contacto familiar", "type": "actor"}
+            ],
+            "messages": [
+              {"from": "notification", "to": "delivery", "message": "enviar()", "type": "async", "response": ""},
+              {"from": "trusted-contact", "to": "delivery", "message": "confirmarRecepcion()", "type": "sync", "response": "confirmada", "responseType": "sync"}
+            ]
+          }
+        }
+      ],
+      "relations": [
+        {"type": "association", "from": "actor-older-adult-safety", "to": "uc-request-help"},
+        {"type": "association", "from": "actor-emergency-operator", "to": "uc-request-help"},
+        {"type": "association", "from": "actor-family-contact", "to": "uc-monitor-vitals"},
+        {"type": "association", "from": "actor-family-contact", "to": "uc-notify-trusted-contact"},
+        {"type": "include", "from": "uc-request-help", "to": "uc-notify-trusted-contact"},
+        {"type": "extend", "from": "uc-monitor-vitals", "to": "uc-request-help"}
+      ]
+    },
+    {
+      "id": "ucd-medication-wellbeing",
+      "name": "Medicación y bienestar",
+      "actors": [
+        {"id": "actor-older-adult-care", "name": "Persona mayor", "position": {"x": 125, "y": 150}},
+        {"id": "actor-caregiver", "name": "Cuidador", "position": {"x": 125, "y": 350}},
+        {"id": "actor-health-professional", "name": "Profesional de salud", "position": {"x": 1040, "y": 225}}
+      ],
+      "useCases": [
+        {
+          "id": "uc-manage-medication-plan",
+          "name": "Gestionar plan de medicación",
+          "position": {"x": 600, "y": 120},
+          "purpose": "Mantener instrucciones vigentes en (PlanMedicacion &-id=string &-fechaInicio=Date &-fechaFin=Date &-estado=EstadoPlan [+activar=void]).",
+          "precondition": "El profesional tiene acceso al (PerfilPersonaMayor &-id=string &-nombre=string) autorizado.",
+          "postcondition": "El plan activo contiene uno o más (Tratamiento &-id=string &-dosis=string &-frecuencia=string [+programar=void]).",
+          "description": "El profesional crea (PlanMedicacion &-id=string &-fechaInicio=Date &-fechaFin=Date &-estado=EstadoPlan [+activar=void] [+suspender=void]) usando *¿EstadoPlan »Borrador »Activo »Suspendido »Finalizado ?. El plan agrupa tratamientos mediante *¡PlanMedicacion 1>[contiene]<n Tratamiento!.",
+          "mainFlow": [
+            {"actor": "actor-health-professional", "action": "El profesional crea (PlanMedicacion &-estado=EstadoPlan [+crear=void])."},
+            {"actor": "actor-health-professional", "action": "El profesional agrega (Tratamiento &-medicamento=string &-dosis=string &-frecuencia=string [+agregar=void])."},
+            {"actor": "System", "action": "El sistema valida incompatibilidades mediante (ValidadorMedicacion [+validar=boolean{.plan=PlanMedicacion}])."},
+            {"actor": "actor-health-professional", "action": "El profesional activa el (PlanMedicacion &-estado=EstadoPlan [+activar=void])."},
+            {"actor": "System", "action": "El sistema genera (RecordatorioMedicacion &-id=string &-fechaHora=Date &-estado=EstadoRecordatorio [+programar=void]) y relaciona *¡Tratamiento 1>[programa]<n RecordatorioMedicacion!."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-medication-conflict",
+              "startStep": 3,
+              "condition": "Se detecta una incompatibilidad entre tratamientos.",
+              "actor": "System",
+              "action": "El sistema crea (AdvertenciaMedicacion &-id=string &-detalle=string &-severidad=int [+mostrar=void]) y mantiene el (PlanMedicacion &-estado=EstadoPlan) como borrador.",
+              "outcome": "return",
+              "returnStep": 3
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "professional", "name": "Profesional de salud", "type": "actor"},
+              {"id": "plan", "name": "plan:PlanMedicacion", "type": "object"},
+              {"id": "validator", "name": "validator:ValidadorMedicacion", "type": "object"}
+            ],
+            "messages": [
+              {"from": "professional", "to": "plan", "message": "crearPlan()", "type": "sync", "response": "planBorrador", "responseType": "sync"},
+              {"from": "plan", "to": "validator", "message": "validarIncompatibilidades()", "type": "sync", "response": "resultado", "responseType": "sync"}
+            ]
+          }
+        },
+        {
+          "id": "uc-record-dose",
+          "name": "Registrar toma de medicación",
+          "position": {"x": 600, "y": 280},
+          "purpose": "Confirmar cada toma con (RegistroToma &-id=string &-fechaHora=Date &-estado=EstadoToma &-observacion=string [+confirmar=void]).",
+          "precondition": "Existe un (RecordatorioMedicacion &-id=string &-fechaHora=Date &-estado=EstadoRecordatorio) pendiente.",
+          "postcondition": "La toma queda registrada y el cuidador puede revisar su cumplimiento en (ResumenAdherencia &-porcentaje=double [+calcular=void]).",
+          "description": "La persona responde al (RecordatorioMedicacion &-id=string &-fechaHora=Date [+mostrar=void]) y crea (RegistroToma &-id=string &-fechaHora=Date &-estado=EstadoToma [+confirmar=void]). Se usa *¿EstadoToma »Tomada »Omitida »Pospuesta ? y *¡RecordatorioMedicacion 1>[produce]<1 RegistroToma!.",
+          "mainFlow": [
+            {"actor": "System", "action": "El sistema muestra (RecordatorioMedicacion &-estado=EstadoRecordatorio [+mostrar=void])."},
+            {"actor": "actor-older-adult-care", "action": "La persona confirma la dosis en (RegistroToma &-estado=EstadoToma [+confirmar=void])."},
+            {"actor": "System", "action": "El sistema guarda (RegistroToma &-fechaHora=Date &-observacion=string [+guardar=void])."},
+            {"actor": "actor-caregiver", "action": "El cuidador consulta (ResumenAdherencia &-porcentaje=double [+calcular=void])."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-dose-postponed",
+              "startStep": 2,
+              "condition": "La persona solicita posponer la toma.",
+              "actor": "actor-older-adult-care",
+              "action": "El sistema actualiza (RecordatorioMedicacion &-fechaHora=Date &-estado=EstadoRecordatorio [+posponer=void]).",
+              "outcome": "return",
+              "returnStep": 2
+            },
+            {
+              "id": "af-dose-missed",
+              "startStep": 2,
+              "condition": "No existe respuesta dentro del intervalo permitido.",
+              "actor": "System",
+              "action": "El sistema crea (RegistroToma &-estado=EstadoToma [+marcarOmitida=void]) y genera (Notificacion &-mensaje=string [+enviar=void]) para el cuidador.",
+              "outcome": "end"
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "older-adult", "name": "Persona mayor", "type": "actor"},
+              {"id": "reminder", "name": "reminder:RecordatorioMedicacion", "type": "object"},
+              {"id": "dose", "name": "dose:RegistroToma", "type": "object"}
+            ],
+            "messages": [
+              {"from": "reminder", "to": "older-adult", "message": "mostrarRecordatorio()", "type": "async", "response": ""},
+              {"from": "older-adult", "to": "dose", "message": "confirmarToma()", "type": "sync", "response": "registroGuardado", "responseType": "sync"}
+            ]
+          }
+        },
+        {
+          "id": "uc-schedule-wellbeing-visit",
+          "name": "Programar visita de bienestar",
+          "position": {"x": 600, "y": 430},
+          "purpose": "Coordinar acompañamiento mediante (VisitaBienestar &-id=string &-fechaHora=Date &-motivo=string &-estado=EstadoVisita [+programar=void]).",
+          "precondition": "La persona tiene al menos un (Cuidador &-id=string &-nombre=string &-telefono=string) asignado.",
+          "postcondition": "La visita queda en agenda y ambas partes reciben una (Notificacion &-mensaje=string [+enviar=void]).",
+          "description": "El cuidador propone (VisitaBienestar &-id=string &-fechaHora=Date &-motivo=string &-estado=EstadoVisita [+programar=void]) con *¿EstadoVisita »Propuesta »Confirmada »Realizada »Cancelada ?. La persona recibe varias visitas mediante *¡PerfilPersonaMayor 1>[recibe]<n VisitaBienestar!.",
+          "mainFlow": [
+            {"actor": "actor-caregiver", "action": "El cuidador propone una (VisitaBienestar &-fechaHora=Date &-motivo=string [+proponer=void])."},
+            {"actor": "System", "action": "El sistema valida disponibilidad con (AgendaCuidado &-fecha=Date [+estaDisponible=boolean])."},
+            {"actor": "actor-older-adult-care", "action": "La persona confirma la (VisitaBienestar &-estado=EstadoVisita [+confirmar=void])."},
+            {"actor": "System", "action": "El sistema agenda la visita y envía (Notificacion &-mensaje=string [+enviar=void])."}
+          ],
+          "alternativeFlows": [
+            {
+              "id": "af-visit-unavailable",
+              "startStep": 2,
+              "condition": "El horario propuesto no está disponible.",
+              "actor": "System",
+              "action": "El sistema consulta (AgendaCuidado [+sugerirHorarios=Array|Date|]) y presenta alternativas.",
+              "outcome": "return",
+              "returnStep": 2
+            }
+          ],
+          "sequence": {
+            "participants": [
+              {"id": "caregiver", "name": "Cuidador", "type": "actor"},
+              {"id": "agenda", "name": "agenda:AgendaCuidado", "type": "object"},
+              {"id": "visit", "name": "visit:VisitaBienestar", "type": "object"}
+            ],
+            "messages": [
+              {"from": "caregiver", "to": "agenda", "message": "consultarDisponibilidad()", "type": "sync", "response": "horarioDisponible", "responseType": "sync"},
+              {"from": "agenda", "to": "visit", "message": "programarVisita()", "type": "sync", "response": "visitaConfirmada", "responseType": "sync"}
+            ]
+          }
+        }
+      ],
+      "relations": [
+        {"type": "association", "from": "actor-health-professional", "to": "uc-manage-medication-plan"},
+        {"type": "association", "from": "actor-older-adult-care", "to": "uc-record-dose"},
+        {"type": "association", "from": "actor-caregiver", "to": "uc-record-dose"},
+        {"type": "association", "from": "actor-caregiver", "to": "uc-schedule-wellbeing-visit"},
+        {"type": "association", "from": "actor-older-adult-care", "to": "uc-schedule-wellbeing-visit"},
+        {"type": "include", "from": "uc-manage-medication-plan", "to": "uc-record-dose"}
+      ]
+    }
+  ]
+}

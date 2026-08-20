@@ -75,6 +75,12 @@ app.expandControllerSocket = function ($scope) {
 
     function onMessage(evt) {
         var obj = JSON.parse(evt.data);
+        if (obj.content && obj.content.diagramId && $scope.useCaseDiagrams) {
+            const targetDiagram = $scope.useCaseDiagrams.find(entry => entry.id === obj.content.diagramId);
+            if (targetDiagram && (!$scope.activeUseCaseDiagram || targetDiagram.id !== $scope.activeUseCaseDiagram.id)) {
+                $scope.openUseCaseDiagram(targetDiagram);
+            }
+        }
         //console.log(obj);
         let form;
         //header-config-content
@@ -201,7 +207,10 @@ app.expandControllerSocket = function ($scope) {
         let objmsg = {
             "config": config,
             "groupId": SessionParams.groupid,
-            "content": { ...data}
+            "content": {
+                ...data,
+                diagramId: $scope.activeUseCaseDiagram ? $scope.activeUseCaseDiagram.id : null
+            }
         };
         //console.log("ENVIANDO SOCKET", objmsg);
         $scope.messageSend(objmsg);

@@ -1,92 +1,155 @@
-<div class="modal fade" id="modal_Symbols" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-     aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-            <!-- Card Header - Dropdown -->
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Symbols to describe use cases</h6>
+<div class="container-fluid interpreter-view">
+    <div class="project-layout-width m-auto">
+        <section class="projects-panel interpreter-shell">
+            <header class="projects-panel-header interpreter-header">
+                <div>
+                    <span class="screen-kicker">Modeling</span>
+                    <h2 class="projects-panel-title">UML language interpreter</h2>
+                    <p class="projects-panel-subtitle">Transform the symbolic engineering language into a structured JSON class model.</p>
+                </div>
+                <button class="btn component-secondary-btn btn-sm" id="Symbols_use_cases" type="button"
+                        data-toggle="modal" data-target="#modal_Symbols">
+                    <i class="fas fa-book-open mr-2"></i>Symbol reference
+                    <span class="component-count">{{interpret.length}}</span>
+                </button>
+            </header>
+
+            <div class="interpreter-capabilities" aria-label="Interpreter capabilities">
+                <article>
+                    <span class="interpreter-capability-icon structure"><i class="fas fa-cubes"></i></span>
+                    <div><strong>Structural elements</strong><small>Classes, hidden classes, interfaces and enumerations.</small></div>
+                </article>
+                <article>
+                    <span class="interpreter-capability-icon members"><i class="fas fa-code"></i></span>
+                    <div><strong>Members and typing</strong><small>Attributes, methods, constructors, parameters, visibility and data types.</small></div>
+                </article>
+                <article>
+                    <span class="interpreter-capability-icon relations"><i class="fas fa-project-diagram"></i></span>
+                    <div><strong>UML relationships</strong><small>Association, aggregation, composition, dependency, generalization and cardinality.</small></div>
+                </article>
             </div>
-            <!-- Card Body -->
-            <div class="card-body" style="overflow: auto">
-                <table class="table table-sm table-bordered">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Simbol</th>
-                        <th scope="col">Ascii</th>
-                        <th scope="col">Description</th>
-                        <th>  </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="keyinterpret in interpret">
-                        <th scope="row">{{keyinterpret.simbol}}</th>
-                        <td>{{keyinterpret.ascii}}</td>
-                        <td>{{keyinterpret.description}}</td>
-                        <td> <button class="btn btn-success btn-sm" ng-click="loadExample(keyinterpret)"> Example </button> </td>
-                    </tr>
-                    </tbody>
-                </table>
+
+            <div class="interpreter-workspace">
+                <section class="interpreter-editor">
+                    <div class="interpreter-section-heading">
+                        <div>
+                            <span class="interpreter-step">01 · Source</span>
+                            <h3>Symbolic description</h3>
+                            <p>Write one model fragment at a time. Each conversion is merged into the current model.</p>
+                        </div>
+                        <span class="interpreter-counter">{{(interprete.newstring || '').length}} characters</span>
+                    </div>
+
+                    <div class="interpreter-code-field">
+                        <div class="interpreter-code-toolbar">
+                            <span><i class="fas fa-terminal mr-2"></i>TDDT symbolic language</span>
+                            <span>UTF-8</span>
+                        </div>
+                        <textarea ng-model="interprete.newstring" rows="12"
+                                  aria-label="Symbolic UML description"
+                                  placeholder="Example: *(Order &amp;-id=int&amp;+total=float [+calculateTotal=float])"></textarea>
+                    </div>
+
+                    <div class="interpreter-editor-footer">
+                        <div class="interpreter-help-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Use the symbol reference to review syntax and concrete examples before converting.</span>
+                        </div>
+                        <button type="button" class="btn project-primary-btn interpreter-run-btn"
+                                ng-click="interprete.transform()" ng-disabled="!interprete.newstring">
+                            <i class="fas fa-play mr-2"></i>Interpret model
+                        </button>
+                    </div>
+                </section>
+
+                <aside class="interpreter-process">
+                    <span class="interpreter-step">Processing flow</span>
+                    <h3>From notation to model</h3>
+                    <ol>
+                        <li><span>1</span><div><strong>Read notation</strong><small>Recognizes structure and UML symbols.</small></div></li>
+                        <li><span>2</span><div><strong>Build fragment</strong><small>Creates the interpreted class-model fragment.</small></div></li>
+                        <li><span>3</span><div><strong>Merge result</strong><small>Adds the fragment to the accumulated JSON model.</small></div></li>
+                    </ol>
+                    <div class="interpreter-output-note">
+                        <i class="fas fa-layer-group"></i>
+                        <div><strong>Incremental output</strong><span>{{interpretador.length}} fragments processed in this session.</span></div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="interpreter-results" ng-show="flagJson">
+                <div class="interpreter-results-header">
+                    <div>
+                        <span class="interpreter-step">02 · Result</span>
+                        <h3>Generated engineering model</h3>
+                        <p>Review the interpreted fragments and the cumulative machine-readable structure.</p>
+                    </div>
+                    <span class="interpreter-success"><i class="fas fa-check-circle"></i>Model generated</span>
+                </div>
+
+                <div class="interpreter-results-grid">
+                    <section class="interpreted-fragments">
+                        <header><span>Interpreted fragments</span><strong>{{interpretador.length}}</strong></header>
+                        <ol>
+                            <li ng-repeat="item in interpretador">
+                                <span>{{$index + 1}}</span>
+                                <code>{{item[0]}}</code>
+                            </li>
+                        </ol>
+                    </section>
+                    <section class="generated-json-panel">
+                        <header>
+                            <span><i class="fas fa-code mr-2"></i>Generated JSON</span>
+                            <small>Cumulative model</small>
+                        </header>
+                        <pre><code id="codef" class="json"></code></pre>
+                    </section>
+                </div>
+            </section>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade modal-system symbol-reference-modal" id="modal_Symbols" tabindex="-1" role="dialog"
+     aria-labelledby="symbolReferenceTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="screen-kicker">Modeling language</span>
+                    <h5 class="modal-title" id="symbolReferenceTitle">Symbol reference</h5>
+                    <p>Complete notation currently supported by the interpreter.</p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="component-list-toolbar">
+                    <div class="component-search">
+                        <i class="fas fa-search"></i>
+                        <input class="form-control form-control-sm" type="text" ng-model="symbolSearch" placeholder="Search symbol or purpose">
+                    </div>
+                    <span>{{interpret.length}} supported symbols</span>
+                </div>
+                <div class="table-responsive symbol-reference-table-wrap">
+                    <table class="table symbols-table symbol-reference-table mb-0">
+                        <thead><tr><th>Symbol</th><th>Engineering purpose</th><th aria-label="Open example"></th></tr></thead>
+                        <tbody>
+                            <tr ng-repeat="keyinterpret in interpret | filter: symbolSearch"
+                                ng-click="loadExample(keyinterpret)"
+                                ng-keydown="$event.keyCode === 13 && loadExample(keyinterpret)"
+                                tabindex="0" role="button" title="View syntax example">
+                                <td><code>{{keyinterpret.simbol}}</code></td>
+                                <td><strong>{{keyinterpret.description}}</strong><small ng-show="keyinterpret.ascii">ASCII: {{keyinterpret.ascii}}</small></td>
+                                <td><i class="fas fa-chevron-right"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary rounded-pill btn-sm" data-dismiss="modal">Close</button>
+                <span class="modal-footer-note"><i class="fas fa-info-circle mr-1"></i>Select a row to open its highlighted syntax example.</span>
+                <button type="button" class="btn project-primary-btn btn-sm" data-dismiss="modal">Done</button>
             </div>
         </div>
     </div>
 </div>
-
-<div class="container-fluid">
-
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Interpret</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Interpret</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-    <div class="card shadow mb-4 w-75 m-auto">
-
-        <div  class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-dark">Interpret</h6>
-        </div>
-        <!-- Card Body -->
-        <div class="card-body">
-            <div class="form-group ">
-                <button class="btn badge badge-light float-right" id="Symbols_use_cases"> <i class="fab fa-symfony"></i> Symbols to describe use cases</button>
-                <label class="col-form-label col-form-label-sm"> Enter the description or actions of use cases </label>
-                <textarea style="font-size: 12px;" class="form-control" ng-model="interprete.newstring" rows="10"></textarea>
-            </div>
-            <button type="button" class="btn button-d w-100" ng-click="interprete.transform()">
-                <i class="fas fa-retweet"></i> Convert
-            </button>
-            <div class="row mt-3" ng-show="flagJson">
-                <div class="col-4">
-                    <h6>Descripciones:</h6>
-                    <ul class="list-group scroll" style="height: auto;">
-                        <li class="list-group-item " ng-repeat="item in interpretador">{{item[0]}}</li>
-                    </ul>
-                </div>
-                <div class="col-8">
-                    <h6>Json Generado:</h6>
-                    <!--<div class="scroll" style="background-color: blanchedalmond; height: 85%;">-->
-                    <pre>
-                    <code id="codef" class="scroll json" style="height: 365px; margin-top: -20px">
-
-                    </code></pre>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
-
-
-

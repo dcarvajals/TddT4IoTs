@@ -1,5 +1,6 @@
 package com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.MasterProjectDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.response.CreateFileTrainingResDTO;
@@ -18,5 +19,6 @@ public interface MasterProjectBO {
     CreateFileTrainingResDTO createFileTraining (CreateFileTrainingReq request) throws GenericException, IOException, InterruptedException;
     List<TrainingModelOpenAiRes> trainingModelOpenAi (TrainingModelOpenAiReq request) throws GenericException;
     DiagramDataResDTO useModelOpenAi (GenericTddt4iotsReqDTO<UseModelOpenaiRedDTO> genericTddt4iotsReqDTO) throws GenericException, IOException, InterruptedException;
+    JsonNode generateCaseWorkspace (GenericTddt4iotsReqDTO<GenerateCaseWorkspaceReqDTO> request) throws GenericException, IOException, InterruptedException;
     String deleteTrainingHistory (GenericTddt4iotsReqDTO<Long> idTrainingHistory) throws GenericException;
 }

@@ -26,14 +26,188 @@ app.expandControllerA = function ($scope) {
     var global = "";
     $scope.instanceCode = undefined;
     $scope.flagSelected = false;
+    $scope.testStudioOpen = false;
+    $scope.testStudioSearch = "";
+    $scope.testStudioInputs = {};
+    $scope.testStudioCase = {
+        name: "",
+        assertion: "equals",
+        expected: ""
+    };
+    $scope.testStudioCode = "Select a method from the model tree to preview its JUnit 5 tests.";
     //#endregion VARIABLES
 
     //#region FUNCIONES UTILITARIAS
 
     // funcion para abrir el modal de las tdd
     $scope.openModalTdd = () => {
-        $("#modal_generate_tdd").modal();
+        $scope.testStudioOpen = true;
+        $scope.flagSelected = false;
+        $scope.testStudioInputs = {};
+        $scope.testStudioCase = {name: "", assertion: "equals", expected: ""};
+        $scope.refreshTestStudioCode();
+        window.setTimeout(() => window.dispatchEvent(new Event("resize")), 0);
     };
+
+    $scope.closeTestStudio = () => {
+        $scope.testStudioOpen = false;
+        window.setTimeout(() => window.dispatchEvent(new Event("resize")), 0);
+    };
+
+    $scope.testStudioClassesCount = () => {
+        let total = 0;
+        for (const pack of (($scope.jsonClass && $scope.jsonClass.diagram) || [])) {
+            total += (pack.class || []).length;
+        }
+        return total;
+    };
+
+    $scope.testStudioMethodsCount = () => {
+        let total = 0;
+        for (const pack of (($scope.jsonClass && $scope.jsonClass.diagram) || [])) {
+            for (const itemClass of (pack.class || [])) total += (itemClass.methods || []).length;
+        }
+        return total;
+    };
+
+    $scope.testStudioConfiguredMethodsCount = () => {
+        let total = 0;
+        for (const itemClass of ($scope.classTdd || [])) total += (itemClass.Methods || []).length;
+        return total;
+    };
+
+    $scope.testStudioCasesCount = () => {
+        let total = 0;
+        for (const itemClass of ($scope.classTdd || [])) {
+            for (const method of (itemClass.Methods || [])) total += (method.parameters || []).length;
+        }
+        return total;
+    };
+
+    $scope.testStudioCoverage = () => {
+        const methods = $scope.testStudioMethodsCount();
+        return methods ? Math.round(($scope.testStudioConfiguredMethodsCount() * 100) / methods) : 0;
+    };
+
+    $scope.testStudioMethodHasTests = (className, methodName) => {
+        const classPosition = $scope.existMethod($scope.classTdd, "class", className);
+        if (!classPosition[1]) return false;
+        return $scope.existMethod($scope.classTdd[classPosition[0]].Methods || [], "NameMethod", methodName)[1];
+    };
+
+    $scope.testStudioSelectedMethodData = () => {
+        if (!$scope.methodSelected || !$scope.methodSelected.name || !$scope.classNameSelected) return null;
+        const classPosition = $scope.existMethod($scope.classTdd, "class", $scope.classNameSelected);
+        if (!classPosition[1]) return null;
+        const methodPosition = $scope.existMethod($scope.classTdd[classPosition[0]].Methods || [], "NameMethod", $scope.methodSelected.name);
+        return methodPosition[1] ? $scope.classTdd[classPosition[0]].Methods[methodPosition[0]] : null;
+    };
+
+    $scope.testStudioSelectedCases = () => {
+        const method = $scope.testStudioSelectedMethodData();
+        return method ? (method.parameters || []) : [];
+    };
+
+    $scope.testStudioCaseMetadata = index => {
+        const method = $scope.testStudioSelectedMethodData();
+        return method && method.cases && method.cases[index] ? method.cases[index] : {};
+    };
+
+    $scope.selectTestStudioMethod = (method, pack, className) => {
+        $scope.testStudioSelectedPack = pack;
+        $scope.activeMethod(method, pack, className);
+        $scope.testStudioInputs = {};
+        $scope.testStudioCase = {
+            name: method.name + " - expected behavior",
+            assertion: method.type === "void" ? "completes" : "equals",
+            expected: ""
+        };
+        $scope.refreshTestStudioCode();
+    };
+
+    const normalizedTestValue = (type, value) => {
+        const raw = value === undefined || value === null ? "" : String(value).trim();
+        const normalizedType = String(type || "").split(":").pop().toLowerCase();
+        if (normalizedType === "string") return '"' + raw.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+        if (normalizedType === "char") return "'" + raw.replace(/'/g, "\\'") + "'";
+        if (normalizedType === "long" && /^-?\d+$/.test(raw)) return raw + "L";
+        if (normalizedType === "float" && /^-?\d+(\.\d+)?$/.test(raw)) return raw + "f";
+        return raw || "null";
+    };
+
+    $scope.addTestFromStudio = (method) => {
+        const values = [];
+        for (const parameter of (method.parameters || [])) {
+            const value = $scope.testStudioInputs[parameter.name];
+            if (value === undefined || String(value).trim() === "") {
+                alertAll({status: 3, information: "Complete all method inputs before adding the test."});
+                return;
+            }
+            values.push({
+                typeDate: String(parameter.type || "").split(":").pop(),
+                name: parameter.name,
+                value: String(value).trim()
+            });
+        }
+
+        const assertion = $scope.testStudioCase.assertion;
+        if (assertion === "equals" && String($scope.testStudioCase.expected || "").trim() === "") {
+            alertAll({status: 3, information: "Enter the expected result for this test."});
+            return;
+        }
+
+        let classPosition = $scope.existMethod($scope.classTdd, "class", $scope.classNameSelected);
+        if (!classPosition[1]) {
+            $scope.classTdd.push({Type: "", Pack: $scope.testStudioSelectedPack, class: $scope.classNameSelected, Methods: []});
+            classPosition = [$scope.classTdd.length - 1, true];
+        }
+        const methods = $scope.classTdd[classPosition[0]].Methods;
+        let methodPosition = $scope.existMethod(methods, "NameMethod", method.name);
+        if (!methodPosition[1]) {
+            methods.push({
+                typeVisibility: method.visibility,
+                TypeMethods: method.type,
+                NameMethod: method.name,
+                parameters: [],
+                return: [],
+                cases: []
+            });
+            methodPosition = [methods.length - 1, true];
+        }
+
+        const target = methods[methodPosition[0]];
+        target.parameters.push(values);
+        target.return.push({type: method.type, value: String($scope.testStudioCase.expected || "").trim()});
+        if (!target.cases) target.cases = [];
+        target.cases.push({
+            name: String($scope.testStudioCase.name || (method.name + " test")).trim(),
+            assertion: assertion
+        });
+        $scope.jsonTdd.receiveTDDJSOM = $scope.classTdd;
+        $scope.testStudioInputs = {};
+        $scope.testStudioCase.expected = "";
+        $scope.refreshTestStudioCode();
+        alertAll({status: 1, information: "Test case added to the design."});
+    };
+
+    $scope.deleteTestStudioCase = (methodName, index) => {
+        const itemMethod = $scope.searchMethodTest(methodName);
+        if (!itemMethod || !itemMethod.parameters) return;
+        itemMethod.parameters.splice(index, 1);
+        if (itemMethod.return) itemMethod.return.splice(index, 1);
+        if (itemMethod.cases) itemMethod.cases.splice(index, 1);
+        if (itemMethod.parameters.length === 0) {
+            const classPosition = $scope.existMethod($scope.classTdd, "class", $scope.classNameSelected);
+            if (classPosition[1]) {
+                const methodPosition = $scope.existMethod($scope.classTdd[classPosition[0]].Methods, "NameMethod", methodName);
+                if (methodPosition[1]) $scope.classTdd[classPosition[0]].Methods.splice(methodPosition[0], 1);
+                if ($scope.classTdd[classPosition[0]].Methods.length === 0) $scope.classTdd.splice(classPosition[0], 1);
+            }
+        }
+        $scope.refreshTestStudioCode();
+    };
+
+    $scope.testStudioSelectedPack = "";
 
     $scope.cancelActiveMethod = () => {
         $scope.flagSelected = false;
@@ -382,6 +556,127 @@ app.expandControllerA = function ($scope) {
         //console.log(string);
         return string;
     }
+
+    const safeJavaIdentifier = (value, fallback) => {
+        const identifier = String(value || fallback || "test").replace(/[^A-Za-z0-9_$]/g, "_");
+        return /^\d/.test(identifier) ? "test_" + identifier : identifier;
+    };
+
+    const findModeledClass = (className) => {
+        for (const pack of (($scope.jsonClass && $scope.jsonClass.diagram) || [])) {
+            for (const itemClass of (pack.class || [])) {
+                if (itemClass.className === className) return {pack: pack.packName || "", itemClass: itemClass};
+            }
+        }
+        return null;
+    };
+
+    const generateJUnit5ForClass = (testClass) => {
+        if (!testClass) return "Select a configured class to preview its tests.";
+        const modeled = findModeledClass(testClass.class);
+        const packageName = testClass.Pack || (modeled && modeled.pack) || "";
+        let code = packageName ? "package " + packageName + ";\n\n" : "";
+        code += "import org.junit.jupiter.api.Test;\n";
+        code += "import static org.junit.jupiter.api.Assertions.*;\n\n";
+        code += "class " + safeJavaIdentifier(testClass.class, "Generated") + "Test {\n\n";
+        code += "    private final " + testClass.class + " instance = new " + testClass.class + "();\n";
+
+        for (const itemMethod of (testClass.Methods || [])) {
+            const modeledMethod = modeled && (modeled.itemClass.methods || []).find(method => method.name === itemMethod.NameMethod);
+            const declaredParameters = modeledMethod ? (modeledMethod.parameters || []) : [];
+            for (let caseIndex = 0; caseIndex < (itemMethod.parameters || []).length; caseIndex++) {
+                const values = itemMethod.parameters[caseIndex] || [];
+                const metadata = (itemMethod.cases || [])[caseIndex] || {};
+                const assertion = metadata.assertion || (itemMethod.TypeMethods === "void" ? "completes" : "equals");
+                const caseName = safeJavaIdentifier(metadata.name, itemMethod.NameMethod + "_case_" + (caseIndex + 1));
+                code += "\n    @Test\n";
+                code += "    void " + caseName + "() {\n";
+                const invocationArgs = [];
+                for (let paramIndex = 0; paramIndex < values.length; paramIndex++) {
+                    const parameter = values[paramIndex];
+                    const declared = declaredParameters[paramIndex] || {};
+                    const type = String(declared.type || parameter.typeDate || "Object").split(":").pop();
+                    const name = safeJavaIdentifier(parameter.name, "arg" + paramIndex);
+                    code += "        " + type + " " + name + " = " + normalizedTestValue(type, parameter.value) + ";\n";
+                    invocationArgs.push(name);
+                }
+                const invocation = "instance." + itemMethod.NameMethod + "(" + invocationArgs.join(", ") + ")";
+                const expected = (itemMethod.return || [])[caseIndex] || {type: itemMethod.TypeMethods, value: ""};
+                if (assertion === "notNull") {
+                    code += "        assertNotNull(" + invocation + ");\n";
+                } else if (assertion === "throws") {
+                    code += "        assertThrows(Exception.class, () -> " + invocation + ");\n";
+                } else if (assertion === "completes" || itemMethod.TypeMethods === "void") {
+                    code += "        assertDoesNotThrow(() -> " + invocation + ");\n";
+                } else {
+                    code += "        " + itemMethod.TypeMethods + " expected = " + normalizedTestValue(expected.type, expected.value) + ";\n";
+                    code += "        assertEquals(expected, " + invocation + ");\n";
+                }
+                code += "    }\n";
+            }
+        }
+        code += "}\n";
+        return code;
+    };
+
+    $scope.refreshTestStudioCode = () => {
+        let selectedClass = null;
+        if ($scope.classNameSelected) {
+            const classPosition = $scope.existMethod($scope.classTdd, "class", $scope.classNameSelected);
+            if (classPosition[1]) selectedClass = $scope.classTdd[classPosition[0]];
+        }
+        $scope.testStudioCode = selectedClass
+            ? generateJUnit5ForClass(selectedClass)
+            : "Select a method and add its first test case to generate the JUnit 5 preview.";
+    };
+
+    const downloadTextArtifact = (content, fileName, mimeType) => {
+        const blob = new Blob([content], {type: mimeType || "text/plain;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    $scope.downloadTestStudioCode = () => {
+        if (!$scope.classNameSelected || !$scope.testStudioMethodHasTests($scope.classNameSelected, $scope.methodSelected.name)) {
+            alertAll({status: 3, information: "Add at least one test case before downloading the source."});
+            return;
+        }
+        downloadTextArtifact($scope.testStudioCode, safeJavaIdentifier($scope.classNameSelected, "Generated") + "Test.java", "text/x-java;charset=utf-8");
+    };
+
+    const escapeReportHtml = value => String(value === undefined || value === null ? "" : value)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    $scope.downloadTestStudioReport = () => {
+        const rows = [];
+        for (const itemClass of ($scope.classTdd || [])) {
+            for (const method of (itemClass.Methods || [])) {
+                for (let index = 0; index < (method.parameters || []).length; index++) {
+                    const metadata = (method.cases || [])[index] || {};
+                    rows.push("<tr><td>" + escapeReportHtml(itemClass.class) + "</td><td>" + escapeReportHtml(method.NameMethod) +
+                        "</td><td>" + escapeReportHtml(metadata.name || ("Case " + (index + 1))) + "</td><td>" +
+                        escapeReportHtml(metadata.assertion || "equals") + "</td><td>Designed · not executed</td></tr>");
+                }
+            }
+        }
+        const projectName = ($scope.dataProject && $scope.dataProject.name_mp) || "TDDT4IoTS project";
+        const html = "<!doctype html><html><head><meta charset='utf-8'><title>Test design report</title><style>" +
+            "body{font-family:Arial,sans-serif;color:#34434c;margin:36px}h1{font-size:22px;margin-bottom:4px}p{color:#718089;font-size:12px}" +
+            ".summary{display:flex;gap:12px;margin:24px 0}.summary div{border:1px solid #dbe5e0;border-radius:8px;padding:12px 18px}.summary strong{display:block;color:#176b48;font-size:20px}" +
+            "table{border-collapse:collapse;width:100%;font-size:11px}th{background:#30463d;color:#fff;text-align:left}th,td{border:1px solid #e1e8e4;padding:8px}tr:nth-child(even){background:#f6f9f7}" +
+            "</style></head><body><h1>Test design report</h1><p>" + escapeReportHtml(projectName) + " · Generated by TDDT4IoTS Test Studio</p>" +
+            "<div class='summary'><div><strong>" + $scope.testStudioCasesCount() + "</strong>Cases</div><div><strong>" +
+            $scope.testStudioConfiguredMethodsCount() + "/" + $scope.testStudioMethodsCount() + "</strong>Methods</div><div><strong>" +
+            $scope.testStudioCoverage() + "%</strong>Design coverage</div></div><table><thead><tr><th>Class</th><th>Method</th><th>Case</th><th>Assertion</th><th>Status</th></tr></thead><tbody>" +
+            (rows.join("") || "<tr><td colspan='5'>No test cases have been designed.</td></tr>") + "</tbody></table></body></html>";
+        downloadTextArtifact(html, "test-design-report.html", "text/html;charset=utf-8");
+    };
 
     //#region VIEW CODE
 

@@ -2,40 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sing Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TDDT4IoTS - Registration complete</title>
     <link rel="shortcut icon" href="resources/img/logo-app/logoOficial.ico">
     <link rel="stylesheet" href="resources/css/css-library/bootstrap.css">
     <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Karla:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="resources/css/css-app/index-app.css">
-    <link href="resources/css/css-library/toastr.min.css" rel="stylesheet" type="text/css"/>
-
-    <script src="resources/js/js-library/jquery.min.js"></script>
-    <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
-    <script src="resources/js/js-library/angular.js" type="text/javascript"></script>
-    <script src="resources/js/js-library/angular-route.min.js" type="text/javascript"></script>
-    <script src="resources/js/js-library/sweetalert2.min.js" type="text/javascript"></script>
-    <script src="resources/js/js-global/jsAlertPersonalize.js" type="text/javascript"></script>
-
-    <script src="resources/js/js-library/store2.min.js" type="text/javascript"></script>
-    <script src="resources/js/js-library/toastr.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="resources/css/css-app/auth.css">
+    <link rel="stylesheet" href="resources/css/css-app/system-feedback.css">
 </head>
-<body>
+<body class="auth-page">
+    <main class="auth-shell">
+        <aside class="auth-showcase">
+            <a class="auth-brand" href="index.html" aria-label="TDDT4IoTS sign in">
+                <span class="auth-brand-mark"><img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt=""></span>
+                <span class="auth-brand-copy"><strong>TDDT4IoTS</strong><span>CASE workspace</span></span>
+            </a>
+            <div class="auth-showcase-content">
+                <span class="auth-showcase-kicker">Workspace ready</span>
+                <h1>Your engineering journey starts here.</h1>
+                <p class="auth-showcase-description">Your account gives you access to project modeling, UML interpretation, IoT components and AI-assisted engineering tools.</p>
+            </div>
+            <span class="auth-showcase-footer">Design · Validate · Collaborate</span>
+        </aside>
 
-<div class="container mt-4">
-    <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" width="150" alt="logo"/>
-
-    <div class="container-fluid mt-4 mb-4 w-50 text-center">
-        <img src="resources/img/img-uml/registroUsuarioicon.svg" width="350" alt="logo"/>
-        <h1 class="display-3 text-success font-weight-bold">
-            Successful user registration
-        </h1>
-        <span class="font-weight-bold" style="letter-spacing: 1.28px;">
-            To log in <a href="index.html"> click here </a>
-        </span>
-    </div>
-</div>
-
+        <section class="auth-content">
+            <div class="auth-card">
+                <div class="auth-form-panel auth-success">
+                    <span class="auth-success-icon"><span class="oi oi-check"></span></span>
+                    <span class="auth-step justify-content-center">Registration complete</span>
+                    <h2>Account created successfully</h2>
+                    <p>Your TDDT4IoTS workspace is ready. Sign in with your registered email and password to begin modeling.</p>
+                    <a class="btn auth-primary-button" href="index.html">Continue to sign in</a>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

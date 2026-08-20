@@ -2,6 +2,7 @@
 
 var myDiagram;
 var myPalette;
+var myOverview;
 var goJs;
 var nodeMenu;
 var lineMenu;
@@ -174,38 +175,80 @@ function initDiagramProject() {
                         curve: go.Link.JumpOver,
                         reshapable: true,
                         resegmentable: true,
-                        relinkableFrom: true, relinkableTo: true,
+                        relinkableFrom: true,
+                        relinkableTo: true,
                         selectionAdorned: true,
                         adjusting: go.Link.End,
-                        corner: 5,
+                        corner: 10,
+                        fromShortLength: 2,
+                        toShortLength: 2,
+                        cursor: "pointer",
+                        selectionAdornmentTemplate:
+                                goJs(go.Adornment, "Link",
+                                        goJs(go.Shape, {
+                                            isPanelMain: true,
+                                            stroke: "#176b48",
+                                            strokeWidth: 12,
+                                            opacity: 0.14
+                                        })),
                         mouseEnter: function (e, link) {
-                            //link.elt(0).stroke = "rgba(140, 0, 50)";
+                            var hoverShape = link.findObject("CABLE_HOVER");
+                            if (hoverShape) {
+                                hoverShape.stroke = "rgba(23, 107, 72, 0.12)";
+                            }
                         },
                         mouseLeave: function (e, link) {
-                            //link.elt(0).stroke = "transparent";
+                            var hoverShape = link.findObject("CABLE_HOVER");
+                            if (hoverShape) {
+                                hoverShape.stroke = "transparent";
+                            }
                         }
                     },
-                    //{ routing: go.Link.Orthogonal },  // optional, but need to keep LinkingTool.temporaryLink in sync, above
-                    //{adjusting: go.Link.Stretch}, // optional
                     new go.Binding("points").makeTwoWay(),
-                    //goJs(go.Shape, { strokeWidth: 1.5 }),
-                    //goJs(go.Shape, {toArrow: "OpenTriangle"}),
-                    goJs(go.Shape, new go.Binding("stroke", "color"), {isPanelMain: true, strokeWidth: 10}))
-            /*goJs(go.Shape, {isPanelMain: true, stroke: "blue", strokeWidth: 8})*/ //rgba(140, 0, 50)
-            /*goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, fromArrow: "Circle"}),
-             goJs(go.Shape, {scale: 2, fill: "rgba(140, 0, 50)", strokeWidth: 0, toArrow: "Circle"}))*/;
+                    // Wide transparent hit area: the visible cable stays compact but is easy to select.
+                    goJs(go.Shape, {
+                        isPanelMain: true,
+                        stroke: "transparent",
+                        strokeWidth: 18
+                    }),
+                    goJs(go.Shape, {
+                        name: "CABLE_HOVER",
+                        isPanelMain: true,
+                        stroke: "transparent",
+                        strokeWidth: 11,
+                        strokeCap: "round",
+                        strokeJoin: "round"
+                    }),
+                    // Light outline keeps colored wires legible over devices and the drawing grid.
+                    goJs(go.Shape, {
+                        isPanelMain: true,
+                        stroke: "rgba(255, 255, 255, 0.92)",
+                        strokeWidth: 7,
+                        strokeCap: "round",
+                        strokeJoin: "round"
+                    }),
+                    goJs(go.Shape, {
+                        name: "CABLE",
+                        isPanelMain: true,
+                        strokeWidth: 4.5,
+                        strokeCap: "round",
+                        strokeJoin: "round"
+                    }, new go.Binding("stroke", "color", function (color) {
+                        return color || "#3C4042";
+                    })));
+
+    configureCableEditingTools();
 
     var tool = myDiagram.toolManager.relinkingTool;
 
-    //VALIDACION DE LA CONEXION A LOS PUERTOS
+    // Keep reconnection restricted to actual component-port nodes.
     tool.linkValidation = function (fromnode, fromport, tonode, toport, link) {
-        /*//console.log(fromport.jb.portId);
-         //console.log(toport.jb.portId);
-         alert("desde: " + fromport.data.key + "hasta: " + toport.data.key);
-         return fromport.jb.portId === "Gnd";*/
+        return Boolean(fromnode && tonode && fromport && toport &&
+                fromnode.data && tonode.data &&
+                fromnode.data._g !== undefined && tonode.data._g !== undefined);
     };
 
-    goJs(go.Overview, "overView", {
+    myOverview = goJs(go.Overview, "overView", {
         observed: myDiagram
     });
 
@@ -223,27 +266,90 @@ function initDiagramProject() {
     };
 
     myDiagram.addDiagramListener("LinkDrawn", function (e) {
-        var link = e.subject; // El enlace que se acaba de dibujar.
-        var fromNode = link.fromNode;
-        var toNode = link.toNode;
-        var fromPort = link.fromPort;
-        var toPort = link.toPort;
-
-        // Aquí puedes añadir tu lógica de validación.
-        //console.log("EVENTO AL SOLTAR LOS CABLES.");
-        //console.log("fromNode", fromNode.data.key); // Asumiendo que 'key' es una propiedad de tu nodo.
-        //console.log("toNode", toNode.data.key);
-        //console.log("fromnode", fromNode.wb);
-        //console.log("tonode", toNode.wb);
-
-        validaciones = validarConexionCables(fromNode.wb, toNode.wb, link);
-        if (validaciones.showAlert) {
-            alertAll(validaciones);
-            if (validaciones.status !== 1) {
-                myDiagram.model.removeLinkData(link.data);
-            }
-        }
+        validateCableLink(e.subject);
     });
+
+    myDiagram.addDiagramListener("LinkRelinked", function (e) {
+        validateCableLink(e.subject);
+    });
+}
+
+function validateCableLink(link) {
+    if (!link || !link.fromNode || !link.toNode) {
+        return;
+    }
+
+    // Ports are represented by child Nodes; their public data object contains
+    // the electrical capabilities and the _g key of the owning component.
+    validaciones = validarConexionCables(link.fromNode.data, link.toNode.data, link);
+    if (validaciones.showAlert) {
+        alertAll(validaciones);
+        if (validaciones.status !== 1) {
+            myDiagram.model.removeLinkData(link.data);
+        }
+    }
+}
+
+function configureCableEditingTools() {
+    var reshapeTool = myDiagram.toolManager.linkReshapingTool;
+    var linkingTool = myDiagram.toolManager.linkingTool;
+    var relinkingTool = myDiagram.toolManager.relinkingTool;
+
+    // Existing bend: larger white handle with a green outline.
+    reshapeTool.handleArchetype = goJs(go.Shape, "Circle", {
+        desiredSize: new go.Size(11, 11),
+        fill: "#ffffff",
+        stroke: "#176b48",
+        strokeWidth: 2,
+        cursor: "move"
+    });
+
+    // Intermediate handle: dragging it creates a new orthogonal bend.
+    reshapeTool.midHandleArchetype = goJs(go.Shape, "Circle", {
+        desiredSize: new go.Size(8, 8),
+        fill: "#8fc9ad",
+        stroke: "#ffffff",
+        strokeWidth: 1.5,
+        cursor: "copy"
+    });
+
+    linkingTool.portGravity = 24;
+    relinkingTool.portGravity = 24;
+    relinkingTool.fromHandleArchetype = goJs(go.Shape, "Circle", {
+        desiredSize: new go.Size(13, 13),
+        fill: "#ffffff",
+        stroke: "#287ba3",
+        strokeWidth: 2.5,
+        cursor: "pointer"
+    });
+    relinkingTool.toHandleArchetype = goJs(go.Shape, "Circle", {
+        desiredSize: new go.Size(13, 13),
+        fill: "#ffffff",
+        stroke: "#d36b4c",
+        strokeWidth: 2.5,
+        cursor: "pointer"
+    });
+
+    // Preview the same orthogonal, rounded cable while the user is connecting ports.
+    linkingTool.temporaryLink = goJs(go.Link, {
+        routing: go.Link.Orthogonal,
+        corner: 10,
+        curve: go.Link.JumpOver
+    },
+            goJs(go.Shape, {
+                isPanelMain: true,
+                stroke: "rgba(255, 255, 255, 0.92)",
+                strokeWidth: 7,
+                strokeCap: "round",
+                strokeJoin: "round"
+            }),
+            goJs(go.Shape, {
+                isPanelMain: true,
+                stroke: "#3C4042",
+                strokeWidth: 4.5,
+                strokeCap: "round",
+                strokeJoin: "round"
+            }));
 }
 
 getPortsInfo = (port) => {
@@ -451,38 +557,102 @@ function initContextMenu() {
             );
 }
 
-function searchComponentPalette() {
-    var input = document.getElementById('searchBox').value.toLowerCase(); // obtener el texto del input
-    var palette = myPalette; // asegura que 'myPalette' esté disponible en este contexto
+function normalizePaletteText(value) {
+    return String(value || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+}
 
-    if (input === "" || input.length === 0) {
-        palette.model.nodeDataArray = originalNodeDataArray;
+function createPaletteModel(nodeData) {
+    var modelPalette = new go.GraphLinksModel();
+    modelPalette.nodeIsGroupProperty = "_isg";
+    modelPalette.nodeGroupKeyProperty = "_g";
+    modelPalette.addNodeDataCollection(JSON.parse(JSON.stringify(nodeData || [])));
+    return modelPalette;
+}
+
+function updatePaletteSearchState(resultCount, query) {
+    var count = document.getElementById("paletteResultCount");
+    var empty = document.getElementById("paletteEmptyState");
+    var search = document.querySelector(".iot-component-search");
+
+    if (count) {
+        count.textContent = resultCount + (resultCount === 1 ? " device" : " devices");
+    }
+    if (empty) {
+        empty.classList.toggle("is-visible", resultCount === 0 && originalNodeDataArray.length > 0);
+    }
+    if (search) {
+        search.classList.toggle("has-query", Boolean(query));
+    }
+}
+
+function searchComponentPalette() {
+    var searchBox = document.getElementById("searchBox");
+    var query = normalizePaletteText(searchBox ? searchBox.value : "");
+
+    if (!myPalette || !originalNodeDataArray.length) {
+        updatePaletteSearchState(0, query);
         return;
     }
 
-    if (palette.model.nodeDataArray) {
-        var filteredArray = palette.model.nodeDataArray.filter(function (item) {
-            // Asumiendo que 'name' es la propiedad que contiene el nombre del componente
-            if (!item || typeof item.name !== 'string') {
-                return false; // Si no existe o no es string, excluye este item del resultado
-            }
-            return item.name.toLowerCase().includes(input);
-        });
+    var matchingGroupKeys = {};
+    var matchedComponents = originalNodeDataArray.filter(function (item) {
+        if (!item || item._isg !== true) {
+            return false;
+        }
+        var searchableText = normalizePaletteText([item.name, item.type, item.description].join(" "));
+        var matches = !query || searchableText.indexOf(query) !== -1;
+        if (matches) {
+            matchingGroupKeys[String(item.key)] = true;
+        }
+        return matches;
+    });
 
-        var modelPalet = new go.GraphLinksModel();
+    var filteredData = originalNodeDataArray.filter(function (item) {
+        return item && (item._isg === true ? matchingGroupKeys[String(item.key)] : matchingGroupKeys[String(item._g)]);
+    });
 
-        myDiagram.model.nodeIsGroupProperty = "_isg";
-        myDiagram.model.nodeGroupKeyProperty = "_g";
-        modelPalet.nodeIsGroupProperty = "_isg";
-        modelPalet.nodeGroupKeyProperty = "_g";
+    myPalette.model = createPaletteModel(filteredData);
+    updatePaletteSearchState(matchedComponents.length, query);
+    requestIoTDiagramResize();
+}
 
-        modelPalet.addNodeDataCollection(filteredArray);
-        modelPalet.addNodeDataCollection(puertos);
-
-        palette.model = modelPalet;
-
-        //palette.model.nodeDataArray = filteredArray;
+function clearComponentPaletteSearch() {
+    var searchBox = document.getElementById("searchBox");
+    if (searchBox) {
+        searchBox.value = "";
+        searchBox.focus();
     }
+    searchComponentPalette();
+}
+
+function undoIoTDiagram() {
+    if (myDiagram && myDiagram.commandHandler.canUndo()) {
+        myDiagram.commandHandler.undo();
+    }
+}
+
+function redoIoTDiagram() {
+    if (myDiagram && myDiagram.commandHandler.canRedo()) {
+        myDiagram.commandHandler.redo();
+    }
+}
+
+function requestIoTDiagramResize() {
+    window.requestAnimationFrame(function () {
+        if (myDiagram) {
+            myDiagram.requestUpdate();
+        }
+        if (myPalette) {
+            myPalette.requestUpdate();
+        }
+        if (myOverview) {
+            myOverview.requestUpdate();
+        }
+    });
 }
 
 getPortsSearch = (param_ports) => {
@@ -518,9 +688,18 @@ getPortsSearch = (param_ports) => {
 //Inicializar la paleta de los componentes
 function initPalette() {
     myPalette = goJs(go.Palette, "myPalette",
-            {// customize the GridLayout to align the centers of the locationObjects
+            {
+                padding: new go.Margin(4, 5, 8, 5),
+                contentAlignment: go.Spot.TopCenter,
+                allowHorizontalScroll: false,
+                "animationManager.isEnabled": false,
                 layout: goJs(go.GridLayout,
-                        {alignment: go.GridLayout.Location}),
+                        {
+                            alignment: go.GridLayout.Location,
+                            wrappingColumn: 1,
+                            spacing: new go.Size(0, 2),
+                            cellSize: new go.Size(1, 1)
+                        })
             });
 
     myPalette.nodeTemplate =
@@ -558,59 +737,88 @@ function initPalette() {
 
 
     myPalette.groupTemplate =
-            goJs(go.Group, "Horizontal",
+            goJs(go.Group, "Auto",
                     {
                         name: "toolTdd",
                         selectionAdorned: false,
-                        locationSpot: go.Spot.Center, locationObjectName: "ICON",
-                        padding: 0,
-                        background: "#F1F1F3",
-                        cursor: "grab", width: 245, margin: new go.Margin(100, 10, 0, 10),
+                        locationSpot: go.Spot.Center,
+                        locationObjectName: "CARD",
+                        cursor: "grab",
+                        width: 244,
+                        height: 78,
+                        margin: new go.Margin(4, 4, 4, 4),
                         mouseEnter: function (e, toolTdd) {
-                            toolTdd.background = "white";
+                            var card = toolTdd.findObject("CARD");
+                            if (card) {
+                                card.fill = "#f1f8f4";
+                                card.stroke = "#9ecbb6";
+                            }
                         },
                         mouseLeave: function (e, toolTdd) {
-                            toolTdd.background = "#F1F1F3";
+                            var card = toolTdd.findObject("CARD");
+                            if (card) {
+                                card.fill = "#ffffff";
+                                card.stroke = "#dce5e1";
+                            }
                         }
-                        //movable: false,
                     },
                     new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-                    goJs(go.Panel, "Vertical", go.Panel.Viewbox,
-                            {width: 70, height: 70, margin: new go.Margin(0, 5, 0, 20), background: "white", padding: 5},
-                            goJs(go.Panel, "Spot",
-                                    {name: "ICON"}, // an initial height; size will be set by InputOutputGroupLayout
-
-                                    goJs(go.Picture,
-                                            new go.Binding("source", "img"), new go.Binding("width", "widthX"),
-                                            new go.Binding("height", "heightX"),
-                                            {/*imageAlignment: go.Spot.Left*/margin: new go.Margin(0, 0, 0, 0)
-
-                                            }),
+                    goJs(go.Shape, "RoundedRectangle", {
+                        name: "CARD",
+                        fill: "#ffffff",
+                        stroke: "#dce5e1",
+                        strokeWidth: 1,
+                        parameter1: 7
+                    }),
+                    goJs(go.Panel, "Horizontal", {margin: 8},
+                            goJs(go.Panel, "Auto", {width: 56, height: 56},
+                                    goJs(go.Shape, "RoundedRectangle", {
+                                        fill: "#f4f8f6",
+                                        stroke: "#e3ebe7",
+                                        parameter1: 6
+                                    }),
+                                    goJs(go.Picture, {
+                                        name: "ICON",
+                                        width: 45,
+                                        height: 45,
+                                        imageStretch: go.GraphObject.Uniform
+                                    }, new go.Binding("source", "img"))
+                                    ),
+                            goJs(go.Panel, "Vertical", {
+                                width: 162,
+                                margin: new go.Margin(1, 0, 0, 9),
+                                defaultAlignment: go.Spot.Left
+                            },
+                                    goJs(go.TextBlock, {
+                                        name: "TBE",
+                                        font: "600 11px 'Roboto Mono', monospace",
+                                        stroke: "#31433a",
+                                        width: 158,
+                                        maxLines: 1,
+                                        overflow: go.TextBlock.OverflowEllipsis
+                                    }, new go.Binding("text", "name")),
+                                    goJs(go.TextBlock, {
+                                        font: "700 7px 'Roboto Mono', monospace",
+                                        stroke: "#27805a",
+                                        margin: new go.Margin(3, 0, 3, 0),
+                                        width: 158
+                                    }, new go.Binding("text", "type", function (type) {
+                                        return String(type || "IoT device").toUpperCase();
+                                    })),
+                                    goJs(go.TextBlock, {
+                                        name: "TBD",
+                                        font: "9px 'Roboto Mono', monospace",
+                                        stroke: "#74827b",
+                                        width: 158,
+                                        maxLines: 2,
+                                        overflow: go.TextBlock.OverflowEllipsis,
+                                        wrap: go.TextBlock.WrapFit
+                                    }, new go.Binding("text", "description"))
                                     )
-                            ),
-                    new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-                    goJs(go.Panel, "Vertical", {
-                        width: 160,
-                        height: 100,
-                        padding: 0, background: "#F1F1F3"},
-                            goJs(go.TextBlock, {name: "TBE"},
-                                    new go.Binding("text", "name"), {
-                                font: "bold  12px consolas",
-                                textAlign: "left", margin: new go.Margin(20, 0, 5, 0), width: 120
-                            }),
-                            goJs(go.TextBlock, {name: "TBD"},
-                                    new go.Binding("text", "description"), {
-                                font: "9px consolas",
-                                textAlign: "left", margin: new go.Margin(0, 10, 0, 10), width: 120,
-                                mouseEnter: function (e, TBD) {
-                                    TBD.stroke = "#87D5FF";
-                                },
-                                mouseLeave: function (e, TBD) {
-                                    TBD.stroke = "black";
-                                }
-                            })
                             )
                     );
+
+    requestIoTDiagramResize();
 }
 
 //Cargar los datos de los componentes(funcion que debe servir para el webSocket)
@@ -618,6 +826,7 @@ function loadComponents(obj) {
     ////console.log(myDiagram.model);
     //let components = [];
     let ports = [];
+    puertos = [];
 
     var model = new go.GraphLinksModel();
     var modelPalet = new go.GraphLinksModel();
@@ -631,7 +840,7 @@ function loadComponents(obj) {
     let components = obj.data.map(
             dataItem => {
                 // Asegúrate de que la descripción no exceda los 100 caracteres
-                let description = dataItem.description_component;
+                let description = dataItem.description_component || "No description available.";
                 if (description.length > 100) {
                     description = description.substring(0, 99);
                 }
@@ -664,7 +873,10 @@ function loadComponents(obj) {
     myPalette.model = modelPalet;
     // Guardar una copia de los datos originales
     originalNodeDataArray = JSON.parse(JSON.stringify(myPalette.model.nodeDataArray));
+    searchComponentPalette();
 }
+
+window.addEventListener("resize", requestIoTDiagramResize);
 
 getPorts = (param_ports) => {
     let ports = [];

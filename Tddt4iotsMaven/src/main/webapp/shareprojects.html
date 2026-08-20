@@ -1,5 +1,5 @@
 <!--modal para visualizar las invitaciones-->
-<div class="modal fade" id="modalInvitations" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+<div class="modal fade shared-invitations-modal" id="modalInvitations" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable sha" role="document">
         <div class="modal-content">
@@ -59,208 +59,196 @@
     </div>
 </div>
 
-<div class="container-fluid">
-
-    <!-- Page Heading -->
-    <div class="page-title d-flex flex-column me-5 w-75 m-auto">
-        <h5 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Share projects</h5>
-        <ul class="breadcrumb fw-bold fs-7 small">
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Home</a>
-            </li>
-            <li class="breadcrumb-item text-muted">
-                <a href="app.html#!/home" class="text-muted text-hover-primary">Share projects</a>
-            </li>
-        </ul>
-        <!--end::Breadcrumb-->
-    </div>
-
-    <div class="card shadow mb-4 w-75 m-auto" ng-show="flag_selected_projectup === false">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-dark">Projects List - Click on "Open Project" to see
-                its respective modules</h6>
-            <button type="button" ng-click="openModalInvitation()" class="btn button-ds btn-sm mr-4 float-right">
-                <span class="badge badge-light">{{listInvitations.length}}</span> Invitations
-            </button>            
+<div class="container-fluid shared-projects-view">
+    <div class="card projects-panel project-layout-width mb-4 m-auto" ng-show="flag_selected_projectup === false">
+        <div class="projects-panel-header">
+            <div>
+                <span class="screen-kicker">Workspace</span>
+                <h6 class="projects-panel-title">Shared with me</h6>
+                <p class="projects-panel-subtitle">Projects where you collaborate as an editor or reader.</p>
+            </div>
+            <button type="button" ng-click="openModalInvitation()" class="btn invitation-btn btn-sm">
+                <i class="far fa-envelope mr-2"></i>Invitations
+                <span class="invitation-count">{{listInvitations.length}}</span>
+            </button>
         </div>
-        <!-- Card Body -->
-        <div class="card-body">
+
+        <div class="card-body projects-panel-body">
             <div class="media" ng-show="listSharesWithMe.length === 0">
                 <div class="media-body">
-                    <div class="text-center">
+                    <div class="projects-empty-state text-center">
                         <img class="mb-4" src="resources/img/img-app/nodata.svg" alt="..." width="150">
                         <br>
-                        <h5>No data currently available</h5>
+                        <h5>No shared projects</h5>
+                        <p>Accepted invitations will appear here.</p>
                     </div>
                 </div>
             </div>
-            <div class="alert alert-primary" role="alert" ng-repeat="dom_myprojects in listSharesWithMe"
-                 ng-show="listSharesWithMe.length > 0">
-                <div class="media mb-2">
-                    <img src="resources/img/img-app/proyecto.svg" class="align-self-center mr-3" alt="..."
-                         width="70">
-                    <div class="media-body">
-                        <div style="font-size: 12px">
-                            <strong> Creation date: </strong> {{dom_myprojects.creationdate_mp}} -
-                            <strong> Update date: </strong> {{dom_myprojects.updatedate_mp}} <br>
-                            <strong> Owner: </strong> {{dom_myprojects.propietario}}
-                            <strong> Permit: </strong>
-                            <span class="badge badge-light">{{dom_myprojects.permit_pm === 'W' ? 'WRITER' : 'READER'}}</span>
-                        </div>
-                        <h5 class="mt-0 text-dark"><strong> {{dom_myprojects.name_mp}} </strong></h5>
-                        <div class="row">
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-d btn-sm w-100" ng-click="selectProjectUp(dom_myprojects)">
-                                    Open Project
-                                </button>
-                            </div>
-                            <div class="col-xl-4 col-md-3 mb-2">
-                                <button class="btn button-dt btn-sm w-100" ng-click="stopColaborating(dom_myprojects)">
-                                    Stop collaborating
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+            <div class="table-responsive projects-table-wrap" ng-show="listSharesWithMe.length > 0">
+                <table class="table projects-table shared-projects-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Modules</th>
+                            <th>Access</th>
+                            <th>Last update</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="dom_myprojects in listSharesWithMe">
+                            <td class="project-identity-cell">
+                                <div class="project-avatar shared"><i class="fas fa-share-alt"></i></div>
+                                <div class="project-identity">
+                                    <strong>{{dom_myprojects.name_mp}}</strong>
+                                    <span>Owner: {{dom_myprojects.propietario}}</span>
+                                    <small>Created {{dom_myprojects.creationdate_mp.split('T')[0]}}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="module-status-list">
+                                    <span ng-class="dom_myprojects.status_uml === 'A' ? 'module-status is-ready' : 'module-status is-empty'">
+                                        <i ng-class="dom_myprojects.status_uml === 'A' ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                                        UML · {{dom_myprojects.status_uml === 'A' ? 'Ready' : 'Not created'}}
+                                    </span>
+                                    <span ng-class="dom_myprojects.status_iot === 'A' ? 'module-status is-ready' : 'module-status is-empty'">
+                                        <i ng-class="dom_myprojects.status_iot === 'A' ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                                        IoT · {{dom_myprojects.status_iot === 'A' ? 'Ready' : 'Not created'}}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span ng-class="dom_myprojects.permit_pm === 'W' ? 'access-badge is-writer' : 'access-badge is-reader'">
+                                    <i ng-class="dom_myprojects.permit_pm === 'W' ? 'fas fa-pen' : 'far fa-eye'"></i>
+                                    {{dom_myprojects.permit_pm === 'W' ? 'Editor' : 'Reader'}}
+                                </span>
+                            </td>
+                            <td class="project-date-cell">
+                                <i class="far fa-clock mr-1"></i>{{dom_myprojects.updatedate_mp.split('T')[0]}}
+                            </td>
+                            <td>
+                                <div class="project-actions">
+                                    <button class="btn project-open-btn btn-sm" ng-click="selectProjectUp(dom_myprojects)">
+                                        View modules <i class="fas fa-arrow-right ml-2"></i>
+                                    </button>
+                                    <button class="stop-collaboration-btn" ng-click="stopColaborating(dom_myprojects)">
+                                        <i class="fas fa-sign-out-alt mr-1"></i>Stop collaborating
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="card shadow mb-4 w-75 m-auto" ng-show="flag_selected_projectup === true">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-           
-                <h6 class="m-0 font-weight-bold text-dark">Projects Modules</h6>
-                <div class="">
-                    <button type="button" ng-click="flag_selected_projectup = false" class="btn button-ds btn-sm float-right">
-                        <i class="fas fa-chevron-circle-left"></i> Return
-                    </button>
-                    <button type="button" ng-click="loadEntregablesProjectShare()" class="btn button-d btn-sm float-right mr-4">
-                        <i class="fas fa-check-double"></i> Planning And Progress Control    
-                    </button>
+    <div class="card modules-panel project-layout-width mb-4 m-auto" ng-show="flag_selected_projectup === true">
+        <div class="modules-panel-header">
+            <button type="button" ng-click="flag_selected_projectup = false" class="module-back-btn">
+                <i class="fas fa-arrow-left mr-2"></i>Shared projects
+            </button>
+            <div class="modules-project-heading">
+                <span>Shared workspace</span>
+                <h5>{{selected_projectup.name_mp}}</h5>
+                <small>Updated {{selected_projectup.updatedate_mp.split('T')[0]}}</small>
+            </div>
+            <span ng-class="selected_projectup.permit_mp === 'W' ? 'access-badge is-writer' : 'access-badge is-reader'">
+                <i ng-class="selected_projectup.permit_mp === 'W' ? 'fas fa-pen' : 'far fa-eye'"></i>
+                {{selected_projectup.permit_mp === 'W' ? 'Editor access' : 'Read-only access'}}
+            </span>
+            <button type="button" ng-click="loadEntregablesProjectShare()" class="btn project-primary-btn btn-sm">
+                <i class="fas fa-tasks mr-2"></i>Planning &amp; progress
+            </button>
+        </div>
+
+        <div class="card-body modules-panel-body">
+            <div class="modules-intro">
+                <div>
+                    <h6>Engineering modules</h6>
+                    <p>Open an existing module or create one when your collaboration permission allows it.</p>
                 </div>
-        </div>        <!-- Card Body -->
-        <div class="card-body">
-            <div class="media" ng-show="flag_selected_projectup === false">
-                <div class="media-body">
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/selelctProject.svg" alt="..." width="150">
-                        <br>
-                        <h5>Select Project</h5>
+            </div>
+
+            <div class="module-grid">
+                <article ng-class="selected_projectup.uml.data.length > 0 ? 'case-module-card is-created' : 'case-module-card'">
+                    <div class="module-card-top">
+                        <div class="module-card-icon uml"><i class="fas fa-sitemap"></i></div>
+                        <span ng-class="selected_projectup.uml.data.length > 0 ? 'module-status is-ready' : 'module-status is-empty'">
+                            <i ng-class="selected_projectup.uml.data.length > 0 ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                            {{selected_projectup.uml.data.length > 0 ? 'Ready' : 'Not created'}}
+                        </span>
                     </div>
-                </div>
-            </div>
-            <div ng-show="flag_selected_projectup === true">
-                <div style="font-size: 12px">
-                    <strong> Creation date: </strong> {{selected_projectup.creationdate_mp.split('T')[0]}} -
-                    <strong> Update date: </strong> {{selected_projectup.updatedate_mp.split('T')[0]}}
-                </div>
-                <h5 class="mt-0 text-dark"><strong> Project name: {{selected_projectup.name_mp}} </strong></h5>
-            </div>
-            <div class="media" ng-show="selected_projectup.uml.data.length === 0">
-                <div class="media-body">
-                    <h5 class="mt-0"><strong> Modeling Uml Diagramas </strong></h5>
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/newModuleUml.svg" alt="..." width="225">
-                        <br>
-                        <button ng-disabled="selected_projectup.permit_mp === 'R'"
-                                ng-hide="selected_projectup.permit_mp === 'R'"
-                                class="btn button-ds btn-sm" ng-click="createModuleUml(selected_projectup)">Create
-                            Uml
+                    <div class="module-card-content">
+                        <span class="module-kicker">Software modeling</span>
+                        <h5>UML diagrams</h5>
+                        <p>Review use cases and work with the class diagram shared by the project owner.</p>
+                    </div>
+                    <div class="module-card-actions" ng-show="selected_projectup.uml.data.length === 0">
+                        <button ng-hide="selected_projectup.permit_mp === 'R'" class="btn module-create-btn btn-sm"
+                                ng-click="createModuleUml(selected_projectup)">
+                            <i class="fas fa-plus mr-2"></i>Create UML module
                         </button>
-                        <span ng-show="selected_projectup.permit_mp === 'R'" class="small text-danger"> You do not have the necessary permission to create a new module. </span>
+                        <span ng-show="selected_projectup.permit_mp === 'R'" class="permission-note">
+                            <i class="fas fa-lock mr-1"></i>Editor permission required
+                        </span>
                     </div>
-                </div>
-            </div>
-            <div class="media" ng-show="selected_projectup.uml.data.length > 0">
-                <div class="media-body">
-                    <div class="float-right" style="display: flex; margin-top: -3.3rem">
-                        <button ng-click="openUml()" class="btn button-d d-block ">
-                            <i class="fas fa-folder-open"></i>
-                            Open module
+                    <div class="module-card-actions" ng-show="selected_projectup.uml.data.length > 0">
+                        <button ng-click="openUml()" class="btn project-open-btn btn-sm">
+                            <i ng-class="selected_projectup.permit_mp === 'W' ? 'fas fa-pen mr-2' : 'far fa-eye mr-2'"></i>
+                            {{selected_projectup.permit_mp === 'W' ? 'Open & edit' : 'Open module'}}
                         </button>
                     </div>
-                    <h5 class="mt-0"><strong> Module Diagramas Uml </strong></h5>
-                    <span>Generate and edit class diagrams by entering the respective descriptions of a use case diagram.</span>
-                    <div class="row mt-2 mb-2" style="margin-left: 0.01rem">
-                        <div class="col-3 border mr-3 pl-0">
-                            <img src="resources/img/img-app/useCaseDPro.png" class="w-100 border-dark" alt="useCaseExample">
-                        </div>
-                        <div class="col-3 border pl-0">
-                            <img src="resources/img/img-app/classDiagramPro.png" class="w-100 border-dark" alt="useCaseExample">
-                        </div>
+                </article>
+
+                <article ng-class="selected_projectup.iot.data.length > 0 ? 'case-module-card is-created' : 'case-module-card'">
+                    <div class="module-card-top">
+                        <div class="module-card-icon iot"><i class="fas fa-microchip"></i></div>
+                        <span ng-class="selected_projectup.iot.data.length > 0 ? 'module-status is-ready' : 'module-status is-empty'">
+                            <i ng-class="selected_projectup.iot.data.length > 0 ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                            {{selected_projectup.iot.data.length > 0 ? 'Ready' : 'Not created'}}
+                        </span>
                     </div>
-                    
-                    <span ng-show="selected_projectup.download === 'T'">Download an executable project with the logic applied to the generated class diagram.</span>
-                    <div class="alert alert-success mt-2" role="alert" ng-show="selected_projectup.download === 'T'">
-                        <div class="media mb-2">
-                            <img src="resources/img/img-app/projectJava.png" class="align-self-center mr-3" alt="..."
-                                 width="70">
-                            <div class="media-body">
-                                <div style="font-size: 12px">
-                                    <strong> Language: </strong> Java /
-                                    <strong> Framework: </strong> Spring Boot /
-                                    <strong> Package management </strong> Maven /
-                                </div>
-                                <h5 class="mt-0 text-dark"><strong> Project Spring Boot</strong></h5>
-                                <div class="row">
-                                    <div class="col-xl-4 col-md-3 mb-2">
-                                        <button class="btn button-dt btn-sm w-100"
-                                                ng-click="downloadPrjMav()">
-                                            Download  Project
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="module-card-content">
+                        <span class="module-kicker">Device engineering</span>
+                        <h5>IoT system design</h5>
+                        <p>Work with the shared device structure, components and connections.</p>
+                        <span class="module-resource" ng-show="selected_projectup.iot.data.length > 0">
+                            <i class="far fa-file-code mr-1"></i>system_IoT.json
+                        </span>
                     </div>
-                    
-                    <span ng-show="selected_projectup.permit_mp === 'R'" class="small text-danger">
-                                You do not have the necessary permission to create edit the module,
-                                <strong>
-                                    soon you will be able to see an image.
-                                </strong>
-                    </span>
-                </div>
-            </div>
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="media" ng-show="selected_projectup.iot.data.length === 0">
-                <div class="media-body">
-                    <h5 class="mt-0"><strong> Desing System IoT </strong></h5>
-                    <div class="text-center">
-                        <img class="mb-4" src="resources/img/img-app/newModuleIoT.svg" alt="..." width="225">
-                        <br>
-                        <button ng-disabled="selected_projectup.permit_mp === 'R'"
-                                ng-hide="selected_projectup.permit_mp === 'R'"
-                                class="btn button-ds btn-sm" ng-click="createModuleIoT(selected_projectup)">Create
-                            Module
+                    <div class="module-card-actions" ng-show="selected_projectup.iot.data.length === 0">
+                        <button ng-hide="selected_projectup.permit_mp === 'R'" class="btn module-create-btn btn-sm"
+                                ng-click="createModuleIoT(selected_projectup)">
+                            <i class="fas fa-plus mr-2"></i>Create IoT module
                         </button>
-                        <span ng-show="selected_projectup.permit_mp === 'R'" class="small text-danger"> You do not have the necessary permission to create a new module. </span>
+                        <span ng-show="selected_projectup.permit_mp === 'R'" class="permission-note">
+                            <i class="fas fa-lock mr-1"></i>Editor permission required
+                        </span>
                     </div>
-                </div>
+                    <div class="module-card-actions" ng-show="selected_projectup.iot.data.length > 0">
+                        <button ng-click="openIoT()" ng-hide="selected_projectup.permit_mp === 'R'"
+                                class="btn project-open-btn btn-sm">
+                            <i class="fas fa-pen mr-2"></i>Open &amp; edit
+                        </button>
+                        <span ng-show="selected_projectup.permit_mp === 'R'" class="permission-note">
+                            <i class="fas fa-lock mr-1"></i>Editor permission required
+                        </span>
+                    </div>
+                </article>
             </div>
-            <div class="media" ng-show="selected_projectup.iot.data.length > 0">
-                <div class="media-body">
-                    <h5 class="mt-0"><strong> Module System IoT </strong></h5>
-                    <span>Download a json file containing the entire IoT system diagram structure.</span>
-                    <div class="alert alert-primary mt-2" role="alert">
-                        <a href="">system_IoT.json</a>
-                    </div>
-                    <button ng-click="openIoT()" ng-disabled="selected_projectup.permit_mp === 'R'"
-                            ng-hide="selected_projectup.permit_mp === 'R'"
-                            class="btn btn-success d-block"><i class="fas fa-folder-open"></i>
-                        Open module
-                    </button>
-                    <span ng-show="selected_projectup.permit_mp === 'R'" class="small text-danger">
-                                You do not have the necessary permission to create edit the module,
-                                <strong>
-                                    soon you will be able to see an image.
-                                </strong>
-                            </span>
+
+            <div class="generated-output" ng-show="selected_projectup.download === 'T'">
+                <div class="generated-output-icon"><i class="fas fa-box-open"></i></div>
+                <div>
+                    <strong>Generated Spring Boot project</strong>
+                    <span>Java · Spring Boot · Maven</span>
                 </div>
+                <button class="btn output-download-btn btn-sm" ng-click="downloadPrjMav()">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
             </div>
         </div>
     </div>
 </div>
-

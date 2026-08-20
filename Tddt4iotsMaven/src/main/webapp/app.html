@@ -19,6 +19,9 @@
         <link href="resources/css/css-viewcode/view-code_atom-one-light.css" rel="stylesheet" type="text/css"/>
         <link href="resources/css/css-viewcode/view_code_we.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/UDStyle.css" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-app/myprojects.css" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-app/modal-system.css" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-app/system-feedback.css" type="text/css"/>
 
         <script src="resources/js/js-library/jquery.min.js"></script>
         <script src="resources/js/js-library/bootstrap.bundle.min.js"></script>
@@ -50,10 +53,6 @@
 
     </head>
     <body  ng-controller="application">
-
-    <button type="button" class="btn-suggestion" ng-click="openModalOpinion()">
-            <!--<img src="resources/img/img-app/opinion.svg" width="30" height="30"/>   -->
-        </button>
 
     <div class="modal fade" id="modalNewSecretKey" tabindex="-1" role="dialog" aria-labelledby="modalNewSecretKey"
          aria-hidden="true" data-backdrop="static" data-keyboard="false">
@@ -92,154 +91,177 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalSettings" tabindex="-1" role="dialog" aria-labelledby="modalSettings"
+    <div class="modal fade settings-modal" id="modalSettings" tabindex="-1" role="dialog" aria-labelledby="modalSettingsTitle"
          aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-xl modal-dialog-centered sha" role="document">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Settings</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-2">
-
-                            <div class="dropdown-menu" style="display: block !important; top: 0%; width: 100%; position:unset !important;">
-
-                                <a ng-repeat="dom_menuSettings in menuSettings"
-                                   ng-class="dom_menuSettings.active ? 'dropdown-item active' : 'dropdown-item'"
-                                   ng-click="changeMenu(dom_menuSettings)">
-                                    <i ng-class="dom_menuSettings.icon"></i>
-                                    {{dom_menuSettings.label}} </a>
-
-                                <a class="dropdown-item" ng-click="closeModalSettings()"> <i class="fas fa-times"></i> Close</a>
-                            </div>
-
-                        </div>
-                        <div class="col-10">
-
-                            <div class="card m-auto" id="settingsOpenAi" ng-if="menuSettings[0].active">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-dark">
-                                        OpenAI </h6>
-                                </div>
-                                <div class="card-body">
-                                    <form ng-submit="saveSettingOpenAi()">
-                                        <div class="form-group">
-                                            <label> Selected model base: </label>
-                                            <div class="row">
-                                                <div class="col-12" ng-repeat="dom_baseModels in baseModels">
-                                                    <div ng-class="dom_baseModels.background" role="alert" id="component_table" ng-click="selectedModelBase(dom_baseModels)">
-                                                        <div class="media mb-2">
-                                                            <img src="resources/img/img-app/017-brain.png" class="align-self-center mr-3" alt="..." width="40">
-                                                            <div class="media-body">
-                                                                <div>
-                                                                    <strong> Name: </strong> {{dom_baseModels.name}} <br>
-                                                                    <strong> Description: </strong> {{dom_baseModels.description}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label> Select how you will use OpenAI: </label>
-                                            <div class="row">
-                                                <div class="col-6" ng-repeat="dom_useOpenAi in useOpenAi">
-                                                    <div ng-class="dom_useOpenAi.value ? 'alert alert-success border-success' : 'alert alert-ligth border-success cursorPointer'" role="alert"
-                                                         ng-click="selectedModeUseOpenAi(dom_useOpenAi)">
-                                                        <div class="media mb-2">
-                                                            <img src="resources/img/img-app/trainig.png" class="align-self-center mr-3" alt="..." width="40">
-                                                            <div class="media-body">
-                                                                <div>
-                                                                    <strong> {{dom_useOpenAi.name}} </strong> <br>
-                                                                    <span> {{dom_useOpenAi.description}} </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="text-align: right">
-                                            <button type="submit" class="btn button-d btn-sm"> Save changes </button>
-                                        </div>
-
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="card m-auto" id="trainingOpenAi" ng-if="menuSettings[1].active">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-dark">
-                                        Training </h6>
-                                </div>
-                                <div class="card-body">
-                                    <label> Users who previously trained the selected base model. </label>
-                                    <table class="table table-bordered table-hover table-sm">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th>Trainer</th>
-                                                <th>Model</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr ng-repeat="dom_modelPermissions in modelPermissions"  ng-class="dom_modelPermissions.selected ? 'bg-primary text-white' : ''">
-                                                <td class="text-white">
-                                                    <span> <strong>Name:</strong> </span>
-                                                    {{dom_modelPermissions.person.namePerson}} {{dom_modelPermissions.person.lastnamePerson}} <br>
-                                                    <span class="badge badge-info"> {{dom_modelPermissions.person.emailPerson}} </span>
-                                                    <br>
-                                                    <span ng-if="dom_modelPermissions.selected" class="badge badge-success"> IN USE </span>
-                                                </td>
-                                                <td>
-                                                    <span> <strong>Name:</strong> </span>
-                                                    {{dom_modelPermissions.model.name}} <br>
-                                                    <span> <strong>Description:</strong> </span>
-                                                    {{dom_modelPermissions.model.description}}
-                                                </td>
-
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
-                                    <label> Trainings conducted based on the previously selected base model. </label>
-                                    <table class="table table-bordered table-hover table-sm">
-                                        <thead class="thead-light">
-                                        <tr>
-                                            <th>Commit</th>
-                                            <th>Create date</th>
-                                            <th>Start/End Trining date</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr ng-repeat="dom_trainingHistoryFromBaseModel in trainingHistoryFromBaseModel"  ng-class="dom_trainingHistoryFromBaseModel.selected ? 'bg-primary text-white' : ''">
-                                            <td class="col-5"> {{dom_trainingHistoryFromBaseModel.commit}} <br>
-                                            <span ng-if="dom_trainingHistoryFromBaseModel.selected" class="badge badge-success"> IN USE </span> </td>
-                                            <td class="col-2"> {{dom_trainingHistoryFromBaseModel.dateCreation}} </td>
-                                            <td class="col-3">
-                                                <span> <strong> FROM:  </strong> </span>
-                                                {{dom_trainingHistoryFromBaseModel.dateStartTrining}} <br>
-                                                <span> <strong> TO: </strong> </span>
-                                                {{dom_trainingHistoryFromBaseModel.dateEndTrining}}
-                                            </td>
-                                            <td>
-
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-
-                                    <div style="text-align: right">
-                                        <button type="submit" class="btn button-d btn-sm"> Save changes </button>
-                                    </div>
-                                </div>
-                            </div>
-
+                <div class="modal-header settings-modal-header">
+                    <div class="settings-modal-heading">
+                        <span class="settings-heading-icon"><i class="fas fa-sliders-h"></i></span>
+                        <div>
+                            <span class="screen-kicker">AI workspace</span>
+                            <h5 class="modal-title" id="modalSettingsTitle">Settings</h5>
+                            <p>Configure how this account trains and consumes OpenAI models.</p>
                         </div>
                     </div>
+                    <button type="button" class="close" ng-click="closeModalSettings()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body settings-modal-body">
+                    <aside class="settings-navigation">
+                        <span class="settings-navigation-label">Configuration</span>
+                        <button type="button" ng-repeat="dom_menuSettings in menuSettings"
+                                ng-class="dom_menuSettings.active ? 'settings-nav-item is-active' : 'settings-nav-item'"
+                                ng-click="changeMenu(dom_menuSettings)" ng-attr-aria-current="{{dom_menuSettings.active ? 'page' : undefined}}">
+                            <span><i ng-class="dom_menuSettings.icon"></i></span>
+                            <div><strong>{{dom_menuSettings.label}}</strong><small>{{dom_menuSettings.label === 'OpenAI' ? 'Model and operating mode' : 'Trainers and run history'}}</small></div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+
+                        <div class="settings-integration-state">
+                            <div ng-class="responseHasSecretKey.hasSecretKey ? 'settings-state-icon is-ready' : 'settings-state-icon is-pending'">
+                                <i ng-class="responseHasSecretKey.hasSecretKey ? 'fas fa-check' : 'fas fa-key'"></i>
+                            </div>
+                            <div>
+                                <strong>{{responseHasSecretKey.hasSecretKey ? 'OpenAI connected' : 'API key required'}}</strong>
+                                <small>{{responseHasSecretKey.hasSecretKey ? 'Credentials available for this account.' : 'Add a key before using AI features.'}}</small>
+                            </div>
+                            <button type="button" ng-if="!responseHasSecretKey.hasSecretKey"
+                                    ng-click="closeModalSettings(); openModalNewSecretKey()">Configure key</button>
+                        </div>
+                    </aside>
+
+                    <main class="settings-content">
+                        <section id="settingsOpenAi" ng-if="menuSettings[0].active" class="settings-section">
+                            <header class="settings-section-header">
+                                <div>
+                                    <span class="screen-kicker">OpenAI configuration</span>
+                                    <h6>Model access</h6>
+                                    <p>Select the base model and decide whether this account will train or consume models.</p>
+                                </div>
+                                <span ng-class="responseHasSecretKey.hasSecretKey ? 'settings-readiness is-ready' : 'settings-readiness is-pending'">
+                                    <i ng-class="responseHasSecretKey.hasSecretKey ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+                                    {{responseHasSecretKey.hasSecretKey ? 'Ready' : 'Key pending'}}
+                                </span>
+                            </header>
+
+                            <form ng-submit="saveSettingOpenAi()" class="settings-configuration-form">
+                                <section class="settings-step-block">
+                                    <div class="settings-step-heading">
+                                        <span>1</span>
+                                        <div><h6>Base model</h6><p>Foundation used for training or model consumption.</p></div>
+                                        <small>{{baseModels.length}} available</small>
+                                    </div>
+                                    <div class="settings-empty-state" ng-show="baseModels.length === 0">
+                                        <i class="fas fa-brain"></i><span>No base models are currently available.</span>
+                                    </div>
+                                    <div class="settings-model-grid" ng-show="baseModels.length > 0">
+                                        <button type="button" ng-repeat="dom_baseModels in baseModels"
+                                                ng-class="dom_baseModels.selected ? 'settings-model-option is-selected' : 'settings-model-option'"
+                                                ng-click="selectedModelBase(dom_baseModels)"
+                                                ng-attr-aria-pressed="{{dom_baseModels.selected}}">
+                                            <span class="settings-option-icon"><i class="fas fa-brain"></i></span>
+                                            <div><strong>{{dom_baseModels.name}}</strong><small>{{dom_baseModels.description}}</small></div>
+                                            <span class="settings-option-check"><i class="fas fa-check"></i></span>
+                                        </button>
+                                    </div>
+                                </section>
+
+                                <section class="settings-step-block">
+                                    <div class="settings-step-heading">
+                                        <span>2</span>
+                                        <div><h6>Operating mode</h6><p>Choose what this account is allowed to do with the selected model.</p></div>
+                                    </div>
+                                    <div class="settings-mode-grid">
+                                        <button type="button" ng-repeat="dom_useOpenAi in useOpenAi"
+                                                ng-class="dom_useOpenAi.value ? 'settings-mode-option is-selected' : 'settings-mode-option'"
+                                                ng-click="selectedModeUseOpenAi(dom_useOpenAi)"
+                                                ng-attr-aria-pressed="{{dom_useOpenAi.value}}">
+                                            <span ng-class="dom_useOpenAi.name === 'TRAINING' ? 'settings-mode-icon training' : 'settings-mode-icon use'">
+                                                <i ng-class="dom_useOpenAi.name === 'TRAINING' ? 'fas fa-flask' : 'fas fa-play-circle'"></i>
+                                            </span>
+                                            <div><strong>{{dom_useOpenAi.name === 'TRAINING' ? 'Train models' : 'Use trained model'}}</strong><small>{{dom_useOpenAi.description}}</small></div>
+                                            <span class="settings-option-check"><i class="fas fa-check"></i></span>
+                                        </button>
+                                    </div>
+                                </section>
+
+                                <footer class="settings-form-footer">
+                                    <div>
+                                        <span>Current selection</span>
+                                        <strong>{{baseModelSelcted.name || 'No model'}} · {{useOpenAiSelected.name || 'No mode'}}</strong>
+                                    </div>
+                                    <button type="submit" class="btn project-primary-btn btn-sm"
+                                            ng-disabled="!baseModelSelcted.id || !useOpenAiSelected.name || !responseHasSecretKey.hasSecretKey">
+                                        <i class="fas fa-save mr-2"></i>Save configuration
+                                    </button>
+                                </footer>
+                            </form>
+                        </section>
+
+                        <section id="trainingOpenAi" ng-if="menuSettings[1].active" class="settings-section">
+                            <header class="settings-section-header">
+                                <div>
+                                    <span class="screen-kicker">Training traceability</span>
+                                    <h6>Training activity</h6>
+                                    <p>Review who trained the selected base model and which generated run is currently in use.</p>
+                                </div>
+                                <span class="settings-readiness is-info"><i class="fas fa-history"></i>Read-only view</span>
+                            </header>
+
+                            <div class="settings-training-summary">
+                                <article><span><i class="fas fa-user-cog"></i></span><div><small>Authorized trainers</small><strong>{{modelPermissions.length}}</strong></div></article>
+                                <article><span><i class="fas fa-stream"></i></span><div><small>Training runs</small><strong>{{trainingHistoryFromBaseModel.length}}</strong></div></article>
+                                <article><span><i class="fas fa-check-circle"></i></span><div><small>Active run</small><strong>{{trainingHistoryValidate.id ? 'Configured' : 'Pending'}}</strong></div></article>
+                            </div>
+
+                            <section class="settings-data-block">
+                                <div class="settings-data-heading">
+                                    <div><h6>Model trainers</h6><p>Users with previous training access for the selected base model.</p></div>
+                                    <span>{{modelPermissions.length}} records</span>
+                                </div>
+                                <div class="settings-empty-state" ng-show="modelPermissions.length === 0"><i class="far fa-user"></i><span>No trainers found for this model.</span></div>
+                                <div class="table-responsive" ng-show="modelPermissions.length > 0">
+                                    <table class="table settings-table mb-0">
+                                        <thead><tr><th>Trainer</th><th>Assigned model</th><th>Status</th></tr></thead>
+                                        <tbody>
+                                            <tr ng-repeat="dom_modelPermissions in modelPermissions" ng-class="dom_modelPermissions.selected ? 'is-selected' : ''">
+                                                <td><div class="settings-person-cell"><span>{{(dom_modelPermissions.person.namePerson || '?').charAt(0)}}{{(dom_modelPermissions.person.lastnamePerson || '').charAt(0)}}</span><div><strong>{{dom_modelPermissions.person.namePerson}} {{dom_modelPermissions.person.lastnamePerson}}</strong><small>{{dom_modelPermissions.person.emailPerson}}</small></div></div></td>
+                                                <td><div class="settings-model-cell"><strong>{{dom_modelPermissions.model.name}}</strong><small>{{dom_modelPermissions.model.description}}</small></div></td>
+                                                <td><span ng-class="dom_modelPermissions.selected ? 'settings-record-status is-active' : 'settings-record-status'">{{dom_modelPermissions.selected ? 'In use' : 'Available'}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section class="settings-data-block">
+                                <div class="settings-data-heading">
+                                    <div><h6>Training history</h6><p>Runs generated from the active model permission.</p></div>
+                                    <span>{{trainingHistoryFromBaseModel.length}} runs</span>
+                                </div>
+                                <div class="settings-empty-state" ng-show="trainingHistoryFromBaseModel.length === 0"><i class="fas fa-history"></i><span>No training runs are available for this selection.</span></div>
+                                <div class="table-responsive" ng-show="trainingHistoryFromBaseModel.length > 0">
+                                    <table class="table settings-table settings-training-table mb-0">
+                                        <thead><tr><th>Commit</th><th>Created</th><th>Training period</th><th>Status</th></tr></thead>
+                                        <tbody>
+                                            <tr ng-repeat="dom_trainingHistoryFromBaseModel in trainingHistoryFromBaseModel" ng-class="dom_trainingHistoryFromBaseModel.selected ? 'is-selected' : ''">
+                                                <td><code>{{dom_trainingHistoryFromBaseModel.commit}}</code></td>
+                                                <td>{{dom_trainingHistoryFromBaseModel.dateCreation}}</td>
+                                                <td><div class="settings-period"><span>{{dom_trainingHistoryFromBaseModel.dateStartTrining || '—'}}</span><i class="fas fa-arrow-right"></i><span>{{dom_trainingHistoryFromBaseModel.dateEndTrining || '—'}}</span></div></td>
+                                                <td><span ng-class="dom_trainingHistoryFromBaseModel.selected ? 'settings-record-status is-active' : 'settings-record-status'">{{dom_trainingHistoryFromBaseModel.selected ? 'In use' : 'Completed'}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </section>
+                    </main>
+                </div>
+                <div class="modal-footer settings-modal-footer">
+                    <span><i class="fas fa-shield-alt mr-1"></i>API credentials are managed separately from model permissions.</span>
+                    <button type="button" class="btn component-secondary-btn btn-sm" ng-click="closeModalSettings()">Close settings</button>
                 </div>
             </div>
         </div>
@@ -247,211 +269,165 @@
 
         <div id="wrapper">
             <!-- Sidebar -->
-            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-                <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                    <div class="sidebar-brand-text mx-3 mb-2" style="margin-top: 4rem !important;">
-                        <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt="TDDm4IoTBS" width="150">
-                    </div>
+            <ul class="navbar-nav sidebar sidebar-dark accordion case-sidebar" id="accordionSidebar">
+                <a class="sidebar-brand case-sidebar-brand" ng-click="redirect('home')">
+                    <span class="case-brand-mark">
+                        <img src="resources/img/logo-app/logoTDDT4IOTSicon.svg" alt="TDDT4IoTS">
+                    </span>
+                    <span class="case-brand-copy">
+                        <strong>TDDT4IoTS</strong>
+                        <small>CASE workspace</small>
+                    </span>
                 </a>
 
-                <!-- Divider -->
-                <hr class="sidebar-divider my-0" style="margin-top: 3.5rem !important;margin-bottom: -4rem !important;">
+                <div class="case-menu-divider"></div>
 
-                <!-- Nav Item - Dashboard -->
-                <li style="margin-top: 5rem !important;" class="nav-item {{appPage.Select==='home'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('home')">
-                        <i class="oi oi-dashboard"></i>
-                        <span>Dashboard</span></a>
+                <div class="sidebar-heading">Workspace</div>
+                <li class="nav-item {{appPage.Select==='home'?'active activeMenu':''}}">
+                    <a class="nav-link" ng-click="redirect('home')" title="Dashboard">
+                        <span class="case-nav-icon"><i class="oi oi-dashboard"></i></span>
+                        <span>Dashboard</span>
+                    </a>
                 </li>
-           
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    Projects
-                </div>
-
-                <!-- Nav Item - Pages Collapse Menu -->
                 <li class="nav-item {{appPage.Select==='myprojects'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('myprojects')">
-                        <i class="oi oi-folder" ></i>
-                        <span>Projects</span></a>
+                    <a class="nav-link" ng-click="redirect('myprojects')" title="Projects">
+                        <span class="case-nav-icon"><i class="oi oi-folder"></i></span>
+                        <span>Projects</span>
+                    </a>
                 </li>
-
-                
-                <!-- Nav Item - Pages Collapse Menu -->
                 <li class="nav-item {{appPage.Select==='shareprojects'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('shareprojects')">
-                        <i class="oi oi-fork" ></i>
-                        <span>Shared Projects</span></a>
+                    <a class="nav-link" ng-click="redirect('shareprojects')" title="Shared projects">
+                        <span class="case-nav-icon"><i class="oi oi-fork"></i></span>
+                        <span>Shared projects</span>
+                    </a>
                 </li>
 
-                <hr class="sidebar-divider">
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    OpenAI
-                </div>
-
+                <div class="sidebar-heading">AI models</div>
                 <li class="nav-item {{appPage.Select==='basemodels'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('basemodels')">
-                        <i class="bi bi-box-fill"></i>
-                        <span>Base Models</span></a>
+                    <a class="nav-link" ng-click="redirect('basemodels')" title="Base models">
+                        <span class="case-nav-icon"><i class="bi bi-box-fill"></i></span>
+                        <span>Base models</span>
+                    </a>
                 </li>
-
                 <li class="nav-item {{appPage.Select==='trainmodels'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('trainmodels')">
-                        <i class="bi bi-gear-wide-connected"></i>
-                        <span>Train Models</span></a>
+                    <a class="nav-link" ng-click="redirect('trainmodels')" title="Train models">
+                        <span class="case-nav-icon"><i class="bi bi-gear-wide-connected"></i></span>
+                        <span>Train models</span>
+                    </a>
                 </li>
-
                 <li class="nav-item {{appPage.Select==='testmodels'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('testmodels')">
-                        <i class="bi bi-boxes"></i>
-                        <span>Test Models</span></a>
+                    <a class="nav-link" ng-click="redirect('testmodels')" title="Test models">
+                        <span class="case-nav-icon"><i class="bi bi-boxes"></i></span>
+                        <span>Test models</span>
+                    </a>
                 </li>
 
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-                <div ng-if="DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R'" >
-                    <!-- Heading -->
-                    <div class="sidebar-heading">
-                        User Management
-                    </div>
-
-                    <!-- Nav Item - Pages Collapse Menu -->
-                    <li class="nav-item {{appPage.Select==='usermanagement'?'active activeMenu':''}}">
-                        <a class="nav-link" ng-click="redirect('usermanagement')">
-                            <i class="oi oi-hard-drive"></i>
-                            <span>Application users</span></a>
-                    </li>
-                    
-                    
-                    <hr class="sidebar-divider d-none d-md-block">
-                </div>
-
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    UML
-                </div>
-
-                <!-- Nav Item - Pages Collapse Menu -->
+                <div class="sidebar-heading">Modeling</div>
                 <li class="nav-item {{appPage.Select==='interpret'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('interpret')">
-                        <i class="oi oi-script"></i>
-                        <span>Interpret</span></a>
+                    <a class="nav-link" ng-click="redirect('interpret')" title="UML interpreter">
+                        <span class="case-nav-icon"><i class="oi oi-script"></i></span>
+                        <span>UML interpreter</span>
+                    </a>
                 </li>
 
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    IoT Systems
-                </div>
-
-                <!-- Nav Item - Pages Collapse Menu -->
+                <div class="sidebar-heading">IoT engineering</div>
                 <li class="nav-item {{appPage.Select==='componentsiot'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('componentsiot')">
-                        <i class="oi oi-wrench"></i>
-                        <span>IoT Components</span></a>
+                    <a class="nav-link" ng-click="redirect('componentsiot')" title="IoT components">
+                        <span class="case-nav-icon"><i class="oi oi-wrench"></i></span>
+                        <span>IoT components</span>
+                    </a>
                 </li>
-                
-                <!-- Nav Item - Pages Collapse Menu -->
                 <li class="nav-item {{appPage.Select==='settingsprotocol'?'active activeMenu':''}}">
-                    <a class="nav-link" ng-click="redirect('settingsprotocol')">
-                        <i class="oi oi-code"></i>
-                        <span>Protocol Configuration</span></a>
+                    <a class="nav-link" ng-click="redirect('settingsprotocol')" title="Protocol configuration">
+                        <span class="case-nav-icon"><i class="oi oi-code"></i></span>
+                        <span>Protocols</span>
+                    </a>
                 </li>
 
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-
-                <!-- Divider -->
-
-                <!-- Sidebar Message -->
-                <div class="sidebar-card d-none d-lg-flex">
-                    <img class="sidebar-card-illustration mb-2" src="resources/img/img-app/dowloandIoT.svg" alt="...">
-                    <p class="text-center mb-2"><strong>To compile and upload</strong> the code to your Arduino board, click the button to download the corresponding application. </p>
-                    <a class="btn button-ds btn-sm" href="#">Upload</a>
+                <div class="case-admin-group" ng-if="DatoUsuario.type_person === 'A' || DatoUsuario.type_person === 'R'">
+                    <div class="sidebar-heading">Administration</div>
+                    <li class="nav-item {{appPage.Select==='usermanagement'?'active activeMenu':''}}">
+                        <a class="nav-link" ng-click="redirect('usermanagement')" title="Application users">
+                            <span class="case-nav-icon"><i class="oi oi-people"></i></span>
+                            <span>Application users</span>
+                        </a>
+                    </li>
                 </div>
 
+                <li class="case-feedback-slot">
+                    <button type="button" class="case-feedback-button" ng-click="openModalOpinion()" title="Send feedback">
+                        <span class="case-feedback-icon"><i class="far fa-comment-dots"></i></span>
+                        <span class="case-feedback-copy"><strong>Send feedback</strong><small>Help improve the tool</small></span>
+                        <i class="fas fa-chevron-right case-feedback-arrow"></i>
+                    </button>
+                </li>
             </ul>
 
             <div id="content-wrapper" class="d-flex flex-column">
                 <!-- Main Content -->
                 <div id="content">
                     <!-- Topbar -->
-                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <nav class="navbar navbar-expand navbar-light bg-white topbar case-topbar static-top">
 
-                        <!-- Sidebar Toggle (Topbar) -->
-                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle case-menu-toggle">
                             <i class="fa fa-bars"></i>
                         </button>
 
-                        <!-- Topbar Tittle -->
-                        <!--<h1 class="h3 mb-0 text-gray-800">{{appPage.tittle}}</h1>-->
-                        <!-- Topbar Navbar -->
-                        <ul class="navbar-nav ml-auto">
+                        <div class="case-topbar-context">
+                            <span class="case-topbar-context-icon"><i class="fas fa-project-diagram"></i></span>
+                            <div>
+                                <small>CASE workspace</small>
+                                <strong>{{appPage.tittle}}</strong>
+                            </div>
+                        </div>
 
-                            <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                            <li class="nav-item dropdown no-arrow d-sm-none">
-                                <a class="nav-link dropdown-toggle" id="searchDropdown" role="button"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-search fa-fw"></i>
-                                </a>
-                                <!-- Dropdown - Messages -->
-                                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                     aria-labelledby="searchDropdown">
-                                    <form class="form-inline mr-auto w-100 navbar-search">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control bg-light border-0 small"
-                                                   placeholder="Search for..." aria-label="Search"
-                                                   aria-describedby="basic-addon2">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-primary" type="button">
-                                                    <i class="fas fa-search fa-sm"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </li>
-
-                            <li class="nav-item dropdown no-arrow" style="display: flex; align-items: center;">
-                                <span class="badge badge-warning mr-1 text-black-50" id="permitUser"></span>
-                            </li>
-
-                            <div class="topbar-divider d-none d-sm-block"></div>
-
-                            <!-- Nav Item - User Information -->
+                        <ul class="navbar-nav ml-auto case-topbar-actions">
                             <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" id="userDropdown" role="button"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span ng-class="(responseHasSecretKey.hasSecretKey) ? 'mr-2 d-none d-lg-inline text-gray-600 small openAi'
-                                    : 'mr-2 d-none d-lg-inline text-gray-600 small'"
-                                          id="nameUser">
+                                <a class="nav-link dropdown-toggle case-user-menu" id="userDropdown" role="button"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                   aria-label="{{nameUser(DatoUsuario)}} user menu">
+                                    <span class="case-user-profile">
+                                        <span class="case-user-avatar" aria-hidden="true">
+                                            {{userInitials(DatoUsuario)}}
+                                            <i class="case-user-online"></i>
+                                        </span>
+                                        <span class="case-user-identity d-none d-md-flex">
+                                            <strong>{{nameUser(DatoUsuario)}}</strong>
+                                            <small><span ng-class="'case-role-dot ' + userRoleClass(DatoUsuario)"></span>{{validatePermit(DatoUsuario)}}</small>
+                                        </span>
+                                        <span ng-class="responseHasSecretKey.hasSecretKey ? 'case-ai-indicator is-ready' : 'case-ai-indicator is-pending'"
+                                              title="{{responseHasSecretKey.hasSecretKey ? 'OpenAI key configured' : 'OpenAI key pending'}}">
+                                            <i class="fas fa-key"></i>
+                                        </span>
                                     </span>
-                                    <img class="img-profile rounded-circle" alt="..."
-                                         src="resources/img/img-app/userMale.png">
+                                    <i class="fas fa-chevron-down case-user-chevron"></i>
                                 </a>
-                                <!-- Dropdown - User Information -->
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in case-user-dropdown"
                                      aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" ng-click="openModalNewSecretKey()">
-                                        <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Secret Key OpenAI
-                                        <span class="badge badge-info"> NEW </span>
+                                    <div class="case-user-dropdown-header">
+                                        <span class="case-user-avatar is-large">{{userInitials(DatoUsuario)}}<i class="case-user-online"></i></span>
+                                        <div>
+                                            <strong>{{nameUser(DatoUsuario)}}</strong>
+                                            <span>{{validatePermit(DatoUsuario)}}</span>
+                                        </div>
+                                    </div>
+                                    <div ng-class="responseHasSecretKey.hasSecretKey ? 'case-openai-status is-ready' : 'case-openai-status is-pending'">
+                                        <span><i class="fas fa-key"></i> OpenAI integration</span>
+                                        <strong>{{responseHasSecretKey.hasSecretKey ? 'Configured' : 'Setup required'}}</strong>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item case-user-dropdown-item" ng-click="openModalNewSecretKey()">
+                                        <span class="case-dropdown-icon"><i class="fas fa-key"></i></span>
+                                        <span><strong>OpenAI secret key</strong><small>Configure model access</small></span>
                                     </a>
-                                    <a class="dropdown-item" ng-click="openModalSettings()">
-                                        <i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Settings
+                                    <a class="dropdown-item case-user-dropdown-item" ng-click="openModalSettings()">
+                                        <span class="case-dropdown-icon"><i class="fas fa-sliders-h"></i></span>
+                                        <span><strong>Settings</strong><small>Models and preferences</small></span>
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" ng-click="logOut()">
-                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Logout
+                                    <a class="dropdown-item case-user-dropdown-item is-logout" ng-click="logOut()">
+                                        <span class="case-dropdown-icon"><i class="fas fa-sign-out-alt"></i></span>
+                                        <span><strong>Logout</strong><small>Close current session</small></span>
                                     </a>
                                 </div>
                             </li>
@@ -463,7 +439,7 @@
 
                     <!-- Begin Page Content -->
 
-                    <div ng-view></div>
+                    <main class="case-page-scroll" ng-view></main>
                     <!-- End Page Content -->
                 </div>
 
@@ -529,12 +505,9 @@
 
 
                 <!-- Footer -->
-                <footer class="sticky-footer bg-white mt-4">
-                    <div class="container my-auto">
-                        <div class="copyright text-center my-auto">
-                            <span>Copyright &copy; Aplication Web 2021</span>
-                        </div>
-                    </div>
+                <footer class="sticky-footer bg-white case-footer">
+                    <span class="case-footer-brand"><i class="fas fa-code-branch"></i> TDDT4IoTS</span>
+                    <span>CASE engineering workspace &middot; &copy; {{currentYear}}</span>
                 </footer>
                 <!-- End of Footer -->
 

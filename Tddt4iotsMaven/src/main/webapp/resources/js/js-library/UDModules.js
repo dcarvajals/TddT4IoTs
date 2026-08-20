@@ -5233,10 +5233,10 @@ var UMLClass = function (b) {
     setStereotypeProperties(a, b.stereotypes || []);
     a.setMoveable();
     a.addFigure(new RectangleFigure({color: "#ffffbb"}));
-    a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true, margin: 3}));
-    a.addComponent(new TextArea({id: "name", text: "ClassName", centered: true, margin: 3}));
-    a.addComponent(new AttributeFields({id: "attributes", margin: 3}));
-    a.addComponent(new OperationFields({id: "operations", margin: 3}));
+    a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true, margin: 2}));
+    a.addComponent(new TextArea({id: "name", text: "ClassName", centered: true, margin: 2}));
+    a.addComponent(new AttributeFields({id: "attributes", margin: 2}));
+    a.addComponent(new OperationFields({id: "operations", margin: 2}));
     a.setMenu([[function () {
         a.showStyleDialog({that: a});
         a.removeContextualMenu()
@@ -7201,10 +7201,10 @@ var UMLClass = function (b) {
     setStereotypeProperties(a, b.stereotypes || []);
     a.setMoveable();
     a.addFigure(new RectangleFigure({color: "#ffffbb"}));
-    a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true, margin: 3}));
-    a.addComponent(new TextArea({id: "name", text: "ClassName", centered: true, margin: 3}));
-    a.addComponent(new AttributeFields({id: "attributes", margin: 3}));
-    a.addComponent(new OperationFields({id: "operations", margin: 3}));
+    a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true, margin: 2}));
+    a.addComponent(new TextArea({id: "name", text: "ClassName", centered: true, margin: 2}));
+    a.addComponent(new AttributeFields({id: "attributes", margin: 2}));
+    a.addComponent(new OperationFields({id: "operations", margin: 2}));
     a.setMenu([[function () {
         a.showStyleDialog({that: a});
         a.removeContextualMenu()
@@ -11979,7 +11979,7 @@ var UMLLifeline = function (b) {
     var a = new Lifeline(b);
     a.setType("UMLLifeline");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setHeight(250);
+    a.setHeight(220);
     a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true}));
     a.addComponent(new TextBox({id: "name", centered: true, margin: 3}));
     a.addFigure(new LifelineFigure({color: "#c6dbdc"}));
@@ -14188,8 +14188,8 @@ var UMLActor = function (b) {
     var a = new Actor(b);
     a.setType("UMLActor");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setMinWidth(50);
-    a.setMinHeight(70);
+    a.setMinWidth(44);
+    a.setMinHeight(60);
     a.setProportional();
     a.setMoveable();
     a.addFigure(new StickmanFigure());
@@ -14212,8 +14212,8 @@ var UMLUseCase = function (b) {
     var a = new UseCase(b);
     a.setType("UMLUseCase");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setWidth(100);
-    a.setHeight(40);
+    a.setWidth(86);
+    a.setHeight(34);
     a.setMoveable();
     a.addFigure(new EllipseFigure());
     a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true}));
@@ -14238,8 +14238,8 @@ var UMLUseCaseExtended = function (b) {
     var a = new UseCaseExtended(b);
     a.setType("UMLUseCaseExtended");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setWidth(100);
-    a.setHeight(40);
+    a.setWidth(86);
+    a.setHeight(34);
     a.setMoveable();
     a.addFigure(new EllipseFigure());
     a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true}));
@@ -14267,8 +14267,8 @@ var UMLSystem = function (b) {
     var a = new System(b);
     a.setType("UMLSystem");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setWidth(150);
-    a.setHeight(100);
+    a.setWidth(135);
+    a.setHeight(90);
     a.setMoveable();
     a.setContainer();
     a.addFigure(new RectangleFigure({color: "#c6dbdc"}));
@@ -14336,8 +14336,8 @@ var UMLUseCase = function (b) {
     var a = new UseCase(b);
     a.setType("UMLUseCase");
     setStereotypeProperties(a, b.stereotypes || []);
-    a.setWidth(100);
-    a.setHeight(40);
+    a.setWidth(86);
+    a.setHeight(34);
     a.setMoveable();
     a.addFigure(new EllipseFigure());
     a.addComponent(new StereotypeTagList({id: "stereotypes", centered: true}));
