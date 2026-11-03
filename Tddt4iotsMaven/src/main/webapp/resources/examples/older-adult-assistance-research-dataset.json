@@ -1,0 +1,493 @@
+{
+  "datasetName": "older-adult-assistance-case-workspaces",
+  "datasetVersion": "1.0.0",
+  "schemaVersion": "1.0",
+  "description": "Dataset de ejemplo para entrenar y evaluar la generación de espacios de trabajo CASE a partir de requisitos en lenguaje natural.",
+  "samples": [
+    {
+      "projectId": "senior-medication-emergency-001",
+      "split": "TRAIN",
+      "inputRequirements": {
+        "language": "es",
+        "description": "Desarrollar un sistema de asistencia para personas mayores que permita registrar medicamentos y horarios, confirmar cada toma y avisar al cuidador cuando una dosis no sea confirmada. También debe permitir que la persona mayor solicite ayuda mediante un botón de emergencia. El sistema registra el incidente, obtiene la ubicación disponible y notifica al cuidador. La descripción de cada caso de uso debe incluir el lenguaje de símbolos necesario para derivar clases, atributos, métodos, relaciones y enumeraciones."
+      },
+      "goldWorkspace": {
+        "format": "TDDT4IOTS_CASE_WORKSPACE",
+        "schemaVersion": "1.0",
+        "project": {
+          "name": "Asistencia de medicación y emergencias",
+          "description": "Gestión de medicación y solicitudes de ayuda para personas mayores.",
+          "symbolLanguageRequired": true
+        },
+        "diagrams": [
+          {
+            "id": "ucd-medication",
+            "name": "Gestión de medicación",
+            "actors": [
+              {
+                "id": "actor-older-adult",
+                "name": "Persona mayor",
+                "position": { "x": 90, "y": 150 }
+              },
+              {
+                "id": "actor-caregiver",
+                "name": "Cuidador",
+                "position": { "x": 950, "y": 150 }
+              }
+            ],
+            "useCases": [
+              {
+                "id": "uc-register-medication",
+                "name": "Registrar medicamento",
+                "position": { "x": 430, "y": 90 },
+                "purpose": "Registrar un tratamiento. (Medication &-id=Long &-name=String &-dose=String [+createMedication=Medication] [+updateSchedule=Void]) (DoseSchedule &-time=LocalTime &-frequency=String &-active=Boolean [+scheduleDose=Void]) *¡Medication 1>[has]<n DoseSchedule!",
+                "precondition": "El usuario ha iniciado sesión y tiene permiso para administrar el tratamiento.",
+                "postcondition": "El medicamento y sus horarios quedan almacenados y activos.",
+                "description": "El cuidador registra el medicamento, la dosis y los horarios en que debe administrarse.",
+                "mainFlow": [
+                  { "actor": "actor-caregiver", "action": "Selecciona la opción para registrar un medicamento." },
+                  { "actor": "System", "action": "Solicita nombre, dosis, frecuencia y horarios." },
+                  { "actor": "actor-caregiver", "action": "Ingresa y confirma los datos del tratamiento." },
+                  { "actor": "System", "action": "Valida y guarda el medicamento con sus horarios." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-register-duplicate",
+                    "startStep": 4,
+                    "condition": "Ya existe un medicamento activo con el mismo nombre y dosis.",
+                    "actor": "System",
+                    "action": "Informa la coincidencia y solicita confirmar si se actualizará el tratamiento existente.",
+                    "outcome": "return",
+                    "returnStep": 3
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-caregiver", "name": "Cuidador", "type": "actor" },
+                    { "id": "seq-medication-ui", "name": "MedicationForm", "type": "boundary" },
+                    { "id": "seq-medication-service", "name": "MedicationService", "type": "control" },
+                    { "id": "seq-medication-repository", "name": "MedicationRepository", "type": "entity" }
+                  ],
+                  "messages": [
+                    { "from": "seq-caregiver", "to": "seq-medication-ui", "message": "submitMedication(data)", "type": "sync", "response": "request accepted", "responseType": "return" },
+                    { "from": "seq-medication-ui", "to": "seq-medication-service", "message": "createMedication(data)", "type": "sync", "response": "medication", "responseType": "return" },
+                    { "from": "seq-medication-service", "to": "seq-medication-repository", "message": "save(medication)", "type": "sync", "response": "saved medication", "responseType": "return" }
+                  ]
+                }
+              },
+              {
+                "id": "uc-confirm-dose",
+                "name": "Confirmar toma de medicamento",
+                "position": { "x": 430, "y": 250 },
+                "purpose": "Confirmar una dosis programada. (DoseIntake &-id=Long &-scheduledAt=LocalDateTime &-confirmedAt=LocalDateTime &-status=DoseStatus [+confirm=Void] [+markMissed=Void]) *¿DoseStatus »PENDING »TAKEN »MISSED ? *¡DoseSchedule 1>[generates]<n DoseIntake!",
+                "precondition": "Existe una dosis pendiente dentro del horario permitido.",
+                "postcondition": "La toma queda confirmada o se registra como omitida y se notifica al cuidador.",
+                "description": "La persona mayor confirma la toma desde el recordatorio mostrado por el sistema.",
+                "mainFlow": [
+                  { "actor": "System", "action": "Muestra el recordatorio de una dosis pendiente." },
+                  { "actor": "actor-older-adult", "action": "Confirma que tomó el medicamento." },
+                  { "actor": "System", "action": "Registra la fecha de confirmación y marca la dosis como tomada." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-dose-timeout",
+                    "startStep": 2,
+                    "condition": "La persona mayor no confirma dentro del tiempo configurado.",
+                    "actor": "System",
+                    "action": "Marca la dosis como omitida y envía una alerta al cuidador.",
+                    "outcome": "end",
+                    "returnStep": null
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-older-adult", "name": "PersonaMayor", "type": "actor" },
+                    { "id": "seq-reminder-ui", "name": "DoseReminder", "type": "boundary" },
+                    { "id": "seq-dose-service", "name": "DoseService", "type": "control" },
+                    { "id": "seq-dose-intake", "name": "DoseIntake", "type": "entity" }
+                  ],
+                  "messages": [
+                    { "from": "seq-older-adult", "to": "seq-reminder-ui", "message": "confirmDose(doseId)", "type": "sync", "response": "confirmation shown", "responseType": "return" },
+                    { "from": "seq-reminder-ui", "to": "seq-dose-service", "message": "confirmIntake(doseId)", "type": "sync", "response": "updated intake", "responseType": "return" },
+                    { "from": "seq-dose-service", "to": "seq-dose-intake", "message": "confirm(now)", "type": "sync", "response": "status TAKEN", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-caregiver", "to": "uc-register-medication" },
+              { "type": "association", "from": "actor-older-adult", "to": "uc-confirm-dose" },
+              { "type": "association", "from": "actor-caregiver", "to": "uc-confirm-dose" },
+              { "type": "include", "from": "uc-confirm-dose", "to": "uc-register-medication" }
+            ]
+          },
+          {
+            "id": "ucd-emergency",
+            "name": "Atención de emergencias",
+            "actors": [
+              {
+                "id": "actor-senior-emergency",
+                "name": "Persona mayor",
+                "position": { "x": 90, "y": 150 }
+              },
+              {
+                "id": "actor-caregiver-emergency",
+                "name": "Cuidador",
+                "position": { "x": 950, "y": 150 }
+              }
+            ],
+            "useCases": [
+              {
+                "id": "uc-request-help",
+                "name": "Solicitar ayuda de emergencia",
+                "position": { "x": 430, "y": 130 },
+                "purpose": "Crear y notificar un incidente. (EmergencyIncident &-id=Long &-createdAt=LocalDateTime &-latitude=Double &-longitude=Double &-status=IncidentStatus [+open=EmergencyIncident] [+resolve=Void]) (EmergencyNotification &-sentAt=LocalDateTime &-channel=String [+send=Boolean]) *¿IncidentStatus »OPEN »ACKNOWLEDGED »RESOLVED ? *¡EmergencyIncident 1>[triggers]<n EmergencyNotification!",
+                "precondition": "La persona mayor tiene un perfil activo y acceso al botón de ayuda.",
+                "postcondition": "El incidente queda abierto y el cuidador recibe la alerta.",
+                "description": "La persona mayor solicita ayuda y el sistema intenta adjuntar su ubicación actual.",
+                "mainFlow": [
+                  { "actor": "actor-senior-emergency", "action": "Pulsa el botón de emergencia." },
+                  { "actor": "System", "action": "Crea un incidente y obtiene la ubicación disponible." },
+                  { "actor": "System", "action": "Notifica al cuidador con los datos del incidente." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-location-unavailable",
+                    "startStep": 2,
+                    "condition": "No se puede obtener la ubicación del dispositivo.",
+                    "actor": "System",
+                    "action": "Continúa la solicitud indicando que la ubicación no está disponible.",
+                    "outcome": "return",
+                    "returnStep": 3
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-senior", "name": "PersonaMayor", "type": "actor" },
+                    { "id": "seq-emergency-button", "name": "EmergencyButton", "type": "boundary" },
+                    { "id": "seq-emergency-service", "name": "EmergencyService", "type": "control" },
+                    { "id": "seq-notification-service", "name": "NotificationService", "type": "control" }
+                  ],
+                  "messages": [
+                    { "from": "seq-senior", "to": "seq-emergency-button", "message": "pressHelp()", "type": "sync", "response": "request received", "responseType": "return" },
+                    { "from": "seq-emergency-button", "to": "seq-emergency-service", "message": "openIncident(profileId)", "type": "sync", "response": "incident", "responseType": "return" },
+                    { "from": "seq-emergency-service", "to": "seq-notification-service", "message": "notifyCaregiver(incident)", "type": "async", "response": "notification queued", "responseType": "return" }
+                  ]
+                }
+              },
+              {
+                "id": "uc-resolve-emergency",
+                "name": "Atender emergencia",
+                "position": { "x": 430, "y": 290 },
+                "purpose": "Aceptar y cerrar la atención. (IncidentResponse &-id=Long &-acknowledgedAt=LocalDateTime &-notes=String [+acknowledge=Void] [+close=Void]) *¡EmergencyIncident 1>[receives]<n IncidentResponse!",
+                "precondition": "Existe un incidente abierto asignado al cuidador.",
+                "postcondition": "El incidente queda reconocido o resuelto con evidencia de la atención.",
+                "description": "El cuidador revisa la alerta, confirma que atenderá a la persona y registra la resolución.",
+                "mainFlow": [
+                  { "actor": "actor-caregiver-emergency", "action": "Abre la alerta recibida." },
+                  { "actor": "actor-caregiver-emergency", "action": "Confirma que atenderá el incidente." },
+                  { "actor": "System", "action": "Marca el incidente como reconocido." },
+                  { "actor": "actor-caregiver-emergency", "action": "Registra una nota y cierra el incidente." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-caregiver-unavailable",
+                    "startStep": 2,
+                    "condition": "El cuidador indica que no puede atender.",
+                    "actor": "System",
+                    "action": "Escala la notificación al siguiente contacto configurado.",
+                    "outcome": "end",
+                    "returnStep": null
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-caregiver-emergency", "name": "Cuidador", "type": "actor" },
+                    { "id": "seq-alert-panel", "name": "EmergencyPanel", "type": "boundary" },
+                    { "id": "seq-incident-controller", "name": "IncidentController", "type": "control" },
+                    { "id": "seq-incident", "name": "EmergencyIncident", "type": "entity" }
+                  ],
+                  "messages": [
+                    { "from": "seq-caregiver-emergency", "to": "seq-alert-panel", "message": "acknowledgeIncident(id)", "type": "sync", "response": "processing", "responseType": "return" },
+                    { "from": "seq-alert-panel", "to": "seq-incident-controller", "message": "acknowledge(id)", "type": "sync", "response": "incident status", "responseType": "return" },
+                    { "from": "seq-incident-controller", "to": "seq-incident", "message": "changeStatus(ACKNOWLEDGED)", "type": "sync", "response": "updated", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-senior-emergency", "to": "uc-request-help" },
+              { "type": "association", "from": "actor-caregiver-emergency", "to": "uc-request-help" },
+              { "type": "association", "from": "actor-caregiver-emergency", "to": "uc-resolve-emergency" },
+              { "type": "extend", "from": "uc-resolve-emergency", "to": "uc-request-help" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "projectId": "senior-health-appointments-001",
+      "split": "VALIDATION",
+      "inputRequirements": {
+        "language": "es",
+        "description": "Crear un módulo para una persona mayor que permita agendar citas médicas y registrar mediciones de salud enviadas por sensores. El profesional de salud debe consultar el historial y el cuidador debe recibir alertas cuando una medición se encuentre fuera del rango esperado. Cada caso de uso debe contener símbolos para clases, atributos, operaciones, relaciones y enumeraciones, además de su escenario principal, alternativos y secuencia."
+      },
+      "goldWorkspace": {
+        "format": "TDDT4IOTS_CASE_WORKSPACE",
+        "schemaVersion": "1.0",
+        "project": {
+          "name": "Seguimiento de salud de la persona mayor",
+          "description": "Citas médicas y control remoto de signos vitales.",
+          "symbolLanguageRequired": true
+        },
+        "diagrams": [
+          {
+            "id": "ucd-appointments",
+            "name": "Gestión de citas",
+            "actors": [
+              { "id": "actor-patient", "name": "Persona mayor", "position": { "x": 90, "y": 160 } },
+              { "id": "actor-health-professional", "name": "Profesional de salud", "position": { "x": 950, "y": 160 } }
+            ],
+            "useCases": [
+              {
+                "id": "uc-schedule-appointment",
+                "name": "Agendar cita médica",
+                "position": { "x": 430, "y": 170 },
+                "purpose": "Reservar una cita disponible. (MedicalAppointment &-id=Long &-scheduledAt=LocalDateTime &-reason=String &-status=AppointmentStatus [+schedule=MedicalAppointment] [+cancel=Void]) *¿AppointmentStatus »SCHEDULED »CONFIRMED »CANCELLED ? *¡HealthProfessional 1>[attends]<n MedicalAppointment!",
+                "precondition": "La persona mayor está registrada y el profesional tiene horarios disponibles.",
+                "postcondition": "La cita queda registrada y ambas partes reciben la confirmación.",
+                "description": "La persona mayor selecciona un profesional, una fecha disponible y el motivo de consulta.",
+                "mainFlow": [
+                  { "actor": "actor-patient", "action": "Consulta los horarios disponibles." },
+                  { "actor": "System", "action": "Muestra las fechas y horas disponibles." },
+                  { "actor": "actor-patient", "action": "Selecciona un horario e ingresa el motivo." },
+                  { "actor": "System", "action": "Registra y confirma la cita." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-slot-taken",
+                    "startStep": 4,
+                    "condition": "El horario fue reservado por otra persona.",
+                    "actor": "System",
+                    "action": "Informa que el horario ya no está disponible y actualiza la lista.",
+                    "outcome": "return",
+                    "returnStep": 2
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-patient", "name": "PersonaMayor", "type": "actor" },
+                    { "id": "seq-calendar", "name": "AppointmentCalendar", "type": "boundary" },
+                    { "id": "seq-appointment-service", "name": "AppointmentService", "type": "control" },
+                    { "id": "seq-appointment", "name": "MedicalAppointment", "type": "entity" }
+                  ],
+                  "messages": [
+                    { "from": "seq-patient", "to": "seq-calendar", "message": "selectSlot(slotId)", "type": "sync", "response": "selected slot", "responseType": "return" },
+                    { "from": "seq-calendar", "to": "seq-appointment-service", "message": "schedule(request)", "type": "sync", "response": "appointment", "responseType": "return" },
+                    { "from": "seq-appointment-service", "to": "seq-appointment", "message": "confirm()", "type": "sync", "response": "SCHEDULED", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-patient", "to": "uc-schedule-appointment" },
+              { "type": "association", "from": "actor-health-professional", "to": "uc-schedule-appointment" }
+            ]
+          },
+          {
+            "id": "ucd-vital-signs",
+            "name": "Monitoreo de signos vitales",
+            "actors": [
+              { "id": "actor-health-sensor", "name": "Sensor de salud", "position": { "x": 90, "y": 160 } },
+              { "id": "actor-clinician", "name": "Profesional de salud", "position": { "x": 950, "y": 100 } },
+              { "id": "actor-health-caregiver", "name": "Cuidador", "position": { "x": 950, "y": 280 } }
+            ],
+            "useCases": [
+              {
+                "id": "uc-record-vital-sign",
+                "name": "Registrar signo vital",
+                "position": { "x": 430, "y": 170 },
+                "purpose": "Almacenar y evaluar una medición. (VitalMeasurement &-id=Long &-type=VitalType &-value=Double &-measuredAt=LocalDateTime [+register=VitalMeasurement] [+isOutOfRange=Boolean]) (HealthAlert &-id=Long &-severity=AlertSeverity [+open=HealthAlert]) *¿VitalType »HEART_RATE »BLOOD_PRESSURE »OXYGEN_SATURATION ? *¿AlertSeverity »LOW »MEDIUM »HIGH ? *¡VitalMeasurement 0..n>[mayGenerate]<1 HealthAlert!",
+                "precondition": "El sensor está vinculado al perfil de la persona mayor.",
+                "postcondition": "La medición queda almacenada y, si corresponde, se genera una alerta.",
+                "description": "El sensor transmite una medición, el sistema valida el dato y compara su valor con los umbrales clínicos.",
+                "mainFlow": [
+                  { "actor": "actor-health-sensor", "action": "Envía una nueva medición firmada con su identificador." },
+                  { "actor": "System", "action": "Valida, almacena y clasifica la medición." },
+                  { "actor": "System", "action": "Actualiza el historial visible para el profesional de salud." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-vital-out-of-range",
+                    "startStep": 2,
+                    "condition": "El valor está fuera del rango configurado.",
+                    "actor": "System",
+                    "action": "Crea una alerta y notifica al cuidador y al profesional de salud.",
+                    "outcome": "return",
+                    "returnStep": 3
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-sensor", "name": "HealthSensor", "type": "actor" },
+                    { "id": "seq-ingestion-api", "name": "MeasurementApi", "type": "boundary" },
+                    { "id": "seq-monitor-service", "name": "HealthMonitoringService", "type": "control" },
+                    { "id": "seq-measurement", "name": "VitalMeasurement", "type": "entity" },
+                    { "id": "seq-alert-service", "name": "HealthAlertService", "type": "control" }
+                  ],
+                  "messages": [
+                    { "from": "seq-sensor", "to": "seq-ingestion-api", "message": "sendMeasurement(payload)", "type": "async", "response": "accepted", "responseType": "return" },
+                    { "from": "seq-ingestion-api", "to": "seq-monitor-service", "message": "register(payload)", "type": "sync", "response": "measurement", "responseType": "return" },
+                    { "from": "seq-monitor-service", "to": "seq-measurement", "message": "evaluateThresholds()", "type": "sync", "response": "outOfRange", "responseType": "return" },
+                    { "from": "seq-monitor-service", "to": "seq-alert-service", "message": "openAlert(measurement)", "type": "async", "response": "alert queued", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-health-sensor", "to": "uc-record-vital-sign" },
+              { "type": "association", "from": "actor-clinician", "to": "uc-record-vital-sign" },
+              { "type": "association", "from": "actor-health-caregiver", "to": "uc-record-vital-sign" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "projectId": "senior-routines-safety-001",
+      "split": "TEST",
+      "inputRequirements": {
+        "language": "es",
+        "description": "Diseñar una solución que ayude a una persona mayor con sus rutinas diarias y con la seguridad en el hogar. El cuidador configura tareas, la persona confirma que las realizó y un sensor doméstico detecta posibles caídas. Si se detecta una caída, la aplicación debe abrir un incidente y avisar al cuidador. Incluir lenguaje de símbolos, casos de uso, actores, relaciones, flujos alternativos y secuencias completas."
+      },
+      "goldWorkspace": {
+        "format": "TDDT4IOTS_CASE_WORKSPACE",
+        "schemaVersion": "1.0",
+        "project": {
+          "name": "Rutinas y seguridad en el hogar",
+          "description": "Apoyo diario y detección de incidentes para personas mayores.",
+          "symbolLanguageRequired": true
+        },
+        "diagrams": [
+          {
+            "id": "ucd-daily-routines",
+            "name": "Rutinas diarias",
+            "actors": [
+              { "id": "actor-routine-caregiver", "name": "Cuidador", "position": { "x": 90, "y": 150 } },
+              { "id": "actor-routine-senior", "name": "Persona mayor", "position": { "x": 950, "y": 150 } }
+            ],
+            "useCases": [
+              {
+                "id": "uc-manage-routine",
+                "name": "Gestionar rutina diaria",
+                "position": { "x": 430, "y": 170 },
+                "purpose": "Crear tareas y registrar su cumplimiento. (DailyRoutine &-id=Long &-name=String &-active=Boolean [+addTask=Void] [+deactivate=Void]) (RoutineTask &-id=Long &-description=String &-scheduledAt=LocalTime &-status=TaskStatus [+complete=Void] [+skip=Void]) *¿TaskStatus »PENDING »COMPLETED »SKIPPED ? *¡DailyRoutine 1>[contains]<n RoutineTask!",
+                "precondition": "El cuidador administra el perfil de la persona mayor.",
+                "postcondition": "La rutina queda activa y las tareas pueden confirmarse individualmente.",
+                "description": "El cuidador crea una rutina con tareas y la persona mayor confirma su realización.",
+                "mainFlow": [
+                  { "actor": "actor-routine-caregiver", "action": "Crea una rutina e incorpora tareas con sus horarios." },
+                  { "actor": "System", "action": "Activa la rutina y programa los recordatorios." },
+                  { "actor": "actor-routine-senior", "action": "Confirma una tarea desde el recordatorio." },
+                  { "actor": "System", "action": "Marca la tarea como completada y actualiza el avance diario." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-task-skipped",
+                    "startStep": 3,
+                    "condition": "La persona mayor indica que no realizará la tarea.",
+                    "actor": "actor-routine-senior",
+                    "action": "Selecciona un motivo y omite la tarea.",
+                    "outcome": "return",
+                    "returnStep": 4
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-routine-senior", "name": "PersonaMayor", "type": "actor" },
+                    { "id": "seq-task-reminder", "name": "TaskReminder", "type": "boundary" },
+                    { "id": "seq-routine-service", "name": "RoutineService", "type": "control" },
+                    { "id": "seq-routine-task", "name": "RoutineTask", "type": "entity" }
+                  ],
+                  "messages": [
+                    { "from": "seq-routine-senior", "to": "seq-task-reminder", "message": "completeTask(taskId)", "type": "sync", "response": "processing", "responseType": "return" },
+                    { "from": "seq-task-reminder", "to": "seq-routine-service", "message": "complete(taskId)", "type": "sync", "response": "task", "responseType": "return" },
+                    { "from": "seq-routine-service", "to": "seq-routine-task", "message": "changeStatus(COMPLETED)", "type": "sync", "response": "updated task", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-routine-caregiver", "to": "uc-manage-routine" },
+              { "type": "association", "from": "actor-routine-senior", "to": "uc-manage-routine" }
+            ]
+          },
+          {
+            "id": "ucd-home-safety",
+            "name": "Seguridad en el hogar",
+            "actors": [
+              { "id": "actor-fall-sensor", "name": "Sensor de caída", "position": { "x": 90, "y": 150 } },
+              { "id": "actor-safety-caregiver", "name": "Cuidador", "position": { "x": 950, "y": 150 } }
+            ],
+            "useCases": [
+              {
+                "id": "uc-detect-fall",
+                "name": "Detectar posible caída",
+                "position": { "x": 430, "y": 170 },
+                "purpose": "Procesar un evento del sensor y abrir un incidente. (FallEvent &-id=Long &-detectedAt=LocalDateTime &-confidence=Double [+validate=Boolean]) (SafetyIncident &-id=Long &-status=SafetyStatus [+open=SafetyIncident] [+dismiss=Void] [+resolve=Void]) *¿SafetyStatus »OPEN »FALSE_ALARM »RESOLVED ? *¡FallEvent 1>[originates]<0..1 SafetyIncident!",
+                "precondition": "El sensor está activo y asociado al hogar de la persona mayor.",
+                "postcondition": "El evento queda registrado y el cuidador recibe una alerta si supera el umbral.",
+                "description": "El sensor detecta un patrón de caída y el sistema evalúa su confianza antes de notificar.",
+                "mainFlow": [
+                  { "actor": "actor-fall-sensor", "action": "Envía un evento de posible caída con su nivel de confianza." },
+                  { "actor": "System", "action": "Valida el evento y abre un incidente de seguridad." },
+                  { "actor": "System", "action": "Notifica al cuidador con la ubicación y hora del evento." },
+                  { "actor": "actor-safety-caregiver", "action": "Revisa y resuelve el incidente." }
+                ],
+                "alternativeFlows": [
+                  {
+                    "id": "af-low-confidence",
+                    "startStep": 2,
+                    "condition": "La confianza del evento es inferior al umbral configurado.",
+                    "actor": "System",
+                    "action": "Conserva el evento para auditoría sin abrir un incidente.",
+                    "outcome": "end",
+                    "returnStep": null
+                  },
+                  {
+                    "id": "af-false-alarm",
+                    "startStep": 4,
+                    "condition": "El cuidador verifica que se trata de una falsa alarma.",
+                    "actor": "actor-safety-caregiver",
+                    "action": "Clasifica el incidente como falsa alarma y añade una observación.",
+                    "outcome": "end",
+                    "returnStep": null
+                  }
+                ],
+                "sequence": {
+                  "participants": [
+                    { "id": "seq-fall-sensor", "name": "FallSensor", "type": "actor" },
+                    { "id": "seq-event-api", "name": "SafetyEventApi", "type": "boundary" },
+                    { "id": "seq-safety-service", "name": "SafetyService", "type": "control" },
+                    { "id": "seq-safety-incident", "name": "SafetyIncident", "type": "entity" },
+                    { "id": "seq-caregiver-notifier", "name": "CaregiverNotifier", "type": "control" }
+                  ],
+                  "messages": [
+                    { "from": "seq-fall-sensor", "to": "seq-event-api", "message": "publishFallEvent(event)", "type": "async", "response": "event accepted", "responseType": "return" },
+                    { "from": "seq-event-api", "to": "seq-safety-service", "message": "process(event)", "type": "sync", "response": "decision", "responseType": "return" },
+                    { "from": "seq-safety-service", "to": "seq-safety-incident", "message": "open(event)", "type": "sync", "response": "incident", "responseType": "return" },
+                    { "from": "seq-safety-service", "to": "seq-caregiver-notifier", "message": "notify(incident)", "type": "async", "response": "queued", "responseType": "return" }
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              { "type": "association", "from": "actor-fall-sensor", "to": "uc-detect-fall" },
+              { "type": "association", "from": "actor-safety-caregiver", "to": "uc-detect-fall" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

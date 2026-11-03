@@ -19,6 +19,16 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingMonitorCheckpoint;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingMonitorEvent;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.entity.TrainingMonitorSnapshot;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.repository.TrainingMonitorCheckpointRepository;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.repository.TrainingMonitorEventRepository;
+import com.ugr.microservices.dependencies.scheme.tddt4iots.repository.TrainingMonitorSnapshotRepository;
 
 @Service
 @Slf4j
@@ -35,6 +45,12 @@ public class TrainingHistoryBOImpl implements TrainingHistoryBO {
 
     @Autowired
     TrainingHistoryMapper trainingHistoryMapper;
+
+    @Autowired TrainingMonitorSnapshotRepository snapshotRepository;
+    @Autowired TrainingMonitorEventRepository eventRepository;
+    @Autowired TrainingMonitorCheckpointRepository checkpointRepository;
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     @Override
     public List<TrainingHistoryDTO> getModelTrainingByPersonModelUseTool(GenericTddt4iotsReqDTO<ModelTrainingByPersonModelUseToolReqDTO> request) throws GenericException, IOException, InterruptedException {
@@ -65,5 +81,56 @@ public class TrainingHistoryBOImpl implements TrainingHistoryBO {
         }
 
         return trainingHistoryDTOList;
+    }
+
+    @Override
+    public JsonNode getMonitorDetail(Long trainingHistoryId, String userToken)
+            throws GenericException, IOException, InterruptedException {
+        PersonDTO person = tddt4iotsGenericBO.validateSession(userToken);
+        TrainingHistory history = trainingHistoryService.findId(trainingHistoryId);
+        if (history.getIdPerson() == null || !person.getId().equals(history.getIdPerson().getId())) {
+            throw new GenericException("The training does not belong to the authenticated user.");
+        }
+        ObjectNode result = JSON.createObjectNode();
+        result.put("trainingHistoryId", history.getId());
+        result.put("providerJobId", history.getProviderJobId());
+        result.put("providerStatus", history.getProviderStatus());
+        if (history.getProgressPercent() == null) result.putNull("progressPercent"); else result.put("progressPercent", history.getProgressPercent());
+        if (history.getLastMonitoredAt() == null) result.putNull("lastMonitoredAt"); else result.put("lastMonitoredAt", history.getLastMonitoredAt().getTime());
+        result.put("monitoringFailures", history.getMonitoringFailures() == null ? 0 : history.getMonitoringFailures());
+
+        ArrayNode snapshots = result.putArray("snapshots");
+        for (TrainingMonitorSnapshot item : snapshotRepository.findTop100ByTrainingHistoryIdOrderByCheckedAtDesc(trainingHistoryId)) {
+            ObjectNode node = snapshots.addObject();
+            node.put("checkedAt", item.getCheckedAt() == null ? null : item.getCheckedAt().getTime());
+            node.put("status", item.getProviderStatus());
+            if (item.getProgressPercent() == null) node.putNull("progressPercent"); else node.put("progressPercent", item.getProgressPercent());
+            node.put("durationMs", item.getDurationMs());
+            node.put("error", item.getErrorMessage());
+        }
+        ArrayNode events = result.putArray("events");
+        for (TrainingMonitorEvent item : eventRepository.findByTrainingHistoryIdOrderByProviderCreatedAtDesc(trainingHistoryId)) {
+            ObjectNode node = events.addObject();
+            node.put("id", item.getProviderEventId());
+            node.put("level", item.getLevel());
+            node.put("message", item.getMessage());
+            node.put("createdAt", item.getProviderCreatedAt());
+            putJson(node, "data", item.getDataPayload());
+        }
+        ArrayNode checkpoints = result.putArray("checkpoints");
+        for (TrainingMonitorCheckpoint item : checkpointRepository.findByTrainingHistoryIdOrderByStepNumberAsc(trainingHistoryId)) {
+            ObjectNode node = checkpoints.addObject();
+            node.put("id", item.getProviderCheckpointId());
+            node.put("stepNumber", item.getStepNumber());
+            node.put("model", item.getFineTunedModel());
+            node.put("createdAt", item.getProviderCreatedAt());
+            putJson(node, "metrics", item.getMetricsPayload());
+        }
+        return result;
+    }
+
+    private void putJson(ObjectNode target, String field, String raw) {
+        try { target.set(field, raw == null ? JSON.nullNode() : JSON.readTree(raw)); }
+        catch (Exception ignored) { target.put(field, raw); }
     }
 }

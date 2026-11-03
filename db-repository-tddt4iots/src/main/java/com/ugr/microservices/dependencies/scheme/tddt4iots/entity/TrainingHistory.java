@@ -59,6 +59,24 @@ public class TrainingHistory {
     @Column(name = "status")
     private Character status;
 
+    @Size(max = 200)
+    @Column(name = "provider_job_id", length = 200)
+    private String providerJobId;
+
+    @Size(max = 40)
+    @Column(name = "provider_status", length = 40)
+    private String providerStatus;
+
+    @Column(name = "progress_percent")
+    private Double progressPercent;
+
+    @Column(name = "last_monitored_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastMonitoredAt;
+
+    @Column(name = "monitoring_failures", nullable = false)
+    private Integer monitoringFailures = 0;
+
     @OneToMany(mappedBy = "modelTraining")
     private List<ModelUseTool> modelUseTools = new ArrayList<>();
 

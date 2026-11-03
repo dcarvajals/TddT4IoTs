@@ -4,6 +4,7 @@ import json
 from grpc_service.proto import openai_pb2_grpc, openai_pb2
 from openai_model.train_model import train_model
 from openai_model.train_model import use_model
+from openai_model.train_model import get_training_status
 
 
 class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
@@ -32,8 +33,8 @@ class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
         try:
             # Procesar la cadena JSON recibida
             data = request.json_data;
-            # Lógica de procesamiento del modelo usando los datos JSON
-            response_message = use_model(data)
+            operation = json.loads(data).get("operation")
+            response_message = get_training_status(data) if operation == "training_status" else use_model(data)
             # Crear y devolver la respuesta
             response = openai_pb2.TrainResponse()
             response.message = f"Processing result: {response_message}"

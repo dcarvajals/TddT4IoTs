@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public interface TrainingHistoryBO {
     List<TrainingHistoryDTO> getModelTrainingByPersonModelUseTool (GenericTddt4iotsReqDTO<ModelTrainingByPersonModelUseToolReqDTO> request) throws GenericException, IOException, InterruptedException;
     TrainingHistoryDTO validate (String request) throws GenericException, IOException, InterruptedException;
     List<TrainingHistoryDTO> getAllTraniningHistory (String userToken) throws GenericException, IOException, InterruptedException;
+    JsonNode getMonitorDetail(Long trainingHistoryId, String userToken)
+            throws GenericException, IOException, InterruptedException;
 }

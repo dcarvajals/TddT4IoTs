@@ -69,4 +69,8 @@ public interface TrainingHistoryRepository extends JpaRepository<TrainingHistory
             @Param("idPerson") Long idPerson
     );
 
+    @Query("SELECT TH FROM TrainingHistory TH JOIN FETCH TH.idPerson " +
+            "WHERE TH.resultTrining IS NOT NULL AND (TH.providerStatus IS NULL OR TH.providerStatus IN ('queued','validating_files','running','monitor_error'))")
+    List<TrainingHistory> findMonitorableTrainings();
+
 }

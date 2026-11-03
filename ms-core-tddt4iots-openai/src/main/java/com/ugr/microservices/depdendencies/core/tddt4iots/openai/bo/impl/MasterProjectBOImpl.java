@@ -10,6 +10,7 @@ import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGen
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.grpc.GrpcTrainingModelOpenAi;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.config.ApplicationConfig;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.*;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ResearchPersistenceService;
 import com.ugr.microservices.dependencies.core.tddt4iots.cons.Tddt4iotsCons;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
@@ -87,6 +88,9 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     @Autowired
     private GrpcTrainingModelOpenAi grpcTrainingModelOpenAi;
 
+    @Autowired
+    private ResearchPersistenceService researchPersistenceService;
+
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     public MasterProjectBOImpl(ApplicationConfig applicationConfig) {
@@ -109,6 +113,10 @@ public class MasterProjectBOImpl implements MasterProjectBO {
     public CreateFileTrainingResDTO createFileTraining(CreateFileTrainingReq request) throws GenericException, IOException, InterruptedException {
         // validar la session de la herramienta
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
+
+        if (request.getSamples() != null && !request.getSamples().isEmpty()) {
+            return createReviewedProjectDataset(request, personDTO);
+        }
 
         CreateFileTrainingResDTO createFileTrainingResDTO = new CreateFileTrainingResDTO();
         GetProjectFromDateReq getProjectFromDateReq = GetProjectFromDateReq.builder()
@@ -216,7 +224,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
             for (TrainingDataDTO trainingDataDTO : trainingDataDTOList) {
                 String json = JSON_MAPPER.writeValueAsString(trainingDataDTO);
                 jsonlContent.append(json).append("\n");
-                rowCount += rowCount;
+                rowCount++;
             }
 
             // URL del servicio web
@@ -261,44 +269,102 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         return createFileTrainingResDTO;
     }
 
+    private CreateFileTrainingResDTO createReviewedProjectDataset(CreateFileTrainingReq request, PersonDTO personDTO)
+            throws GenericException, JsonProcessingException, IOException, InterruptedException {
+        if (request.getDatasetName() == null || request.getDatasetName().isBlank()
+                || request.getDatasetVersion() == null || request.getDatasetVersion().isBlank()) {
+            throw new GenericException("El manifiesto requiere datasetName y datasetVersion.");
+        }
+        List<TrainingDataDTO> examples = new ArrayList<>();
+        java.util.Set<String> projectIds = new java.util.HashSet<>();
+        String systemInstruction = singleLineTrainingContent("""
+                Convert the complete natural-language software requirements into a TDDT4IOTS_CASE_WORKSPACE 1.0 JSON object.
+                Preserve requirement traceability, create all use-case diagrams, one global class model through the symbol language,
+                and one consistent sequence per use case. Return only JSON that satisfies the supplied CASE contract.
+                """);
+        for (int index = 0; index < request.getSamples().size(); index++) {
+            ResearchDatasetSampleDTO sample = request.getSamples().get(index);
+            if (sample == null || sample.getInputRequirements() == null || sample.getGoldWorkspace() == null) {
+                throw new GenericException("La muestra " + index + " requiere inputRequirements y goldWorkspace.");
+            }
+            String projectId = sample.getProjectId() == null ? "sample-" + index : sample.getProjectId().trim();
+            if (projectId.isBlank() || !projectIds.add(projectId)) {
+                throw new GenericException("projectId vacío o duplicado en el manifiesto: " + projectId);
+            }
+            String split = sample.getSplit() == null ? "TRAIN" : sample.getSplit().toUpperCase(Locale.ROOT);
+            if (!java.util.Set.of("TRAIN", "VALIDATION", "TEST").contains(split)) {
+                throw new GenericException("Split no compatible en " + projectId + ": " + split);
+            }
+            validateCaseWorkspace(sample.getGoldWorkspace());
+            if (!"TRAIN".equals(split)) continue; // Validation and locked test projects must never enter training JSONL.
+            List<MessageDTO> messages = new ArrayList<>();
+            messages.add(MessageDTO.builder().role(Tddt4iotsCons.SYSTEM).content(systemInstruction).build());
+            messages.add(MessageDTO.builder().role(Tddt4iotsCons.USER)
+                    .content(singleLineTrainingContent(JSON_MAPPER.writeValueAsString(sample.getInputRequirements()))).build());
+            messages.add(MessageDTO.builder().role(Tddt4iotsCons.ASSISTANT)
+                    .content(singleLineTrainingContent(JSON_MAPPER.writeValueAsString(sample.getGoldWorkspace()))).build());
+            examples.add(TrainingDataDTO.builder().messages(messages).build());
+        }
+        if (examples.isEmpty()) throw new GenericException("El manifiesto no contiene muestras con split TRAIN.");
+
+        StringBuilder jsonlContent = new StringBuilder();
+        for (TrainingDataDTO example : examples) jsonlContent.append(JSON_MAPPER.writeValueAsString(example)).append('\n');
+        String fileName = sanitizeFilePart(request.getDatasetName()) + "-" + sanitizeFilePart(request.getDatasetVersion())
+                + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + Tddt4iotsCons.JSONL;
+        String pathTrainingFileData = Tddt4iotsCons.TRAINING_DATA + fileName;
+        Tddt4iotsServerResDTO saveResponse = Tddt4iotsUtil.postRequest(
+                applicationConfig.getTddt4iotsServer() + Tddt4iotsCons.URL_SAVE_FILE_TRAINING,
+                SaveFileTrainingReqDTO.builder().filePath(pathTrainingFileData).fileContent(jsonlContent.toString()).build(),
+                Tddt4iotsServerResDTO.class);
+        if (saveResponse.getStatus() != 2) {
+            throw new GenericException("No se pudo guardar el dataset revisado: " + saveResponse.getInformation());
+        }
+
+        String pathFileJson = applicationConfig.getTddt4iotsNfs() + Tddt4iotsCons.PATH_TRAINING_DATA + pathTrainingFileData;
+        TrainingHistoryDTO history = new TrainingHistoryDTO();
+        history.setIdPerson(personDTO);
+        history.setDateCreation(new Date());
+        history.setCommit(request.getDatasetName() + ":" + request.getDatasetVersion());
+        history.setDateStartTrining(null);
+        history.setDateEndTrining(null);
+        history.setPathFileJson(pathFileJson);
+        history.setCountRowDataTrining((long) examples.size());
+        history.setModel(modelPermissionBO.validatePermiss(request.getUserToken()));
+        history = trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(history)));
+        researchPersistenceService.registerDataset(history.getId(), request, personDTO.getId());
+        return CreateFileTrainingResDTO.builder().pathJsonFile(pathFileJson).idTrainingHistory(history.getId()).build();
+    }
+
+    private String sanitizeFilePart(String value) {
+        return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9._-]+", "-").replaceAll("^-|-$", "");
+    }
+
+    private String singleLineTrainingContent(String value) {
+        if (value == null) return "";
+        return value.replace("\\r\\n", " ")
+                .replace("\\n", " ")
+                .replace("\\r", " ")
+                .replace('\r', ' ')
+                .replace('\n', ' ')
+                .replaceAll("[\\t ]+", " ")
+                .trim();
+    }
+
     @Override
     public List<TrainingModelOpenAiRes> trainingModelOpenAi(TrainingModelOpenAiReq request) throws GenericException {
         List<TrainingModelOpenAiRes> trainingModelOpenAiResList = new ArrayList<>();
-        // buscar los entrenamientos disponibles por el rango de fecha
-        GetProjectFromDateReq getProjectFromDateReq = GetProjectFromDateReq.builder()
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .build();
-
         TrainingHistoryDTO trainingHistoryDTO = trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.findIdByModelPermission(request.getIdTrainingHistory()));
-        GrpcTrainModelReqDTO grpcTrainModelReqDTO;
-
-        if(trainingHistoryDTO.getModel().getPrimaryTrain()) {
-            log.info("******* PRIMER ENTRENAMIENTO ********");
-             grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
-                    .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
-                    .model((trainingHistoryDTO.getModel().getModel().getName()))
-                    .pathFileTrain(trainingHistoryDTO.getPathFileJson())
-                    .build();
-        } else {
-            log.info("******* NO ES SU PRIMER ENTRENAMIENTO ********");
-            // buscamos el ultimo entrenamiento realizado por ese modelo base y los permisos asignados
-            TrainingHistoryDTO trainingHistoryLastestDTO = trainingHistoryMapper
-                    .trainingHistoryDtoTo(trainingHistoryService.getLastestTrainingByNotId(trainingHistoryDTO.getModel().getId(), request.getIdTrainingHistory()));
-
-            GrpcTrainModelResDTO grpcTrainModelResDTO =
-                    Tddt4iotsUtil.fetchDataFromJsonString(trainingHistoryLastestDTO.getResultTrining(), GrpcTrainModelResDTO.class);
-
-            grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
-                    .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
-                    .model(grpcTrainModelResDTO.getData().getFineTunedModel())
-                    .pathFileTrain(trainingHistoryDTO.getPathFileJson())
-                    .build();
-        }
+        // Every scientific run starts from the configured base model. Chaining fine-tunes
+        // makes experiments incomparable and can accumulate drift between datasets.
+        GrpcTrainModelReqDTO grpcTrainModelReqDTO = GrpcTrainModelReqDTO.builder()
+                .openAiSecretKey(trainingHistoryDTO.getIdPerson().getOpenaiSecretKey())
+                .model(trainingHistoryDTO.getModel().getModel().getName())
+                .pathFileTrain(trainingHistoryDTO.getPathFileJson())
+                .build();
 
         String requestGrpcTrainModel = Tddt4iotsUtil.convertObjectToJsonString(grpcTrainModelReqDTO);
         //log.info(requestGrpcTrainModel);
-        // entrenamos todos los archivos que se han encontrado con la fecha indicada
+        // inicia el entrenamiento con el dataset versionado seleccionado
         String response = grpcTrainingModelOpenAi.trainModel(requestGrpcTrainModel);
 
         // Define the regex pattern to capture the JSON part of the string
@@ -312,14 +378,22 @@ public class MasterProjectBOImpl implements MasterProjectBO {
             GrpcTrainModelResDTO grpcTrainModelResDTO =
                     Tddt4iotsUtil.fetchDataFromJsonString(json, GrpcTrainModelResDTO.class);
 
-            if(grpcTrainModelResDTO.getStatus().equals("ERROR")) {
-                trainingHistoryDTO.setStatus('E');
-            }
-
             // actualizar los resultados del entrenamiento
             trainingHistoryDTO.setResultTrining(json);
-            trainingHistoryDTO.setStatus('S');
+            String providerStatus = grpcTrainModelResDTO.getData() == null ? null : grpcTrainModelResDTO.getData().getStatus();
+            trainingHistoryDTO.setProviderJobId(grpcTrainModelResDTO.getData() == null ? null : grpcTrainModelResDTO.getData().getId());
+            trainingHistoryDTO.setProviderStatus(providerStatus);
+            trainingHistoryDTO.setProgressPercent("succeeded".equals(providerStatus) ? 100D : null);
+            trainingHistoryDTO.setLastMonitoredAt(new Date());
+            trainingHistoryDTO.setMonitoringFailures(0);
+            trainingHistoryDTO.setStatus(trainingStatusCode(grpcTrainModelResDTO.getStatus(), providerStatus));
             trainingHistoryService.save(trainingHistoryMapper.trainingHistoryTo(trainingHistoryDTO));
+            try {
+                JsonNode job = JSON_MAPPER.readTree(json).path("data");
+                if (job.isObject()) researchPersistenceService.registerTrainingStart(trainingHistoryDTO.getId(), job);
+            } catch (JsonProcessingException error) {
+                log.warn("No se pudo registrar el inicio científico del entrenamiento {}: {}", trainingHistoryDTO.getId(), error.getMessage());
+            }
             TrainingModelOpenAiRes trainingModelOpenAiRes = TrainingModelOpenAiRes.builder()
                     .result(response)
                     .pathFileJson(trainingHistoryDTO.getPathFileJson())
@@ -332,6 +406,13 @@ public class MasterProjectBOImpl implements MasterProjectBO {
 
 
         return trainingModelOpenAiResList;
+    }
+
+    private Character trainingStatusCode(String envelopeStatus, String providerStatus) {
+        if ("ERROR".equals(envelopeStatus) || "failed".equals(providerStatus) || "cancelled".equals(providerStatus)) return 'E';
+        if ("succeeded".equals(providerStatus)) return 'S';
+        if ("running".equals(providerStatus)) return 'R';
+        return 'Q';
     }
 
     @Override
@@ -464,11 +545,19 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 .model(trainedModel.getData().getFineTunedModel() == null
                         ? trainedModel.getData().getModel() : trainedModel.getData().getFineTunedModel())
                 .messages(messages)
+                .responseSchema("case_workspace")
+                .maxOutputTokens(16000)
                 .build();
+        long inferenceStarted = System.currentTimeMillis();
         String responseGrpc = grpcTrainingModelOpenAi.useModel(Tddt4iotsUtil.convertObjectToJsonString(grpcRequest));
         Pattern pattern = Pattern.compile("Processing result:\\s*(\\{.*\\})", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(responseGrpc);
-        if (!matcher.find()) throw new GenericException("El servicio de IA no devolvió un JSON de proyecto reconocible.");
+        if (!matcher.find()) {
+            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
+                    responseGrpc, System.currentTimeMillis() - inferenceStarted, grpcRequest.getModel(), null,
+                    "El servicio de IA no devolvió un JSON de proyecto reconocible.");
+            throw new GenericException("El servicio de IA no devolvió un JSON de proyecto reconocible.");
+        }
 
         try {
             JsonNode envelope = JSON_MAPPER.readTree(matcher.group(1));
@@ -477,14 +566,122 @@ public class MasterProjectBOImpl implements MasterProjectBO {
             String rawData = dataNode.isTextual() ? dataNode.asText() : dataNode.toString();
             rawData = rawData.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "").trim();
             JsonNode workspace = JSON_MAPPER.readTree(rawData);
-            if (!"TDDT4IOTS_CASE_WORKSPACE".equals(workspace.path("format").asText()) || !workspace.path("diagrams").isArray()) {
-                throw new GenericException("La IA devolvió datos que no cumplen el contrato del espacio CASE.");
-            }
+            validateCaseWorkspace(workspace);
+            researchPersistenceService.recordInference(
+                    modelUseToolDto.getModelTraining().getId(),
+                    JSON_MAPPER.createObjectNode().put("naturalLanguage", naturalLanguage.toString()),
+                    rawData, workspace, JSON_MAPPER.createArrayNode(),
+                    System.currentTimeMillis() - inferenceStarted,
+                    envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), null);
             return workspace;
+        } catch (GenericException exception) {
+            JsonNode envelope = parseResearchEnvelope(matcher.group(1));
+            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
+                    matcher.group(1), System.currentTimeMillis() - inferenceStarted,
+                    envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), exception.getMessage());
+            throw exception;
         } catch (JsonProcessingException exception) {
             log.error("Invalid CASE workspace generated by AI: {}", exception.getMessage());
+            JsonNode envelope = parseResearchEnvelope(matcher.group(1));
+            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
+                    matcher.group(1), System.currentTimeMillis() - inferenceStarted,
+                    envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), exception.getMessage());
             throw new GenericException("La IA generó un JSON incompleto o inválido.");
         }
+    }
+
+    private JsonNode parseResearchEnvelope(String raw) {
+        try { return JSON_MAPPER.readTree(raw); }
+        catch (Exception ignored) { return JSON_MAPPER.createObjectNode(); }
+    }
+
+    private void recordFailedResearchInference(Long trainingHistoryId, String naturalLanguage, String raw,
+                                               long latencyMs, String model, JsonNode usage, String error) {
+        try {
+            com.fasterxml.jackson.databind.node.ArrayNode errors = JSON_MAPPER.createArrayNode().add(error);
+            researchPersistenceService.recordInference(trainingHistoryId,
+                    JSON_MAPPER.createObjectNode().put("naturalLanguage", naturalLanguage),
+                    raw, null, errors, latencyMs, model, usage, error);
+        } catch (Exception persistenceError) {
+            log.warn("No se pudo guardar la inferencia fallida para investigación: {}", persistenceError.getMessage());
+        }
+    }
+
+    private void validateCaseWorkspace(JsonNode workspace) throws GenericException {
+        if (!"TDDT4IOTS_CASE_WORKSPACE".equals(workspace.path("format").asText())
+                || !"1.0".equals(workspace.path("schemaVersion").asText())) {
+            throw new GenericException("La IA devolvió una versión no compatible del espacio CASE.");
+        }
+        JsonNode diagrams = workspace.path("diagrams");
+        if (!diagrams.isArray() || diagrams.isEmpty()) {
+            throw new GenericException("La IA no generó diagramas de casos de uso.");
+        }
+        java.util.Set<String> diagramIds = new java.util.HashSet<>();
+        java.util.Set<String> globalUseCaseIds = new java.util.HashSet<>();
+        for (int diagramIndex = 0; diagramIndex < diagrams.size(); diagramIndex++) {
+            JsonNode diagram = diagrams.get(diagramIndex);
+            String diagramPath = "diagrams[" + diagramIndex + "]";
+            requireUniqueId(diagram.path("id").asText(), diagramIds, diagramPath + ".id");
+            if (diagram.path("name").asText().isBlank()) throw workspaceError(diagramPath + ".name es obligatorio.");
+            JsonNode actors = diagram.path("actors");
+            JsonNode useCases = diagram.path("useCases");
+            JsonNode relations = diagram.path("relations");
+            if (!actors.isArray() || !useCases.isArray() || useCases.isEmpty() || !relations.isArray()) {
+                throw workspaceError(diagramPath + " debe contener actors, useCases y relations válidos.");
+            }
+            java.util.Set<String> actorIds = new java.util.HashSet<>();
+            for (JsonNode actor : actors) requireUniqueId(actor.path("id").asText(), actorIds, diagramPath + ".actors.id");
+            java.util.Set<String> useCaseIds = new java.util.HashSet<>();
+            for (int useCaseIndex = 0; useCaseIndex < useCases.size(); useCaseIndex++) {
+                JsonNode useCase = useCases.get(useCaseIndex);
+                String useCasePath = diagramPath + ".useCases[" + useCaseIndex + "]";
+                String useCaseId = useCase.path("id").asText();
+                requireUniqueId(useCaseId, useCaseIds, useCasePath + ".id");
+                requireUniqueId(useCaseId, globalUseCaseIds, useCasePath + ".id global");
+                if (!useCase.path("mainFlow").isArray() || useCase.path("mainFlow").isEmpty()) {
+                    throw workspaceError(useCasePath + ".mainFlow debe contener al menos un paso.");
+                }
+                for (JsonNode step : useCase.path("mainFlow")) {
+                    String actor = step.path("actor").asText();
+                    if (!"System".equals(actor) && !actorIds.contains(actor)) {
+                        throw workspaceError(useCasePath + ".mainFlow referencia un actor inexistente: " + actor);
+                    }
+                }
+                validateSequence(useCase.path("sequence"), useCasePath + ".sequence");
+            }
+            for (JsonNode relation : relations) {
+                String from = relation.path("from").asText();
+                String to = relation.path("to").asText();
+                if (!(actorIds.contains(from) || useCaseIds.contains(from))
+                        || !(actorIds.contains(to) || useCaseIds.contains(to))) {
+                    throw workspaceError(diagramPath + ".relations contiene referencias inexistentes.");
+                }
+            }
+        }
+    }
+
+    private void validateSequence(JsonNode sequence, String path) throws GenericException {
+        JsonNode participants = sequence.path("participants");
+        JsonNode messages = sequence.path("messages");
+        if (!participants.isArray() || participants.size() < 2 || !messages.isArray() || messages.isEmpty()) {
+            throw workspaceError(path + " requiere al menos dos participantes y un mensaje.");
+        }
+        java.util.Set<String> participantIds = new java.util.HashSet<>();
+        for (JsonNode participant : participants) requireUniqueId(participant.path("id").asText(), participantIds, path + ".participants.id");
+        for (JsonNode message : messages) {
+            if (!participantIds.contains(message.path("from").asText()) || !participantIds.contains(message.path("to").asText())) {
+                throw workspaceError(path + " contiene un mensaje con participantes inexistentes.");
+            }
+        }
+    }
+
+    private void requireUniqueId(String id, java.util.Set<String> ids, String path) throws GenericException {
+        if (id == null || id.isBlank()) throw workspaceError(path + " es obligatorio.");
+        if (!ids.add(id)) throw workspaceError(path + " está duplicado: " + id);
+    }
+
+    private GenericException workspaceError(String detail) {
+        return new GenericException("El espacio CASE generado no es consistente: " + detail);
     }
 
     private String extractNaturalLanguageDocument(NaturalLanguageDocumentDTO document) throws GenericException {

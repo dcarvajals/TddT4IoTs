@@ -1,0 +1,64 @@
+{
+  "datasetName": "case-workspace-gold",
+  "datasetVersion": "1.0.0",
+  "schemaVersion": "1.0",
+  "samples": [
+    {
+      "projectId": "medication-reminder-001",
+      "split": "TRAIN",
+      "inputRequirements": {
+        "language": "es",
+        "description": "Una persona mayor debe registrar sus medicamentos y recibir recordatorios. Un cuidador puede revisar las tomas omitidas. Si la persona no confirma una toma, el sistema avisa al cuidador."
+      },
+      "goldWorkspace": {
+        "format": "TDDT4IOTS_CASE_WORKSPACE",
+        "schemaVersion": "1.0",
+        "project": {
+          "name": "Asistente de medicación",
+          "description": "Gestión accesible de tomas y alertas para personas mayores.",
+          "symbolLanguageRequired": true
+        },
+        "diagrams": [
+          {
+            "id": "ucd-medication",
+            "name": "Medicación",
+            "actors": [
+              {"id": "older-adult", "name": "Persona mayor", "position": {"x": 100, "y": 120}},
+              {"id": "caregiver", "name": "Cuidador", "position": {"x": 100, "y": 300}}
+            ],
+            "useCases": [
+              {
+                "id": "uc-confirm-dose",
+                "name": "Confirmar toma",
+                "position": {"x": 540, "y": 160},
+                "purpose": "Registrar una (Toma &-id=string &-fechaHora=Date &-confirmada=boolean [+confirmar=void]).",
+                "precondition": "Existe un (Medicamento &-id=string &-nombre=string &-dosis=string).",
+                "postcondition": "La toma queda confirmada en (Toma &-confirmada=boolean).",
+                "description": "Un medicamento posee tomas mediante *¡Medicamento 1>[programa]<n Toma!.",
+                "mainFlow": [
+                  {"actor": "older-adult", "action": "La persona confirma (Toma &-confirmada=boolean [+confirmar=void])."},
+                  {"actor": "System", "action": "El sistema guarda (Toma &-fechaHora=Date [+guardar=void])."}
+                ],
+                "alternativeFlows": [
+                  {"id": "af-missed-dose", "startStep": 1, "condition": "No hay confirmación", "actor": "System", "action": "El sistema crea (AlertaToma &-mensaje=string [+enviar=void]).", "outcome": "end", "returnStep": null}
+                ],
+                "sequence": {
+                  "participants": [
+                    {"id": "person", "name": "Persona mayor", "type": "actor"},
+                    {"id": "dose", "name": "dose:Toma", "type": "object"}
+                  ],
+                  "messages": [
+                    {"from": "person", "to": "dose", "message": "confirmar()", "type": "sync", "response": "confirmada", "responseType": "sync"}
+                  ]
+                }
+              }
+            ],
+            "relations": [
+              {"type": "association", "from": "older-adult", "to": "uc-confirm-dose"}
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -19,62 +19,25 @@
                         <form name="formCreateFile" ng-submit="createFileModel(formCreateFile)">
                             <div class="training-panel-intro">
                                 <i class="fas fa-database"></i>
-                                <div><strong>Create the training dataset</strong><span>Select the project date range used to build the JSONL file.</span></div>
+                                <div><strong>Create a project-level dataset</strong><span>Upload an expert-reviewed manifest with isolated training, validation and test projects.</span></div>
                             </div>
-                            <div class="training-date-grid">
-                            <div class="form-group">
-                                <label for="ip_startDate">Start date:</label>
-                                <input class="" id="ip_startDate" type="date"
-                                       name="ip_startDate"
-                                       ng-model="ip_startDate"
-                                       autocomplete="false"
-                                       ng-class="(formTrainModel.ip_startDate.$invalid &&
-                                                           formTrainModel.ip_startDate.$dirty) ?
-                                                           'form-control form-control-sm is-invalid'
-                                                           : 'form-control form-control-sm'" required />
-                                <div class="invalid-feedback">
-                                    Please enter the start date.
-                                </div>
+                            <div class="research-manifest-upload">
+                                <div><i class="fas fa-file-code"></i><strong>Reviewed research manifest</strong><span>JSON with complete natural-language inputs and approved CASE workspaces.</span></div>
+                                <a class="btn button-ds btn-sm" href="resources/examples/research-dataset-manifest-template.json" download title="Download manifest template"><i class="fas fa-download mr-1"></i>Template</a>
+                                <label class="btn button-ds btn-sm mb-0">Choose JSON<input id="researchManifestFile" type="file" accept="application/json,.json" hidden onchange="angular.element(this).scope().handleResearchManifest(this)"></label>
                             </div>
-
-                            <div class="form-group">
-                                <label for="ip_endDate">End date:</label>
-                                <input class="" id="ip_endDate" type="date"
-                                       name="ip_endDate"
-                                       ng-model="ip_endDate"
-                                       autocomplete="false"
-                                       ng-class="(formTrainModel.ip_endDate.$invalid &&
-                                                           formTrainModel.ip_endDate.$dirty) ?
-                                                           'form-control form-control-sm is-invalid'
-                                                           : 'form-control form-control-sm'" required />
-                                <div class="invalid-feedback">
-                                    Please enter the end date.
-                                </div>
+                            <div class="research-manifest-result is-valid" ng-if="researchManifest && !researchManifest.error">
+                                <i class="fas fa-check-circle"></i><span><strong>{{researchManifest.name}}</strong> · {{requestTrainingModel.datasetName}} {{requestTrainingModel.datasetVersion}} · Train {{researchManifest.train}} · Validation {{researchManifest.validation}} · Test {{researchManifest.test}}</span>
                             </div>
+                            <div class="research-manifest-result is-invalid" ng-if="researchManifest.error">
+                                <i class="fas fa-exclamation-circle"></i><span>{{researchManifest.error}}</span>
                             </div>
-
-                            <div class="form-group">
-                                <label for="ip_commit"> Commit: </label>
-                                <textarea id="ip_commit" cols="30" rows="5"
-                                          name="ip_commit"
-                                          ng-model="ip_commit"
-                                          autocomplete="false"
-                                          required
-                                          ng-class="(formTrainModel.ip_commit.$invalid &&
-                                                           formTrainModel.ip_commit.$dirty) ?
-                                                           'form-control form-control-sm is-invalid'
-                                                           : 'form-control form-control-sm'"></textarea>
-                                <div class="invalid-feedback">
-                                    Please enter commit.
-                                </div>
-                            </div>
-
                             <div style="text-align: right">
                                 <button class="btn button-ds btn-sm"  type="button" ng-click="closeModalTrainModel()">
                                     Cancel
                                 </button>
-                                <button class="btn button-d btn-sm"  type="submit">
-                                    Save changes
+                                <button class="btn button-d btn-sm" type="submit" ng-disabled="requestTrainingModel.samples.length === 0 || researchManifest.error">
+                                    Validate and create dataset
                                 </button>
                             </div>
                         </form>
@@ -87,7 +50,7 @@
                         </div>
 
                         <div class="training-file-summary">
-                            <div><span>Date range</span><strong>{{requestTrainingModel.startDate}} — {{requestTrainingModel.endDate}}</strong></div>
+                            <div><span>Dataset</span><strong>{{requestTrainingModel.datasetName}} · {{requestTrainingModel.datasetVersion}}</strong></div>
                             <a ng-ref="requestTrainingModel.pathJson"><i class="fas fa-download mr-1"></i>Download JSONL</a>
                         </div>
 
@@ -111,7 +74,7 @@
     <div class="modal-dialog modal-dialog-centered sha" role="document">
         <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">More information</h5>
+                    <h5 class="modal-title">{{detailModalTitle}}</h5>
                 </div>
                 <div class="modal-body">
                     <div id="resultJson" class="code-editor" style="height: 300px"></div>
@@ -119,6 +82,155 @@
                 <div class="modal-footer">
                     <button ng-click="closeModalMoreInformation()" type="button" class="btn btn-sm btn-danger">Close</button>
                 </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTrainingMonitor" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered training-monitor-dialog" role="document">
+        <div class="modal-content training-monitor-modal" ng-if="trainingMonitor">
+            <div class="modal-header training-monitor-header">
+                <div class="training-monitor-title">
+                    <span class="screen-kicker">Fine-tuning operation</span>
+                    <div><h5>Training monitor</h5><span class="training-monitor-status is-{{trainingMonitor.status}}"><i class="fas fa-circle"></i>{{trainingMonitor.statusLabel}}</span></div>
+                    <button type="button" ng-click="copyMonitorJobId()" title="Copy provider job id"><code>{{trainingMonitor.providerJobId || 'No provider job'}}</code><i class="far fa-copy"></i></button>
+                </div>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body training-monitor-body">
+                <section class="monitor-stage-panel">
+                    <div class="monitor-stage-line"></div>
+                    <div class="monitor-stage" ng-repeat="stage in trainingMonitor.stages" ng-class="{'is-done':stage.done,'is-active':stage.active,'is-error':stage.error}">
+                        <span><i class="fas {{stage.icon}}"></i></span><strong>{{stage.label}}</strong>
+                    </div>
+                </section>
+
+                <section class="monitor-kpi-grid">
+                    <article class="is-progress"><i class="fas fa-percentage"></i><div><span>Progress</span><strong ng-if="trainingMonitor.progressPercent !== null">{{trainingMonitor.progressPercent | number:0}}%</strong><strong ng-if="trainingMonitor.progressPercent === null">Active</strong></div></article>
+                    <article><i class="fas fa-wave-square"></i><div><span>Provider events</span><strong>{{trainingMonitor.events.length}}</strong></div></article>
+                    <article><i class="fas fa-code-branch"></i><div><span>Checkpoints</span><strong>{{trainingMonitor.checkpoints.length}}</strong></div></article>
+                    <article><i class="fas fa-stopwatch"></i><div><span>Mean response</span><strong>{{trainingMonitor.averageLatency}} ms</strong></div></article>
+                    <article><i class="far fa-clock"></i><div><span>Last synchronization</span><strong>{{trainingMonitor.lastMonitoredAt | date:'dd MMM, HH:mm:ss'}}</strong></div></article>
+                </section>
+
+                <div class="monitor-engineering-grid">
+                    <section class="monitor-card monitor-progress-card">
+                        <header><div><span>EXECUTION PROFILE</span><strong>Training evolution</strong></div><small>{{trainingMonitor.snapshots.length}} observations</small></header>
+                        <div class="monitor-chart-wrap">
+                            <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-label="Training progress chart">
+                                <line x1="8" y1="16" x2="312" y2="16"></line><line x1="8" y1="52" x2="312" y2="52"></line><line x1="8" y1="88" x2="312" y2="88"></line>
+                                <polyline class="monitor-progress-line" ng-attr-points="{{trainingMonitor.progressChart}}"></polyline>
+                            </svg>
+                            <div class="monitor-chart-axis"><span>First poll</span><span>Provider status over time</span><span>Latest</span></div>
+                        </div>
+                    </section>
+                    <section class="monitor-card monitor-metric-card">
+                        <header><div><span>MODEL QUALITY</span><strong>Checkpoint metrics</strong></div><small>normalized trend</small></header>
+                        <div class="monitor-chart-wrap" ng-if="trainingMonitor.metricChart.hasLoss || trainingMonitor.metricChart.hasAccuracy">
+                            <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-label="Checkpoint metric chart">
+                                <line x1="8" y1="16" x2="312" y2="16"></line><line x1="8" y1="52" x2="312" y2="52"></line><line x1="8" y1="88" x2="312" y2="88"></line>
+                                <polyline class="monitor-loss-line" ng-if="trainingMonitor.metricChart.hasLoss" ng-attr-points="{{trainingMonitor.metricChart.loss}}"></polyline>
+                                <polyline class="monitor-accuracy-line" ng-if="trainingMonitor.metricChart.hasAccuracy" ng-attr-points="{{trainingMonitor.metricChart.accuracy}}"></polyline>
+                            </svg>
+                            <div class="monitor-chart-legend"><span><i class="is-loss"></i>Validation loss</span><span><i class="is-accuracy"></i>Token accuracy</span></div>
+                        </div>
+                        <div class="monitor-no-data" ng-if="!trainingMonitor.metricChart.hasLoss && !trainingMonitor.metricChart.hasAccuracy"><i class="fas fa-chart-line"></i><span>Metrics will appear when OpenAI publishes a checkpoint.</span></div>
+                    </section>
+                </div>
+
+                <div class="monitor-detail-grid">
+                    <section class="monitor-card monitor-checkpoints">
+                        <header><div><span>CHECKPOINTS</span><strong>Model versions</strong></div><small>{{trainingMonitor.checkpoints.length}} captured</small></header>
+                        <div class="monitor-empty" ng-if="trainingMonitor.checkpoints.length === 0"><i class="fas fa-code-branch"></i><span>No checkpoints available for this job yet.</span></div>
+                        <table ng-if="trainingMonitor.checkpoints.length > 0"><thead><tr><th>Step</th><th>Validation loss</th><th>Accuracy</th><th>Created</th></tr></thead>
+                            <tbody><tr ng-repeat="checkpoint in trainingMonitor.checkpoints | orderBy:'-stepNumber'">
+                                <td><span class="monitor-step-tag">{{checkpoint.stepNumber}}</span></td>
+                                <td>{{monitorMetricLabel(checkpoint, ['full_valid_loss','valid_loss','validation_loss'], false)}}</td>
+                                <td>{{monitorMetricLabel(checkpoint, ['full_valid_mean_token_accuracy','valid_mean_token_accuracy','validation_token_accuracy'], true)}}</td>
+                                <td>{{checkpoint.createdAt * 1000 | date:'dd MMM, HH:mm'}}</td>
+                            </tr></tbody>
+                        </table>
+                    </section>
+                    <section class="monitor-card monitor-activity">
+                        <header><div><span>ACTIVITY</span><strong>Provider timeline</strong></div><small>latest events</small></header>
+                        <div class="monitor-empty" ng-if="trainingMonitor.events.length === 0"><i class="fas fa-stream"></i><span>No provider events have been reported.</span></div>
+                        <div class="monitor-event" ng-repeat="event in trainingMonitor.events | limitTo:monitorEventLimit">
+                            <span class="monitor-event-dot is-{{event.level || 'info'}}"></span>
+                            <div><strong>{{event.message || 'Provider update'}}</strong><small>{{event.createdAtMillis | date:'dd MMM yyyy, HH:mm:ss'}} · {{event.level || 'info'}}</small></div>
+                        </div>
+                        <button class="monitor-more-btn" type="button" ng-if="trainingMonitor.events.length > monitorEventLimit" ng-click="monitorEventLimit = monitorEventLimit + 12">Show more events</button>
+                    </section>
+                </div>
+
+                <section class="monitor-alert-panel" ng-if="trainingMonitor.monitoringFailures > 0 || trainingMonitor.snapshots[0].error">
+                    <i class="fas fa-exclamation-triangle"></i><div><strong>Monitoring diagnostics</strong><span>{{trainingMonitor.monitoringFailures}} consecutive failures · {{trainingMonitor.snapshots[0].error || 'The service will retry automatically.'}}</span></div>
+                </section>
+                <section class="monitor-raw-panel" ng-if="showMonitorRaw"><pre>{{trainingMonitor.raw}}</pre></section>
+            </div>
+            <div class="modal-footer training-monitor-footer">
+                <button class="btn project-secondary-btn btn-sm" type="button" ng-click="showMonitorRaw = !showMonitorRaw"><i class="fas fa-code mr-1"></i>{{showMonitorRaw ? 'Hide raw data' : 'View raw data'}}</button>
+                <button class="btn project-primary-btn btn-sm" type="button" data-dismiss="modal">Close monitor</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalResearchStudio" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered research-studio-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header research-studio-header">
+                <div><span class="screen-kicker">AI experiment studio</span><h5 class="modal-title">Scientific research data</h5></div>
+                <div class="training-header-actions">
+                    <button class="btn project-secondary-btn btn-sm" ng-click="downloadResearchCsv()"><i class="fas fa-file-csv mr-1"></i>Export CSV</button>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+            </div>
+            <div class="modal-body research-studio-body">
+                <div class="research-count-grid">
+                    <div><span>Datasets</span><strong>{{researchDashboard.counts.datasets || 0}}</strong></div>
+                    <div><span>Projects</span><strong>{{researchDashboard.counts.dataset_items || 0}}</strong></div>
+                    <div><span>Experiments</span><strong>{{researchDashboard.counts.experiments || 0}}</strong></div>
+                    <div><span>Runs</span><strong>{{researchDashboard.counts.training_runs || 0}}</strong></div>
+                    <div><span>Checkpoints</span><strong>{{researchDashboard.counts.checkpoints || 0}}</strong></div>
+                    <div><span>Inferences</span><strong>{{researchDashboard.counts.inferences || 0}}</strong></div>
+                    <div><span>Metrics</span><strong>{{researchDashboard.counts.metrics || 0}}</strong></div>
+                    <div><span>Reviews</span><strong>{{researchDashboard.counts.human_reviews || 0}}</strong></div>
+                </div>
+                <div class="research-studio-layout">
+                    <section class="research-review-list">
+                        <div class="research-section-title"><div><strong>Expert review queue</strong><span>Score approved gold projects or request corrections.</span></div><span>{{researchItems.length}} items</span></div>
+                        <div class="research-review-scroll">
+                            <button type="button" ng-repeat="item in researchItems" ng-click="selectResearchItem(item)"
+                                    ng-class="{'is-selected': researchReview.datasetItemId === item.id}">
+                                <i class="fas fa-project-diagram"></i><span><strong>{{item.external_project_id}}</strong><small>{{item.dataset_name}} {{item.dataset_version}}</small></span>
+                                <em>{{item.split}}</em><b>{{item.review_count}}</b>
+                            </button>
+                        </div>
+                    </section>
+                    <section class="research-review-form" ng-if="researchReview">
+                        <div class="research-section-title"><div><strong>Review rubric</strong><span>{{researchReview.item.external_project_id}} · round {{researchReview.reviewRound}}</span></div></div>
+                        <form ng-submit="submitResearchReview()">
+                            <div class="research-score-grid">
+                                <label>Correctness<input type="number" min="1" max="5" ng-model="researchReview.correctness" required></label>
+                                <label>Completeness<input type="number" min="1" max="5" ng-model="researchReview.completeness" required></label>
+                                <label>Consistency<input type="number" min="1" max="5" ng-model="researchReview.consistency" required></label>
+                                <label>Readability<input type="number" min="1" max="5" ng-model="researchReview.readability" required></label>
+                                <label>Usability<input type="number" min="1" max="5" ng-model="researchReview.usability" required></label>
+                                <label>Correction (s)<input type="number" min="0" ng-model="researchReview.correctionSeconds"></label>
+                            </div>
+                            <div class="research-change-grid">
+                                <label>Added<input type="number" min="0" ng-model="researchReview.addedElements"></label>
+                                <label>Changed<input type="number" min="0" ng-model="researchReview.changedElements"></label>
+                                <label>Deleted<input type="number" min="0" ng-model="researchReview.deletedElements"></label>
+                            </div>
+                            <label class="research-field">Decision<select ng-model="researchReview.decision"><option value="APPROVE">Approve</option><option value="REVISE">Revise</option><option value="REJECT">Reject</option></select></label>
+                            <label class="research-field">Notes<textarea rows="3" ng-model="researchReview.notes" placeholder="Scientific observations or required corrections"></textarea></label>
+                            <button class="btn project-primary-btn btn-sm btn-block" type="submit"><i class="fas fa-check mr-1"></i>Save review</button>
+                        </form>
+                    </section>
+                    <section class="research-review-empty" ng-if="!researchReview"><i class="fas fa-clipboard-check"></i><strong>Select a project</strong><span>Choose one dataset item to complete its expert rubric.</span></section>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -132,12 +244,33 @@
                 <h6 class="projects-panel-title">Training history</h6>
                 <p class="projects-panel-subtitle">Review dataset runs, resulting models and execution status.</p>
             </div>
-            <button class="btn project-primary-btn btn-sm" type="button" id="newProtocol" ng-click="openModalTrainModel()">
-                <i class="fas fa-plus mr-2"></i>New training
-            </button>
+            <div class="training-header-actions">
+                <button class="btn project-secondary-btn btn-sm" type="button" ng-click="openResearchSummary()">
+                    <i class="fas fa-microscope mr-2"></i>Research data
+                </button>
+                <button class="btn project-primary-btn btn-sm" type="button" id="newProtocol" ng-click="openModalTrainModel()">
+                    <i class="fas fa-plus mr-2"></i>New training
+                </button>
+            </div>
         </div>
 
         <div class="card-body projects-panel-body">
+            <div class="experiment-summary-grid">
+                <div class="experiment-stat"><span>Runs</span><strong>{{trainingSummary.total}}</strong><small>registered jobs</small></div>
+                <div class="experiment-stat is-success"><span>Completed</span><strong>{{trainingSummary.completed}}</strong><small>provider completed</small></div>
+                <div class="experiment-stat is-running"><span>In progress</span><strong>{{trainingSummary.running}}</strong><small>queued or running</small></div>
+                <div class="experiment-stat is-data"><span>Examples</span><strong>{{trainingSummary.examples}}</strong><small>dataset rows</small></div>
+            </div>
+
+            <div class="experiment-method-banner">
+                <div class="experiment-method-icon"><i class="fas fa-microscope"></i></div>
+                <div>
+                    <strong>Reproducible experiment workflow</strong>
+                    <span>Freeze a project-level dataset, keep validation and test projects isolated, then compare prompting, structured generation and fine-tuning on the same benchmark.</span>
+                </div>
+                <div class="experiment-method-tags"><span>Dataset</span><i class="fas fa-chevron-right"></i><span>Baseline</span><i class="fas fa-chevron-right"></i><span>Evals</span></div>
+            </div>
+
             <div class="component-list-toolbar" ng-show="listTrainingHistory.length > 0">
                 <div class="component-search"><i class="fas fa-search"></i><input ng-model="searchTraining" class="form-control form-control-sm" type="text" placeholder="Search training history"></div>
                 <span>{{listTrainingHistory.length}} training runs</span>
@@ -151,24 +284,27 @@
 
             <div class="table-responsive training-history-wrap" ng-show="listTrainingHistory.length > 0">
                 <table class="table model-table training-history-table mb-0">
-                    <thead><tr><th>Result</th><th>Model</th><th>Commit</th><th>Training period</th><th>Created</th><th class="text-right">Details</th></tr></thead>
+                    <thead><tr><th>Result</th><th>Model</th><th>Dataset</th><th>Examples</th><th>Created</th><th class="text-right">Details</th></tr></thead>
                     <tbody>
-                        <tr ng-repeat="dom_listTrainingHistory in listTrainingHistory | filter: searchTraining">
+                        <tr class="training-row is-{{dom_listTrainingHistory.providerStatus}}" ng-repeat="dom_listTrainingHistory in listTrainingHistory | filter: searchTraining">
                             <td>
-                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'" class="training-status is-success"><i class="fas fa-check-circle"></i>Succeeded</span>
-                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'ERROR'" class="training-status is-error"><i class="fas fa-exclamation-circle"></i>Error</span>
+                                <span ng-if="dom_listTrainingHistory.providerStatus === 'succeeded'" class="training-status is-success"><i class="fas fa-check-circle"></i>Succeeded</span>
+                                <span ng-if="dom_listTrainingHistory.providerStatus === 'error' || dom_listTrainingHistory.providerStatus === 'failed' || dom_listTrainingHistory.providerStatus === 'cancelled' || dom_listTrainingHistory.providerStatus === 'monitor_error'" class="training-status is-error"><i class="fas fa-exclamation-circle"></i>{{dom_listTrainingHistory.providerStatus}}</span>
+                                <span ng-if="dom_listTrainingHistory.providerStatus !== 'succeeded' && dom_listTrainingHistory.providerStatus !== 'error' && dom_listTrainingHistory.providerStatus !== 'failed' && dom_listTrainingHistory.providerStatus !== 'cancelled' && dom_listTrainingHistory.providerStatus !== 'monitor_error'" class="training-status is-running"><i class="fas fa-circle-notch fa-spin"></i>{{dom_listTrainingHistory.providerStatus}}</span>
+                                <div class="training-progress-track" ng-class="{'is-indeterminate': dom_listTrainingHistory.progressPercent === null && (dom_listTrainingHistory.providerStatus === 'running' || dom_listTrainingHistory.providerStatus === 'queued')}">
+                                    <span ng-style="{'width': (dom_listTrainingHistory.progressPercent || 0) + '%'}"></span>
+                                </div>
+                                <small class="training-progress-label" ng-if="dom_listTrainingHistory.progressPercent !== null">{{dom_listTrainingHistory.progressPercent | number:0}}%</small>
+                                <small class="training-sync-label" ng-if="dom_listTrainingHistory.lastMonitoredAt"><i class="fas fa-sync-alt"></i>{{dom_listTrainingHistory.lastMonitoredAt | date:'dd MMM, HH:mm'}}</small>
                             </td>
                             <td class="training-model-cell">
                                 <i class="fas fa-brain"></i>
-                                <span ng-if="dom_listTrainingHistory.resultJson.status === 'OK'">
-                                    {{dom_listTrainingHistory.resultJson.data.fine_tuned_model === null ? dom_listTrainingHistory.resultJson.data.model : dom_listTrainingHistory.resultJson.data.fine_tuned_model}}
-                                </span>
-                                <span ng-if="dom_listTrainingHistory.resultJson.status !== 'OK'">Not generated</span>
+                                <div><span>{{dom_listTrainingHistory.displayModel}}</span><small>{{dom_listTrainingHistory.providerJobId || 'Waiting for provider job'}}</small></div>
                             </td>
-                            <td class="training-commit-cell">{{dom_listTrainingHistory.commit}}</td>
-                            <td class="training-period-cell"><span>{{dom_listTrainingHistory.dateStartTrining || '—'}}</span><i class="fas fa-arrow-right"></i><span>{{dom_listTrainingHistory.dateEndTrining || '—'}}</span></td>
+                            <td class="training-commit-cell"><span>{{dom_listTrainingHistory.commit}}</span></td>
+                            <td class="training-period-cell"><strong>{{dom_listTrainingHistory.countRowDataTrining || 0}}</strong><span>training projects</span></td>
                             <td class="component-date-cell"><i class="far fa-calendar mr-1"></i>{{dom_listTrainingHistory.dateCreation}}</td>
-                            <td><div class="component-row-actions"><button class="model-details-btn" ng-click="openModalMoreInformation(dom_listTrainingHistory)"><i class="fas fa-code mr-1"></i>View response</button></div></td>
+                            <td><div class="component-row-actions"><button class="model-details-btn is-monitor" ng-click="openTrainingMonitor(dom_listTrainingHistory)"><i class="fas fa-wave-square mr-1"></i>Monitor</button><button class="model-details-btn" title="Raw provider response" ng-click="openModalMoreInformation(dom_listTrainingHistory)"><i class="fas fa-code"></i></button></div></td>
                         </tr>
                     </tbody>
                 </table>

@@ -18,7 +18,7 @@ public class FineTuningResDTO {
     private String id;
 
     @JsonProperty("created_at")
-    private String createdAt;
+    private Long createdAt;
 
     @JsonProperty("error")
     private Error error;
@@ -27,7 +27,7 @@ public class FineTuningResDTO {
     private String fineTunedModel;
 
     @JsonProperty("finished_at")
-    private String finishedAt;
+    private Long finishedAt;
 
     @JsonProperty("model")
     private String model;
@@ -42,13 +42,13 @@ public class FineTuningResDTO {
     private List<String> resultFiles;
 
     @JsonProperty("seed")
-    private String seed;
+    private Long seed;
 
     @JsonProperty("status")
     private String status;
 
     @JsonProperty("trained_tokens")
-    private String trainedTokens;
+    private Long trainedTokens;
 
     @JsonProperty("training_file")
     private String trainingFile;
@@ -57,13 +57,16 @@ public class FineTuningResDTO {
     private String validationFile;
 
     @JsonProperty("estimated_finish")
-    private String estimatedFinish;
+    private Long estimatedFinish;
 
     @JsonProperty("integrations")
-    private List<String> integrations;
+    private List<Object> integrations;
 
     @JsonProperty("user_provided_suffix")
     private String userProvidedSuffix;
+
+    @JsonProperty("hyperparameters")
+    private Hyperparameters hyperparameters;
 
     @Data
     public static class Error {
@@ -80,12 +83,12 @@ public class FineTuningResDTO {
     @Data
     public static class Hyperparameters {
         @JsonProperty("n_epochs")
-        private int nEpochs;
+        private Object nEpochs;
 
         @JsonProperty("batch_size")
-        private int batchSize;
+        private Object batchSize;
 
         @JsonProperty("learning_rate_multiplier")
-        private double learningRateMultiplier;
+        private Object learningRateMultiplier;
     }
 }

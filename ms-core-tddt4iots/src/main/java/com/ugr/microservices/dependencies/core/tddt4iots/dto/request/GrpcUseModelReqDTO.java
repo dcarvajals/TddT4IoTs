@@ -16,4 +16,7 @@ public class GrpcUseModelReqDTO {
     private String openAiSecretKey;
     private String model;
     private List<MessageDTO> messages;
+    /** Optional server-side schema identifier. Keeps ordinary JSON calls backwards compatible. */
+    private String responseSchema;
+    private Integer maxOutputTokens;
 }

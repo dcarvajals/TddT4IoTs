@@ -66,7 +66,6 @@ public class FileMangarApi {
         JsonObject Jso = Methods.stringToJSON(data);
         String filePath = Methods.JsonToString(Jso, "filePath", "");
         String fileContent = Methods.JsonToString(Jso, "fileContent", "");
-        System.out.println("fileConent: " + fileContent);
         String rutaJson = path + DataStatic.folderTraining + filePath;
         saveToFileJsonL(fileContent, rutaJson);
         menssage = Methods.getJsonMessage("2", "File successfully updated.", "[]");
@@ -104,12 +103,10 @@ public class FileMangarApi {
     }
     
     private void saveToFileJsonL(String content, String path) throws IOException {
-
-        // Reemplazar los caracteres de nueva línea en el contenido JSONL para evitar problemas
-        String sanitizedContent = content.replace("\\n", "\n");
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
-            writer.write(sanitizedContent);
+            // JSONL already contains physical line separators between records. Escaped
+            // newlines inside JSON strings must remain escaped or the record is corrupted.
+            writer.write(content);
         }
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @RestController
 @Slf4j
@@ -66,6 +67,15 @@ public class TrainingHistoryController {
         log.info("Request received: list");
         response.setData(trainingHistoryBO.getAllTraniningHistory(userToken));
         log.info("Request completed: list");
+        return response;
+    }
+
+    @GetMapping(path = "/{trainingHistoryId}/monitor", produces = MediaType.APPLICATION_JSON_VALUE)
+    public GenericBasicResponse<JsonNode> monitorDetail(
+            @PathVariable Long trainingHistoryId,
+            @RequestHeader String userToken) throws GenericException, IOException, InterruptedException {
+        GenericBasicResponse<JsonNode> response = new GenericBasicResponse<>();
+        response.setData(trainingHistoryBO.getMonitorDetail(trainingHistoryId, userToken));
         return response;
     }
 }
