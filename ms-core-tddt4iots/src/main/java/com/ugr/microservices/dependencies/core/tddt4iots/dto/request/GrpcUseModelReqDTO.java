@@ -19,4 +19,7 @@ public class GrpcUseModelReqDTO {
     /** Optional server-side schema identifier. Keeps ordinary JSON calls backwards compatible. */
     private String responseSchema;
     private Integer maxOutputTokens;
+    @Builder.Default
+    private Double temperature = 0.2;
+    private String reasoningEffort;
 }

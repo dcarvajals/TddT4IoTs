@@ -22,12 +22,15 @@ FLOW_STEP = _object({
 })
 ALTERNATIVE_FLOW = _object({
     "id": {"type": "string", "minLength": 1},
-    "startStep": {"type": "integer", "minimum": 1},
+    "startStep": {"type": "integer", "minimum": 1,
+                  "description": "1-based index into this use case's mainFlow: 1 <= startStep <= mainFlow.length."},
     "condition": {"type": "string", "minLength": 1},
     "actor": {"type": "string", "minLength": 1},
     "action": {"type": "string", "minLength": 1},
-    "outcome": {"type": "string", "enum": ["return", "end"]},
-    "returnStep": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]},
+    "outcome": {"type": "string", "enum": ["return", "end"],
+                "description": "return resumes the normal flow; end terminates this use-case execution."},
+    "returnStep": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}],
+                   "description": "For outcome=return: a non-null integer with startStep <= returnStep <= this use case's mainFlow.length. For outcome=end: null. Never use 0 or a step before startStep."},
 })
 PARTICIPANT = _object({
     "id": {"type": "string", "minLength": 1},
@@ -54,8 +57,10 @@ USE_CASE = _object({
     "precondition": {"type": "string", "minLength": 1},
     "postcondition": {"type": "string", "minLength": 1},
     "description": {"type": "string", "minLength": 1},
-    "mainFlow": {"type": "array", "items": FLOW_STEP, "minItems": 1},
-    "alternativeFlows": {"type": "array", "items": ALTERNATIVE_FLOW},
+    "mainFlow": {"type": "array", "items": FLOW_STEP, "minItems": 1,
+                 "description": "Ordered normal-flow steps numbered from 1 to the array length for alternative-flow references."},
+    "alternativeFlows": {"type": "array", "items": ALTERNATIVE_FLOW,
+                         "description": "Only requirement-supported alternatives. All step references belong to this use case's mainFlow. Use [] when none are supported."},
     "sequence": SEQUENCE,
 })
 RELATION = _object({

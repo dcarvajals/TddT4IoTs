@@ -9,6 +9,7 @@ from openai_model.train_model import get_training_status
 
 class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
     def TrainModel(self, request, context):
+        print("gRPC: solicitud TrainModel recibida", flush=True)
         try:
             #print(request);
             # Procesar la cadena JSON recibida
@@ -30,6 +31,7 @@ class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
             return openai_pb2.TrainResponse()
 
     def UseModel(self, request, context):
+        print("gRPC: solicitud UseModel recibida", flush=True)
         try:
             # Procesar la cadena JSON recibida
             data = request.json_data;
@@ -52,8 +54,11 @@ class OpenAIServiceServicer(openai_pb2_grpc.OpenAIServiceServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     openai_pb2_grpc.add_OpenAIServiceServicer_to_server(OpenAIServiceServicer(), server)
-    server.add_insecure_port('[::]:50051')
+    port = server.add_insecure_port('[::]:50051')
+    if not port:
+        raise RuntimeError("No se pudo abrir el puerto gRPC 50051")
     server.start()
+    print("Servidor gRPC iniciado; escuchando en [::]:50051", flush=True)
     server.wait_for_termination()
 
 

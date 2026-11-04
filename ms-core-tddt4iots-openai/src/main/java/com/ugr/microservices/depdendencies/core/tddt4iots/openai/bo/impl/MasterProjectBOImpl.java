@@ -11,6 +11,7 @@ import com.ugr.microservices.depdendencies.core.tddt4iots.openai.communication.g
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.config.ApplicationConfig;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.mapper.*;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ResearchPersistenceService;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ComparisonEvidenceService;
 import com.ugr.microservices.dependencies.core.tddt4iots.cons.Tddt4iotsCons;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.*;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.request.*;
@@ -90,6 +91,18 @@ public class MasterProjectBOImpl implements MasterProjectBO {
 
     @Autowired
     private ResearchPersistenceService researchPersistenceService;
+
+    @Autowired
+    private ModelCredentialsResolver modelCredentialsResolver;
+
+    @Autowired
+    private ComparisonEvidenceService comparisonEvidenceService;
+
+    @Autowired
+    private SharedModelCatalogService sharedModelCatalogService;
+
+    @Autowired
+    private com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ProjectVersionService projectVersionService;
 
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
@@ -421,8 +434,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(genericTddt4iotsReqDTO.getUserToken());
         // buscamos los datos del modelo a utilizar por la persona
         ModelUseToolDto modelUseToolDto = modelUseToolMapper.modelUseToolDtoTo(modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
-        GrpcTrainModelResDTO grpcTrainModelResDTO =
-                Tddt4iotsUtil.fetchDataFromJsonString(modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
+        String modelOwnerKey = modelCredentialsResolver.resolve(modelUseToolDto);
         List<MessageDTO> messages = new ArrayList<>();
         DiagramDataResDTO response = new DiagramDataResDTO();
         // leer el promp por defecto para cada peticion
@@ -438,12 +450,12 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         messages.add(messageDTOSystem);
         messages.add(messageDTOUser);
         GrpcUseModelReqDTO grpcUseModelReqDTO = GrpcUseModelReqDTO.builder()
-                .openAiSecretKey(personDTO.getOpenaiSecretKey())
-                .model(grpcTrainModelResDTO.getData().getFineTunedModel() == null ? grpcTrainModelResDTO.getData().getModel() : grpcTrainModelResDTO.getData().getFineTunedModel())
+                .openAiSecretKey(modelOwnerKey)
+                .model(selectedModelIdentifier(modelUseToolDto))
                 .messages(messages)
                 .build();
         String grpcUseModelString = Tddt4iotsUtil.convertObjectToJsonString(grpcUseModelReqDTO);
-        log.info(grpcUseModelString);
+        log.info("Generating UML with selected model {}", grpcUseModelReqDTO.getModel());
         String responseGrpc = grpcTrainingModelOpenAi.useModel(grpcUseModelString);
         log.info(responseGrpc);
 
@@ -496,6 +508,8 @@ public class MasterProjectBOImpl implements MasterProjectBO {
             throws GenericException, IOException, InterruptedException {
         GenerateCaseWorkspaceReqDTO input = request.getClassDTO();
         if (input == null) throw new GenericException("No se recibió información para analizar.");
+        try { ComparisonEvidenceService.validate(input); }
+        catch (IllegalArgumentException e) { throw new GenericException(e.getMessage()); }
 
         StringBuilder naturalLanguage = new StringBuilder();
         if (input.getDescription() != null && !input.getDescription().isBlank()) {
@@ -504,10 +518,9 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         List<NaturalLanguageDocumentDTO> documents = input.getDocuments() == null ? List.of() : input.getDocuments();
         for (NaturalLanguageDocumentDTO document : documents) {
             String extracted = extractNaturalLanguageDocument(document);
-            if (!extracted.isBlank()) {
-                naturalLanguage.append("DOCUMENTO: ").append(document.getFileName()).append("\n")
-                        .append(extracted).append("\n\n");
-            }
+            if (extracted.isBlank()) throw new GenericException("No se pudo extraer texto de uno de los documentos. Los PDF escaneados requieren una transcripción revisada antes de generar el modelo.");
+            naturalLanguage.append("DOCUMENTO: ").append(document.getFileName()).append("\n")
+                    .append(extracted).append("\n\n");
         }
         if (naturalLanguage.toString().isBlank()) {
             throw new GenericException("Agregue una descripción o al menos un documento con texto.");
@@ -517,9 +530,11 @@ public class MasterProjectBOImpl implements MasterProjectBO {
         }
 
         PersonDTO personDTO = tddt4iotsGenericBO.validateSession(request.getUserToken());
-        ModelUseToolDto modelUseToolDto = modelUseToolMapper.modelUseToolDtoTo(modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
-        GrpcTrainModelResDTO trainedModel = Tddt4iotsUtil.fetchDataFromJsonString(
-                modelUseToolDto.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
+        ModelUseToolDto modelUseToolDto = modelUseToolMapper.modelUseToolDtoTo(
+                input.getModelRegistrationId() != null || input.getModelRegistrationKind() != null
+                        ? sharedModelCatalogService.resolveForRequest(personDTO.getId(), input.getModelRegistrationId(), input.getModelRegistrationKind())
+                        : modelUseToolService.getModelUseToolByPerson(personDTO.getId()));
+        String modelOwnerKey = modelCredentialsResolver.resolve(modelUseToolDto);
 
         String workspacePrompt = """
                 You are a senior CASE analyst. Convert the supplied natural-language requirements into one valid JSON object.
@@ -536,58 +551,132 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 required to derive the class diagram, such as (Class &-attribute=string [+operation=void]),
                 *¡ClassA 1>[relation]<n ClassB! and *¿Enumeration »Value1 »Value2 ?.
                 Use stable kebab-case ids. Do not include Markdown fences or explanations.
+                Application validation rules (check these before returning the JSON):
+                - Diagram ids and diagram names must be unique. Actor ids/names and use-case names must be unique
+                  within their diagram. Use-case ids must be globally unique across the workspace.
+                - Every purpose, precondition, postcondition, description, mainFlow action and alternative-flow action
+                  must contain nonblank natural-language text and class-parser modeling symbols as specified above.
+                - Every flow actor must be an actor id from the SAME diagram, or the exact literal System.
+                - Number mainFlow steps from 1 through N, where N is this use case's mainFlow.length.
+                  startStep is an integer in [1,N]. It never refers to a sequence message or an alternative-flow index.
+                - For outcome=return, returnStep is a non-null integer satisfying startStep <= returnStep <= N.
+                  This editor supports resuming at the origin step or a later normal-flow step, not an earlier step.
+                  Example for N=5 and startStep=3: returnStep=3,4,5 are valid; 0,1,2,6 and null are invalid.
+                - For outcome=end, returnStep must be null. Use end only when the requirement actually terminates
+                  that execution; never change a return into an end merely to bypass validation.
+                  Each alternative needs a nonblank id, condition and action; ids must be unique per use case.
+                  Omit unsupported or invented alternatives by using an empty alternativeFlows array.
+                - Association connects an actor and a use case. Include/extend connect two use cases.
+                  Generalization connects two actors or two use cases. Every endpoint belongs to the same diagram.
+                  Include association relations for actors participating in each use case's normal flow.
+                - Each sequence needs at least two named participants with unique ids and at least one nonblank
+                  message. Every from/to must reference that sequence's participants. Message types are sync/async.
+                Preserve the supplied requirements. Do not invent behavior or silently alter its meaning to satisfy
+                a constraint. Check every alternative's indices against its OWN completed mainFlow before returning.
                 """;
         List<MessageDTO> messages = new ArrayList<>();
         messages.add(MessageDTO.builder().role(Tddt4iotsCons.SYSTEM).content(workspacePrompt).build());
         messages.add(MessageDTO.builder().role(Tddt4iotsCons.USER).content(naturalLanguage.toString()).build());
         GrpcUseModelReqDTO grpcRequest = GrpcUseModelReqDTO.builder()
-                .openAiSecretKey(personDTO.getOpenaiSecretKey())
-                .model(trainedModel.getData().getFineTunedModel() == null
-                        ? trainedModel.getData().getModel() : trainedModel.getData().getFineTunedModel())
+                .openAiSecretKey(modelOwnerKey)
+                .model(selectedModelIdentifier(modelUseToolDto))
                 .messages(messages)
                 .responseSchema("case_workspace")
-                .maxOutputTokens(16000)
+                .maxOutputTokens(input.getMaxOutputTokens() == null ? 32000 : input.getMaxOutputTokens())
+                .temperature(input.getTemperature())
+                .reasoningEffort(input.getReasoningEffort())
                 .build();
-        long inferenceStarted = System.currentTimeMillis();
-        String responseGrpc = grpcTrainingModelOpenAi.useModel(Tddt4iotsUtil.convertObjectToJsonString(grpcRequest));
-        Pattern pattern = Pattern.compile("Processing result:\\s*(\\{.*\\})", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(responseGrpc);
-        if (!matcher.find()) {
-            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
-                    responseGrpc, System.currentTimeMillis() - inferenceStarted, grpcRequest.getModel(), null,
-                    "El servicio de IA no devolvió un JSON de proyecto reconocible.");
-            throw new GenericException("El servicio de IA no devolvió un JSON de proyecto reconocible.");
-        }
-
+        java.util.UUID comparisonId;
         try {
-            JsonNode envelope = JSON_MAPPER.readTree(matcher.group(1));
+            comparisonId = comparisonEvidenceService.begin(personDTO.getId(),
+                    modelUseToolDto.getModelTraining() == null ? modelUseToolDto.getModel().getIdPerson().getId() : modelUseToolDto.getModelTraining().getIdPerson().getId(),
+                    modelUseToolDto.getModelTraining() == null ? modelUseToolDto.getModel().getId() : modelUseToolDto.getModelTraining().getId(),
+                    modelUseToolDto.getModelTraining() == null ? "BASE_MODEL" : "TRAINED_MODEL",
+                    input, naturalLanguage.toString(), grpcRequest);
+        } catch (IllegalArgumentException e) { throw new GenericException(e.getMessage()); }
+        long inferenceStarted = System.currentTimeMillis();
+        String providerResponse = null;
+        String rawData = null;
+        JsonNode envelope = JSON_MAPPER.createObjectNode();
+        try {
+            providerResponse = grpcTrainingModelOpenAi.useModel(Tddt4iotsUtil.convertObjectToJsonString(grpcRequest));
+            // Provider errors must not accidentally retain the owner's credential in research exports.
+            providerResponse = providerResponse.replace(modelOwnerKey, "[REDACTED]");
+            Pattern pattern = Pattern.compile("Processing result:\\s*(\\{.*\\})", Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(providerResponse);
+            if (!matcher.find()) throw new GenericException("El servicio de IA no devolvió un JSON de proyecto reconocible.");
+            envelope = JSON_MAPPER.readTree(matcher.group(1));
+            JsonNode originalData = envelope.get("data");
+            if (originalData != null && originalData.isTextual()) rawData = originalData.asText();
+            if (!envelope.path("refusal").asText("").isBlank()) throw new GenericException("El modelo rechazó la generación: " + envelope.path("refusal").asText());
+            if (envelope.path("code").asInt(1) != 0)
+                throw new GenericException(envelope.path("message").asText("Falló la generación del modelo."));
+            if (envelope.path("finish_reason").asText("").equals("length"))
+                throw new GenericException("La respuesta alcanzó el límite de " + grpcRequest.getMaxOutputTokens()
+                        + " tokens, que incluye el razonamiento interno. No se importaron diagramas incompletos. "
+                        + "Para otro intento, revise el límite de salida y el nivel de razonamiento en Generation settings.");
             JsonNode dataNode = envelope.get("data");
             if (dataNode == null || dataNode.isNull()) throw new GenericException("La IA devolvió una respuesta sin datos.");
-            String rawData = dataNode.isTextual() ? dataNode.asText() : dataNode.toString();
-            rawData = rawData.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "").trim();
-            JsonNode workspace = JSON_MAPPER.readTree(rawData);
+            rawData = dataNode.isTextual() ? dataNode.asText() : dataNode.toString();
+            // Preserve rawData exactly; normalization is only used for parsing.
+            String normalized = rawData.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "").trim();
+            JsonNode workspace = JSON_MAPPER.readTree(normalized);
             validateCaseWorkspace(workspace);
-            researchPersistenceService.recordInference(
-                    modelUseToolDto.getModelTraining().getId(),
+            com.fasterxml.jackson.databind.node.ObjectNode metadata = JSON_MAPPER.createObjectNode();
+            metadata.put("requestedModel", grpcRequest.getModel()).put("returnedModel", envelope.path("model").asText(grpcRequest.getModel()))
+                    .put("ownerId", modelUseToolDto.getModelTraining() == null ? modelUseToolDto.getModel().getIdPerson().getId() : modelUseToolDto.getModelTraining().getIdPerson().getId())
+                    .put("registrationId", modelUseToolDto.getModelTraining() == null ? modelUseToolDto.getModel().getId() : modelUseToolDto.getModelTraining().getId())
+                    .put("registrationKind", modelUseToolDto.getModelTraining() == null ? "BASE_MODEL" : "TRAINED_MODEL")
+                    .put("inputSha256", ComparisonEvidenceService.sha256(naturalLanguage.toString()))
+                    .put("latencyMs", System.currentTimeMillis() - inferenceStarted).put("promptVersion", "case-workspace-v2").put("schemaVersion", "1.0");
+            metadata.set("parameters", JSON_MAPPER.createObjectNode().put("maxOutputTokens", grpcRequest.getMaxOutputTokens())
+                    .put("temperature", grpcRequest.getTemperature()).put("reasoningEffort", grpcRequest.getReasoningEffort()));
+            metadata.set("usage", envelope.path("usage"));
+            if (input.getResearch() != null) {
+                metadata.put("requirementsVersion", input.getResearch().getRequirementsVersion()).put("systemCode", input.getResearch().getSystemCode())
+                        .put("phase", input.getResearch().getPhase()).put("repetition", input.getResearch().getRepetition()).put("attempt", input.getResearch().getAttempt());
+            }
+            java.util.UUID projectVersion = projectVersionService.recordGeneration(personDTO.getId(), input, comparisonId, workspace, metadata);
+            com.fasterxml.jackson.databind.node.ObjectNode result = workspace.deepCopy();
+            if (projectVersion != null) result.putObject("_version").put("id", projectVersion.toString());
+            if (comparisonId != null) {
+                comparisonEvidenceService.finish(comparisonId, "SERVER_VALIDATED", providerResponse, rawData,
+                        workspace, envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"),
+                        System.currentTimeMillis() - inferenceStarted, null);
+                com.fasterxml.jackson.databind.node.ObjectNode evidence = result.putObject("_research");
+                evidence.put("runId", comparisonId.toString());
+                evidence.put("inputSha256", ComparisonEvidenceService.sha256(naturalLanguage.toString()));
+                evidence.put("model", envelope.path("model").asText(grpcRequest.getModel()));
+                evidence.put("repetition", input.getResearch().getRepetition());
+                evidence.put("attempt", input.getResearch().getAttempt());
+                return result;
+            }
+            if (modelUseToolDto.getModelTraining() != null) researchPersistenceService.recordInference(modelUseToolDto.getModelTraining().getId(),
                     JSON_MAPPER.createObjectNode().put("naturalLanguage", naturalLanguage.toString()),
-                    rawData, workspace, JSON_MAPPER.createArrayNode(),
-                    System.currentTimeMillis() - inferenceStarted,
+                    rawData, workspace, JSON_MAPPER.createArrayNode(), System.currentTimeMillis() - inferenceStarted,
                     envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), null);
-            return workspace;
-        } catch (GenericException exception) {
-            JsonNode envelope = parseResearchEnvelope(matcher.group(1));
-            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
-                    matcher.group(1), System.currentTimeMillis() - inferenceStarted,
-                    envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), exception.getMessage());
-            throw exception;
-        } catch (JsonProcessingException exception) {
-            log.error("Invalid CASE workspace generated by AI: {}", exception.getMessage());
-            JsonNode envelope = parseResearchEnvelope(matcher.group(1));
-            recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
-                    matcher.group(1), System.currentTimeMillis() - inferenceStarted,
-                    envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"), exception.getMessage());
-            throw new GenericException("La IA generó un JSON incompleto o inválido.");
+            return result;
+        } catch (GenericException | JsonProcessingException | RuntimeException exception) {
+            String error = exception.getMessage() == null ? exception.getClass().getSimpleName() : exception.getMessage().replace(modelOwnerKey, "[REDACTED]");
+            if (comparisonId != null) {
+                comparisonEvidenceService.finish(comparisonId, envelope.path("refusal").asText("").isBlank() ? "FAILED" : "REFUSED", providerResponse, rawData, null,
+                        envelope.path("model").asText(grpcRequest.getModel()), envelope.path("usage"),
+                        System.currentTimeMillis() - inferenceStarted, error);
+                throw new GenericException("Ejecución " + comparisonId + ": " + error);
+            }
+            if (modelUseToolDto.getModelTraining() != null) recordFailedResearchInference(modelUseToolDto.getModelTraining().getId(), naturalLanguage.toString(),
+                    providerResponse, System.currentTimeMillis() - inferenceStarted, grpcRequest.getModel(),
+                    envelope.path("usage"), error);
+            throw new GenericException(error);
         }
+    }
+
+    private String selectedModelIdentifier(ModelUseToolDto selected) throws GenericException {
+        if (selected.getModelTraining() == null) return selected.getModel().getName();
+        GrpcTrainModelResDTO result = Tddt4iotsUtil.fetchDataFromJsonString(selected.getModelTraining().getResultTrining(), GrpcTrainModelResDTO.class);
+        if (result == null || result.getData() == null) throw new GenericException("El registro no contiene un modelo utilizable.");
+        String fineTuned = result.getData().getFineTunedModel();
+        return fineTuned == null || fineTuned.isBlank() ? result.getData().getModel() : fineTuned;
     }
 
     private JsonNode parseResearchEnvelope(String raw) {
@@ -647,6 +736,7 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                         throw workspaceError(useCasePath + ".mainFlow referencia un actor inexistente: " + actor);
                     }
                 }
+                validateAlternativeFlows(useCase, actorIds, useCasePath);
                 validateSequence(useCase.path("sequence"), useCasePath + ".sequence");
             }
             for (JsonNode relation : relations) {
@@ -657,6 +747,36 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                     throw workspaceError(diagramPath + ".relations contiene referencias inexistentes.");
                 }
             }
+        }
+    }
+
+    private void validateAlternativeFlows(JsonNode useCase, java.util.Set<String> actorIds, String path) throws GenericException {
+        JsonNode flows = useCase.path("alternativeFlows");
+        if (flows.isMissingNode()) return; // Older workspace payloads may omit alternatives.
+        if (!flows.isArray()) throw workspaceError(path + ".alternativeFlows debe ser un array.");
+        int lastStep = useCase.path("mainFlow").size();
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (int index = 0; index < flows.size(); index++) {
+            JsonNode flow = flows.get(index);
+            String flowPath = path + ".alternativeFlows[" + index + "]";
+            requireUniqueId(flow.path("id").asText(), ids, flowPath + ".id");
+            JsonNode start = flow.path("startStep");
+            if (!start.isIntegralNumber() || !start.canConvertToInt() || start.asInt() < 1 || start.asInt() > lastStep)
+                throw workspaceError(flowPath + ".startStep debe estar entre 1 y " + lastStep + ".");
+            String actor = flow.path("actor").asText();
+            if (!"System".equals(actor) && !actorIds.contains(actor))
+                throw workspaceError(flowPath + ".actor referencia un actor inexistente: " + actor);
+            if (flow.path("condition").asText().isBlank() || flow.path("action").asText().isBlank())
+                throw workspaceError(flowPath + " requiere condition y action no vacíos.");
+            String outcome = flow.path("outcome").asText();
+            JsonNode resume = flow.path("returnStep");
+            if ("return".equals(outcome)) {
+                if (!resume.isIntegralNumber() || !resume.canConvertToInt() || resume.asInt() < start.asInt() || resume.asInt() > lastStep)
+                    throw workspaceError(flowPath + ".returnStep debe estar entre startStep=" + start.asInt()
+                            + " y el último paso mainFlow=" + lastStep + ".");
+            } else if ("end".equals(outcome)) {
+                if (!resume.isNull()) throw workspaceError(flowPath + ".returnStep debe ser null cuando outcome=end.");
+            } else throw workspaceError(flowPath + ".outcome debe ser return o end.");
         }
     }
 
@@ -698,8 +818,9 @@ public class MasterProjectBOImpl implements MasterProjectBO {
                 }
             }
             if (fileName.endsWith(".docx")) {
-                try (XWPFDocument word = new XWPFDocument(new ByteArrayInputStream(bytes))) {
-                    return word.getParagraphs().stream().map(XWPFParagraph::getText).reduce("", (left, right) -> left + right + "\n");
+                try (XWPFDocument word = new XWPFDocument(new ByteArrayInputStream(bytes));
+                     org.apache.poi.xwpf.extractor.XWPFWordExtractor extractor = new org.apache.poi.xwpf.extractor.XWPFWordExtractor(word)) {
+                    return extractor.getText();
                 }
             }
             if (fileName.endsWith(".doc")) {

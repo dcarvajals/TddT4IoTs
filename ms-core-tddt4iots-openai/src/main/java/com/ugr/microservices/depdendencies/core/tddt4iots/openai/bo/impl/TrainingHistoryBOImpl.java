@@ -68,6 +68,7 @@ public class TrainingHistoryBOImpl implements TrainingHistoryBO {
     @Override
     public TrainingHistoryDTO validate(String request) throws GenericException, IOException, InterruptedException {
         ModelUseToolDto modelUseToolDto = modelUseToolBO.validate(request);
+        if (modelUseToolDto.getModelTraining() == null) return null;
         return trainingHistoryMapper.trainingHistoryDtoTo(trainingHistoryService.findId(modelUseToolDto.getModelTraining().getId()));
     }
 

@@ -15,6 +15,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GenerateCaseWorkspaceReqDTO {
+    /** Opaque project reference supplied by the existing CASE workspace. */
+    private String projectId;
+    /** Explicit project choice; when absent the user's global selection applies. */
+    private Long modelRegistrationId;
+    private String modelRegistrationKind;
+    /** Optional: ordinary generation remains available without comparison metadata. */
+    private ComparisonRunContextDTO research;
+    private Integer maxOutputTokens;
+    private Double temperature;
+    private String reasoningEffort;
     private String description;
     @Builder.Default
     private List<NaturalLanguageDocumentDTO> documents = new ArrayList<>();

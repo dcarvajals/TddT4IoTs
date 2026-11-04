@@ -43,14 +43,20 @@ public class TrainingMonitorScheduler {
         long started = System.currentTimeMillis();
         try {
             String jobId = resolveJobId(history);
-            if (jobId == null) {
+            if (jobId == null || jobId.isBlank()) {
                 history.setProviderStatus("legacy_unmonitorable");
                 historyRepository.save(history);
                 return;
             }
+            String ownerKey = history.getIdPerson() == null ? null : history.getIdPerson().getOpenaiSecretKey();
+            if (ownerKey == null || ownerKey.isBlank()) {
+                // Resume automatically when the owner configures a credential.
+                log.debug("Skipping training {}: its owner has no OpenAI credential configured", history.getId());
+                return;
+            }
             ObjectNode request = JSON.createObjectNode();
             request.put("operation", "training_status");
-            request.put("openAiSecretKey", history.getIdPerson().getOpenaiSecretKey());
+            request.put("openAiSecretKey", ownerKey);
             request.put("jobId", jobId);
             String grpcResponse = grpcClient.useModel(JSON.writeValueAsString(request));
             Matcher matcher = GRPC_JSON.matcher(grpcResponse);
@@ -100,7 +106,9 @@ public class TrainingMonitorScheduler {
 
     private String resolveJobId(TrainingHistory history) throws Exception {
         if (history.getProviderJobId() != null && !history.getProviderJobId().isBlank()) return history.getProviderJobId();
+        if (history.getResultTrining() == null || history.getResultTrining().isBlank()) return null;
         JsonNode root = JSON.readTree(history.getResultTrining());
+        if (root == null) return null;
         return root.path("data").path("id").asText(null);
     }
 

@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="resources/css/css-library/sb-admin-2.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-app/index-app.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-app/styleTdd.css" type="text/css"/>
-        <link rel="stylesheet" href="resources/css/css-app/jobsAeraUml.css?v=20260819-test-studio-2" type="text/css"/>
+        <link rel="stylesheet" href="resources/css/css-app/jobsAeraUml.css?v=20261103-toolbar-polish-1" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/open-iconic-bootstrap.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/all.min.css" type="text/css"/>
         <link rel="stylesheet" href="resources/css/css-library/UDStyle.css" type="text/css"/>
@@ -142,8 +142,12 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
+                        <div class="uml-import-messages is-error" role="alert" aria-live="assertive" ng-if="documentWorkspace.errors.length">
+                            <div class="uml-import-message-heading"><i class="fas fa-exclamation-circle"></i><strong>Generation could not be completed</strong></div>
+                            <ul><li ng-repeat="message in documentWorkspace.errors track by $index">{{message}}</li></ul>
+                        </div>
                         <div class="uml-import-intro">
-                            <div><strong>Describe the system in natural language</strong><p>Upload one or several requirements documents, write a paragraph, or combine both. The model will produce the structured JSON used by the CASE workspace.</p></div>
+                            <div><strong>Describe the system in natural language</strong><p>Upload requirements documents, write a description, or combine both to generate editable UML diagrams. Scanned PDFs and diagram images need a reviewed text transcription.</p></div>
                             <span><i class="fas fa-project-diagram"></i> Use cases · classes · sequences</span>
                         </div>
                         <label class="uml-json-dropzone" for="naturalLanguageDocuments" ng-class="{'has-file': documentWorkspace.files.length}">
@@ -164,9 +168,44 @@
                                       placeholder="Example: The system assists older adults with medication reminders, emergency requests and notifications to caregivers..."></textarea>
                             <small class="form-text text-muted">This text is analyzed together with all selected documents.</small>
                         </div>
-                        <div class="uml-import-messages is-error" ng-if="documentWorkspace.errors.length">
-                            <div class="uml-import-message-heading"><i class="fas fa-exclamation-circle"></i><strong>Review the input</strong></div>
-                            <ul><li ng-repeat="message in documentWorkspace.errors track by $index">{{message}}</li></ul>
+                        <div class="pm-model-summary pm-requirements-model"><div><strong>Model for this generation</strong><small>{{projectVersions.effectiveModel.providerModel || 'No available model selected'}} · {{projectVersions.effectiveModel.ownerName}}</small></div><button type="button" class="btn btn-sm btn-outline-primary" ng-click="openProjectModelDialog('requirements')">Choose AI model</button></div>
+                        <fieldset class="border rounded p-3 mt-3" ng-disabled="documentWorkspace.loading">
+                            <legend class="h6 w-auto px-2">Generation settings</legend>
+                            <div class="form-row">
+                                        <div class="form-group col-md-6"><label for="comparisonTokens">Output token limit</label><input id="comparisonTokens" type="number" min="1" max="128000" step="1" class="form-control form-control-sm" ng-model="comparisonContext.maxOutputTokens"/></div>
+                                        <div class="form-group col-md-6"><label for="comparisonReasoning">Reasoning effort</label><select id="comparisonReasoning" class="form-control form-control-sm" ng-model="comparisonContext.reasoningEffort"><option value="">Provider default</option><option value="none">None</option><option value="minimal">Minimal</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Extra high</option><option value="max">Maximum</option></select></div>
+                                        <div class="form-group col-md-6"><label><input type="checkbox" ng-model="comparisonContext.sendTemperature"/> Send temperature (if supported)</label><input aria-label="Temperature" type="number" min="0" max="2" step="0.1" class="form-control form-control-sm" ng-disabled="!comparisonContext.sendTemperature" ng-model="comparisonContext.temperature"/></div>
+                            </div>
+                            <small class="text-muted">The token limit includes the generated model and internal reasoning. Increasing it can increase time and cost. Use reasoning values supported by the selected model; GPT-6 Astra supports Low, Medium, High, Extra high and Maximum. These settings apply with or without study recording.</small>
+                        </fieldset>
+                        <div class="border rounded p-3 mt-3">
+                            <label><input type="checkbox" ng-model="comparisonContext.enabled" ng-disabled="documentWorkspace.loading"/>
+                                Record this generation for the comparative study</label>
+                            <div ng-if="comparisonContext.enabled">
+                                <p class="small text-muted">Use the same study, system and requirements version across model generations in this project or separate projects. Repetitions are independent generations; attempts identify retries. The first run fixes the exact input for that requirements version.</p>
+                                <fieldset ng-disabled="documentWorkspace.loading">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6"><label for="comparisonStudy">Study</label><input id="comparisonStudy" class="form-control form-control-sm" ng-model="comparisonContext.experimentCode" maxlength="100"/></div>
+                                        <div class="form-group col-md-6"><label for="comparisonPhase">Phase</label><select id="comparisonPhase" class="form-control form-control-sm" ng-model="comparisonContext.phase"><option value="PILOT">Pilot (separate material)</option><option value="EVALUATION">Evaluation</option></select></div>
+                                        <div class="form-group col-md-6"><label for="comparisonSystem">System ID (S1–S5 or pilot ID)</label><input id="comparisonSystem" class="form-control form-control-sm" ng-model="comparisonContext.systemCode" maxlength="100"/></div>
+                                        <div class="form-group col-md-6"><label for="comparisonVersion">Requirements version</label><input id="comparisonVersion" class="form-control form-control-sm" ng-model="comparisonContext.requirementsVersion" maxlength="40"/></div>
+                                        <div class="form-group col-md-6"><label for="comparisonRepetition">Repetition</label><input id="comparisonRepetition" type="number" min="1" step="1" class="form-control form-control-sm" ng-model="comparisonContext.repetition"/></div>
+                                        <div class="form-group col-md-6"><label for="comparisonAttempt">Attempt</label><input id="comparisonAttempt" type="number" min="1" step="1" class="form-control form-control-sm" ng-model="comparisonContext.attempt"/></div>
+                                    </div>
+                                    <small class="text-muted">Check compatible settings during the pilot and keep them fixed for evaluation. Unsupported parameters are recorded as failures; settings are never silently changed or retried.</small>
+                                </fieldset>
+                                <p class="small">The original documents, effective input, model response and initial imported UML are retained for this study. Save the project normally to retain its study settings with your modeling version.</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" ng-click="loadComparisonRuns()">Load generation history</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="downloadComparisonCsv()" ng-if="comparisonRuns.length">Download CSV</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="downloadComparisonCsv(true)">CSV · all my projects</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="loadAssignedComparisonRuns()">Load runs assigned to me for review</button>
+                            <div ng-repeat="assigned in assignedComparisonRuns track by assigned.id" class="small mt-1">{{assigned.system_code}} · {{assigned.requested_model}} <button type="button" class="btn btn-sm btn-link" ng-click="openComparisonAssessment(assigned)">Review assigned run</button></div>
+                            <div class="table-responsive mt-2" ng-if="comparisonRuns.length">
+                                <table class="table table-sm"><thead><tr><th>System / phase</th><th>Model</th><th>Rep. / attempt</th><th>Generation / import</th><th>Evidence</th></tr></thead>
+                                    <tbody><tr ng-repeat="run in comparisonRuns track by run.id"><td>{{run.system_code}} / {{run.phase}}</td><td>{{run.returned_model || run.requested_model}}</td><td>{{run.repetition}} / {{run.attempt}}</td><td>{{run.status}} / {{run.client_status || 'Not reported'}}</td><td><button type="button" class="btn btn-sm btn-link" ng-click="downloadComparisonEvidence(run)">JSON</button><button type="button" class="btn btn-sm btn-link" ng-click="openComparisonAssessment(run)">Assess</button></td></tr></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -180,6 +219,159 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="modal fade" id="modal_comparison_assessment" tabindex="-1" role="dialog" aria-labelledby="comparisonAssessmentTitle" data-backdrop="static">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content" ng-if="assessmentPanel">
+                <div class="modal-header"><div><h5 id="comparisonAssessmentTitle">Research assessment</h5><small>{{assessmentPanel.run.id}} · {{assessmentPanel.data.model}}</small></div><button class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" ng-if="assessmentPanel.error">{{assessmentPanel.error}}</div>
+                    <p ng-if="!assessmentPanel.data">Loading assessment evidence…</p>
+                    <div ng-if="assessmentPanel.data">
+                        <p class="small">{{assessmentPanel.data.study.system_code}} · {{assessmentPanel.data.study.phase}} · requirements {{assessmentPanel.data.study.requirements_version}}</p>
+                        <details><summary>Frozen requirements used in this run</summary><small>SHA-256: {{assessmentPanel.data.study.input_sha256}}</small><pre style="white-space:pre-wrap">{{assessmentPanel.data.study.effective_input}}</pre></details>
+                        <button class="btn btn-sm btn-outline-secondary" ng-click="refreshComparisonAssessment()">Refresh</button>
+                        <button class="btn btn-sm btn-outline-secondary" ng-click="downloadAssessmentEvidence()">Download assessment JSON</button>
+                        <button class="btn btn-sm btn-outline-secondary" ng-click="downloadAssessmentCsv()" ng-if="assessmentPanel.data.owner">Export assessments CSV · my projects</button>
+                        <button class="btn btn-sm btn-outline-primary" ng-if="assessmentPanel.data.imported" ng-click="loadAssessmentWorkspace()">Restore initial UML for review</button>
+                        <h6 class="mt-3">1. Automatic structural measurements</h6>
+                        <p class="small">Stage: {{assessmentPanel.data.automatic.artifactStage}}. Actors are counted per diagram; message = request arrows, response = return arrows, message_total = both. Missing class evidence is not a zero-quality score.</p>
+                        <div class="row"><div class="col-sm-3 mb-2" ng-repeat="(kind, count) in assessmentPanel.data.automatic.counts"><strong>{{kind}}</strong>: {{((kind === 'class' || kind === 'class_relation' || kind === 'attribute' || kind === 'operation') &amp;&amp; !assessmentPanel.data.automatic.classMetricsAvailable) ? 'Not available' : count}}</div></div>
+                        <h6 class="mt-3">2. Cross-view checks</h6>
+                        <p class="small">PASS/FAIL are structural checks. MATCH_CANDIDATE and UNMAPPED are lexical hints for expert review, not judgments of semantic correctness.</p>
+                        <div class="table-responsive" style="max-height:220px;overflow:auto"><table class="table table-sm"><thead><tr><th>Rule</th><th>Element</th><th>Method</th><th>Result</th></tr></thead><tbody><tr ng-repeat="check in assessmentPanel.data.automatic.coherence track by $index"><td>{{check.rule}}</td><td>{{check.element}}</td><td>{{check.method}}</td><td>{{check.status}}</td></tr></tbody></table></div>
+                        <h6 class="mt-3">3. Reviewed reference and correspondences</h6>
+                        <p class="small">Prepare an independent reviewed inventory for the same frozen requirements. The downloadable generated inventory illustrates the format; it is not a reference by itself. All unmatched generated elements count as FP; unmatched reference elements count as FN.</p>
+                        <div ng-if="assessmentPanel.data.owner"><button class="btn btn-sm btn-outline-secondary" ng-click="downloadAssessmentInventory()">Download inventory format example</button>
+                            <label class="btn btn-sm btn-outline-primary mb-0">Register reviewed reference JSON<input type="file" accept=".json,application/json" hidden onchange="angular.element(this).scope().uploadAssessmentReference(this)"></label>
+                        </div>
+                        <select class="form-control form-control-sm mt-2" ng-model="assessmentPanel.referenceId" ng-change="selectAssessmentReference()" ng-options="r.id as r.version for r in assessmentPanel.data.references"><option value="">Select reference version</option></select>
+                        <p class="small" ng-if="assessmentPanel.reference">Provenance: {{assessmentPanel.reference.provenance}} · SHA-256: {{assessmentPanel.reference.sha256}}</p>
+                        <div ng-if="assessmentPanel.reference &amp;&amp; assessmentPanel.data.imported">
+                            <div class="table-responsive" style="max-height:320px;overflow:auto"><table class="table table-sm"><thead><tr><th>Kind</th><th>Generated element / scope</th><th>Equivalent reference element</th></tr></thead><tbody><tr ng-repeat="row in assessmentPanel.matchingRows track by row.generated.id"><td>{{row.generated.kind}}</td><td>{{row.generated.label}} <small>{{row.generated.owner}}</small><details><summary>Details</summary><pre>{{row.generated | json}}</pre></details></td><td><select class="form-control form-control-sm" ng-model="row.referenceId" ng-options="r.id as (r.label + ' [' + r.owner + '] {' + r.id + '}') for r in row.candidates"><option value="">No equivalent (FP)</option></select></td></tr></tbody></table></div>
+                            <details><summary>Full reference inventory, including unmatched elements</summary><pre>{{assessmentPanel.reference.inventory | json}}</pre></details>
+                            <label><input type="checkbox" ng-model="assessmentPanel.reviewComplete"> All matches and unmatched elements were reviewed; equivalence includes relation endpoints, direction and message meaning where applicable.</label>
+                            <textarea class="form-control form-control-sm" ng-model="assessmentPanel.matchingRationale" placeholder="Rationale and matching decisions"></textarea>
+                            <button class="btn btn-sm btn-primary mt-2" ng-click="saveAssessmentMatching()" ng-disabled="!assessmentPanel.reviewComplete">Save correspondence assessment</button>
+                        </div>
+                        <div ng-repeat="evaluation in assessmentPanel.data.evaluations track by evaluation.id" class="border rounded p-2 mt-2"><small>Evaluator {{evaluation.evaluator_id}} · reference {{evaluation.reference_id}} · {{evaluation.created_at}}</small>
+                            <table class="table table-sm"><thead><tr><th>Kind</th><th>TP</th><th>FP</th><th>FN</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead><tbody><tr ng-repeat="group in evaluation.results.groups"><td>{{group.kind}}</td><td>{{group.tp}}</td><td>{{group.fp}}</td><td>{{group.fn}}</td><td>{{group.precision === null ? 'N/A' : (group.precision | number:3)}}</td><td>{{group.recall === null ? 'N/A' : (group.recall | number:3)}}</td><td>{{group.f1 === null ? 'N/A' : (group.f1 | number:3)}}</td></tr></tbody></table>
+                            <strong>Micro F1: {{evaluation.results.micro.f1 === null ? 'N/A' : (evaluation.results.micro.f1 | number:3)}}</strong>
+                        </div>
+                        <h6 class="mt-3">4. Expert review · expert-uml-v1</h6>
+                        <p class="small">Review the initial artifact: 1 = major deficiencies; 2 = substantial corrections; 3 = partially satisfactory; 4 = minor corrections; 5 = satisfies the criterion. Correctness: matches intended behavior; completeness: covers requirements; cross-view coherence: consistent actors/classes/messages; traceability: identifiable requirement support; readability: understandable model. Scores are expert judgments, not automatic F1.</p>
+                        <div class="form-row" ng-if="assessmentPanel.data.imported"><div class="form-group col-sm-2" ng-repeat="criterion in assessmentPanel.data.criteria"><label>{{criterion}}</label><select class="form-control form-control-sm" ng-model="assessmentPanel.review.scores[criterion]" ng-options="n for n in [1,2,3,4,5]"><option value="">Score</option></select></div>
+                            <div class="form-group col-sm-2"><label>Round</label><input type="number" min="1" step="1" class="form-control form-control-sm" ng-model="assessmentPanel.review.round"></div>
+                        </div>
+                        <textarea ng-if="assessmentPanel.data.imported" class="form-control form-control-sm" ng-model="assessmentPanel.review.rationale" placeholder="Evidence supporting the scores, requirement identifiers and limitations"></textarea>
+                        <button ng-if="assessmentPanel.data.imported" class="btn btn-sm btn-primary mt-2" ng-click="saveAssessmentReview()">Save expert review</button>
+                        <div ng-repeat="review in assessmentPanel.data.reviews track by review.id" class="small border rounded p-2 mt-2">Reviewer {{review.reviewer_id}} · round {{review.round}} · {{review.rubric_version}}<pre>{{review.scores | json}}</pre>{{review.rationale}}</div>
+                        <div class="form-inline mt-2" ng-if="assessmentPanel.data.owner"><label class="mr-2">Assign another reviewer (application user ID)</label><input type="number" min="1" class="form-control form-control-sm mr-2" ng-model="assessmentPanel.reviewerId"><button class="btn btn-sm btn-outline-primary" ng-click="assignAssessmentReviewer()">Grant review access</button></div>
+                        <h6 class="mt-3">5. Correction effort</h6>
+                        <p class="small">Restore the initial UML, start before editing and pause during interruptions. Close this panel to edit the canvas; reopen Assess to pause or finish. The timer uses server time. Automatic capture records observed workspace transitions while the session is active, including diagram content and layout. One interaction may change several fields. Manual annotations remain available for reasons. Changes made while paused are not measured.</p>
+                        <div ng-if="assessmentPanel.data.imported">
+                            <div class="alert alert-info">Automatic change log: {{correctionAuditStatus.busy ? 'Saving…' : (correctionAuditStatus.pending + ' pending events')}}. Capture runs only during an active correction session. <button class="btn btn-sm btn-outline-primary" ng-click="flushCorrectionAudit()" ng-disabled="correctionAuditStatus.busy">Save pending events / refresh</button></div>
+                            <div class="alert alert-danger" ng-if="correctionAuditStatus.error">{{correctionAuditStatus.error}}</div>
+                            <p ng-if="assessmentPanel.activeEffort">Session {{assessmentPanel.activeEffort.id}} · {{assessmentPanel.activeEffort.status}} · accumulated completed intervals: {{assessmentPanel.activeEffort.active_ms / 1000 | number:1}} seconds</p>
+                            <button class="btn btn-sm btn-outline-primary" ng-if="!assessmentPanel.activeEffort" ng-click="controlAssessmentEffort('start')">Start correction session</button>
+                            <button class="btn btn-sm btn-outline-secondary" ng-if="assessmentPanel.activeEffort.status === 'ACTIVE'" ng-click="controlAssessmentEffort('pause')">Pause</button>
+                            <button class="btn btn-sm btn-outline-secondary" ng-if="assessmentPanel.activeEffort.status === 'PAUSED'" ng-click="controlAssessmentEffort('resume')">Resume</button>
+                            <div class="form-inline mt-2"><select class="form-control form-control-sm mr-2" ng-model="assessmentPanel.changeAction"><option value="add">Add</option><option value="remove">Remove</option><option value="modify">Modify</option><option value="layout">Layout</option></select><input class="form-control form-control-sm mr-2" ng-model="assessmentPanel.changeDescription" placeholder="Correction and reason"><button class="btn btn-sm btn-outline-secondary" ng-click="addAssessmentChange()">Add to change log</button></div>
+                            <ul><li ng-repeat="change in assessmentPanel.changes track by $index">{{change.source === 'automatic' ? 'Automatic' : 'Manual'}} · {{change.action}}: {{change.description}} <small>{{change.capturedAt}} · received {{change.receivedAt}}</small><details ng-if="change.patches"><summary>Before / after changes ({{change.patches.length}})</summary><pre>{{change.patches | json}}</pre></details></li></ul>
+                            <button class="btn btn-sm btn-primary mt-2" ng-if="assessmentPanel.activeEffort" ng-click="controlAssessmentEffort('complete')">Finish and save corrected snapshot</button>
+                        </div>
+                        <div ng-repeat="effort in assessmentPanel.data.efforts track by effort.id" class="small border rounded p-2 mt-2">Reviewer {{effort.reviewer_id}} · {{effort.status}} · {{effort.active_ms / 1000 | number:1}} seconds<pre>{{effort.change_summary | json}}</pre></div>
+                        <h6 class="mt-3">6. Estimated monetary cost</h6>
+                        <p class="small">Uses recorded provider usage. Output tokens already include reasoning; they are not charged twice. Enter the applicable USD rates per million tokens, with source/date, service tier, context tier and region. No usage means unavailable cost, not zero. This estimate excludes taxes, tools and infrastructure.</p>
+                        <div ng-if="assessmentPanel.data.owner"><div class="form-row">
+                            <div class="form-group col-sm-3"><label>Input / 1M</label><input type="number" min="0" step="any" class="form-control form-control-sm" ng-model="assessmentPanel.tariff.inputPerMillion"></div>
+                            <div class="form-group col-sm-3"><label>Cached input / 1M</label><input type="number" min="0" step="any" class="form-control form-control-sm" ng-model="assessmentPanel.tariff.cachedPerMillion"></div>
+                            <div class="form-group col-sm-3"><label>Cache write / 1M</label><input type="number" min="0" step="any" class="form-control form-control-sm" ng-model="assessmentPanel.tariff.cacheWritePerMillion"></div>
+                            <div class="form-group col-sm-3"><label>Output / 1M</label><input type="number" min="0" step="any" class="form-control form-control-sm" ng-model="assessmentPanel.tariff.outputPerMillion"></div>
+                            <div class="form-group col-sm-3"><label>12h cache write / 1M (if used)</label><input type="number" min="0" step="any" class="form-control form-control-sm" ng-model="assessmentPanel.tariff.cacheWrite12hPerMillion"></div>
+                            <div class="form-group col-sm-6"><label>Pricing source URL</label><input class="form-control form-control-sm" ng-model="assessmentPanel.tariff.source"></div>
+                            <div class="form-group col-sm-2"><label>Effective date</label><input class="form-control form-control-sm" ng-model="assessmentPanel.tariff.effectiveDate"></div>
+                            <div class="form-group col-sm-2"><label>Service tier</label><input class="form-control form-control-sm" ng-model="assessmentPanel.tariff.serviceTier"></div>
+                            <div class="form-group col-sm-2"><label>Context tier</label><input class="form-control form-control-sm" ng-model="assessmentPanel.tariff.contextTier"></div>
+                            <div class="form-group col-sm-6"><label>Region / processing location</label><input class="form-control form-control-sm" ng-model="assessmentPanel.tariff.region"></div>
+                        </div><label><input type="checkbox" ng-model="assessmentPanel.tariff.confirmApplicable"> These rates apply to the returned model, service tier, context length and region for this run.</label><br><button class="btn btn-sm btn-primary" ng-click="saveAssessmentCost()">Calculate and store cost estimate</button></div>
+                        <div ng-repeat="cost in assessmentPanel.data.costs track by cost.id" class="small border rounded p-2 mt-2">{{cost.result.status}} · {{cost.amount_usd === null ? 'Unavailable' : (cost.amount_usd | number:8)}} USD · {{cost.tariff.effectiveDate}}<details><summary>Tariff and calculation</summary><pre>{{cost.tariff | json}}</pre><pre>{{cost.result | json}}</pre></details></div>
+                    </div>
+                </div><div class="modal-footer"><button class="btn btn-sm btn-secondary" data-dismiss="modal">Return to canvas</button></div>
+            </div></div>
+        </div>
+
+        <div class="modal fade" id="modal_project_model" tabindex="-1" role="dialog" aria-labelledby="projectModelTitle" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content pm-model-modal">
+                <div class="modal-header"><div><small>PROJECT MODEL</small><h5 id="projectModelTitle">Choose the AI model</h5><p>{{dataProject.name_mp}}</p></div><button type="button" class="close" aria-label="Cancel model selection" ng-click="closeProjectModelDialog()">&times;</button></div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" ng-if="projectModelDialog.error">{{projectModelDialog.error}}</div>
+                    <p>Choose the model for the next generation in this project. Your archived versions retain the model that originally generated them.</p>
+                    <div ng-if="projectModelDialog.loading" class="text-muted"><i class="fas fa-spinner fa-spin"></i> Loading your models and shared registrations…</div>
+                    <label for="projectModelSelector">Available models</label>
+                    <select id="projectModelSelector" class="form-control" ng-model="projectModelDialog.key" ng-change="previewProjectModel()" ng-disabled="projectModelDialog.loading || documentWorkspace.loading" ng-options="model.key as model.optionLabel group by model.group disable when !model.available for model in projectVersions.catalog"><option value="">Use my Settings selection</option></select>
+                    <div class="pm-model-preview" ng-if="projectModelDialog.preview &amp;&amp; !projectModelDialog.loading">
+                        <span><i class="fas fa-microchip"></i> {{projectModelDialog.preview.mine ? 'My registered model' : 'Shared model'}}</span>
+                        <strong>{{projectModelDialog.preview.providerModel}}</strong>
+                        <dl><dt>Registered by</dt><dd>{{projectModelDialog.preview.ownerName}}</dd><dt>Registration</dt><dd>{{projectModelDialog.preview.registrationKind}} #{{projectModelDialog.preview.id}}</dd><dt>Version</dt><dd>{{projectModelDialog.preview.version}}</dd><dt>Availability</dt><dd>{{projectModelDialog.preview.available ? 'Available' : projectModelDialog.preview.unavailableReason}}</dd></dl>
+                    </div>
+                    <p class="small text-muted mt-3">Shared models use the registering user's credentials internally. Apply changes the choice for this project; it does not modify Settings. Use Save all to retain the choice with the project.</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" ng-click="closeProjectModelDialog()">Cancel</button><button type="button" class="btn btn-primary btn-sm" ng-click="applyProjectModel()" ng-disabled="projectModelDialog.loading || documentWorkspace.loading || !projectModelDialog.preview.available">Apply to this project</button></div>
+            </div></div>
+        </div>
+
+        <div class="modal fade" id="modal_project_versions" tabindex="-1" role="dialog" aria-labelledby="projectVersionsTitle" data-backdrop="static">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable pv-dialog"><div class="modal-content pv-content">
+                <div class="modal-header pv-header"><div><small>PROJECT HISTORY</small><h5 id="projectVersionsTitle">Versions &amp; comparisons</h5><p>{{dataProject.name_mp}} · {{projectVersions.rows.length}} archived entries</p></div><button class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+                <div class="modal-body pv-body">
+                    <div class="alert alert-danger" role="alert" ng-if="projectVersions.error">{{projectVersions.error}}</div>
+                    <section class="pv-setup pm-model-summary">
+                        <div><h6>Model for the next generation</h6><p>{{projectVersions.effectiveModel.providerModel || 'No available model selected'}} · {{projectVersions.effectiveModel.ownerName}}</p><small ng-if="activeProjectVersion">Working from {{activeProjectVersion.versionNumber ? 'V' + activeProjectVersion.versionNumber : activeProjectVersion.label || (activeProjectVersion.id | limitTo:8)}}</small></div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" ng-click="openProjectModelDialog('versions')"><i class="fas fa-microchip"></i> Choose AI model</button>
+                    </section>
+                    <section class="pv-save">
+                        <div><h6>Save the current canvas as a separate version</h6><p ng-if="activeProjectVersion">Derived from {{activeProjectVersion.versionNumber ? 'V' + activeProjectVersion.versionNumber : activeProjectVersion.label || activeProjectVersion.id}}. This is a correction, not a new model generation.</p><p ng-if="!activeProjectVersion">No archived origin is loaded. This will be a manual snapshot with no attributed model.</p></div>
+                        <input class="form-control form-control-sm" ng-model="projectVersions.label" maxlength="180" placeholder="Version label, e.g. Expert correction 1" aria-label="Version label">
+                        <input class="form-control form-control-sm" ng-model="projectVersions.notes" maxlength="10000" placeholder="Changes and reason" aria-label="Version notes">
+                        <button class="btn btn-primary btn-sm" ng-disabled="projectVersions.saving || documentWorkspace.loading" ng-click="saveProjectVersion()">{{projectVersions.saving ? 'Saving…' : 'Save new version'}}</button>
+                    </section>
+                    <div class="pv-toolbar">
+                        <input class="form-control form-control-sm" ng-model="projectVersions.search" ng-change="filterProjectVersions()" placeholder="Search labels, models or notes" aria-label="Search versions">
+                        <select class="form-control form-control-sm" ng-model="projectVersions.modelFilter" ng-change="filterProjectVersions()" ng-options="model for model in projectVersions.models"><option value="">All models</option></select>
+                        <select class="form-control form-control-sm" ng-model="projectVersions.kindFilter" ng-change="filterProjectVersions()"><option value="">All entry types</option><option value="GENERATED">Model generations</option><option value="CORRECTION">Corrections</option><option value="MANUAL">Manual snapshots</option><option value="ATTEMPT">Recorded attempts without a version</option></select>
+                        <button class="btn btn-sm btn-outline-secondary" ng-click="loadProjectVersions()" ng-disabled="projectVersions.loading">Refresh</button>
+                        <button class="btn btn-sm btn-primary" ng-click="compareProjectVersions()">Compare selected (2–4)</button>
+                    </div>
+                    <p ng-if="projectVersions.loading" class="pv-empty"><i class="fas fa-spinner fa-spin"></i> Loading project versions…</p>
+                    <div ng-if="!projectVersions.loading &amp;&amp; !projectVersions.rows.length" class="pv-empty"><i class="fas fa-layer-group"></i><h6>No archived versions yet</h6><p>New document-based generations are archived automatically. Save the current canvas above to preserve existing work. Save all remains available for the usual CASE project storage.</p></div>
+                    <div class="table-responsive" ng-if="projectVersions.filtered.length"><table class="table pv-table"><thead><tr><th>Select</th><th>Version / origin</th><th>Model</th><th>Repetition / attempt</th><th>Status / date</th><th>Actions</th></tr></thead><tbody>
+                        <tr ng-repeat="version in projectVersions.filtered track by version.id" ng-class="{'pv-current': activeProjectVersion.id === version.id}">
+                            <td><input type="checkbox" aria-label="Select version {{version.version_number}} for comparison" ng-model="projectVersions.selected[version.id]" ng-disabled="version.kind === 'ATTEMPT'"></td>
+                            <td><strong>{{version.version_number ? 'V' + version.version_number : 'Attempt'}}</strong> <span class="pv-current-label" ng-if="activeProjectVersion.id === version.id">Working origin</span><div>{{version.label}}</div><span class="pv-kind" ng-class="'pv-' + version.kind.toLowerCase()">{{version.kind}}</span><small ng-if="version.parent_id">Parent {{version.parent_id | limitTo:8}}</small><small>{{version.notes}}</small></td>
+                            <td><strong>{{version.metadata.returnedModel || version.metadata.requestedModel || 'No model attributed'}}</strong><small>{{version.metadata.registrationKind}} {{version.metadata.registrationId ? '#' + version.metadata.registrationId : ''}}</small><small>Requirements {{version.metadata.requirementsVersion || (version.metadata.inputSha256 | limitTo:10) || 'Not recorded'}}</small></td>
+                            <td>{{version.kind === 'GENERATED' || version.kind === 'ATTEMPT' ? (version.metadata.repetition || '—') : 'Derived'}} / {{version.kind === 'GENERATED' || version.kind === 'ATTEMPT' ? (version.metadata.attempt || '—') : '—'}}</td>
+                            <td><span>{{version.import_status}}</span><small>{{version.created_at | date:'medium'}}</small><small class="text-danger" ng-if="version.error">{{version.error}}</small></td>
+                            <td><button class="btn btn-sm btn-outline-primary" ng-if="version.kind !== 'ATTEMPT'" ng-click="openProjectVersion(version)">Open</button><button class="btn btn-sm btn-link" ng-if="version.run_id" ng-click="assessProjectVersion(version)">Assess source run</button><button class="btn btn-sm btn-link" ng-if="version.kind !== 'ATTEMPT'" ng-click="downloadProjectVersion(version)">JSON</button></td>
+                        </tr>
+                    </tbody></table></div>
+                    <p class="small text-muted" ng-if="projectVersions.rows.length &amp;&amp; !projectVersions.filtered.length &amp;&amp; !projectVersions.loading">No entries match these filters.</p>
+                    <section class="pv-comparison" ng-if="projectVersions.comparison.length">
+                        <div class="pv-comparison-heading"><div><small>SIDE-BY-SIDE</small><h6>Selected versions</h6></div><button class="btn btn-sm btn-link" ng-click="projectVersions.comparison = []">Close comparison</button></div>
+                        <div class="alert alert-warning" ng-repeat="warning in projectVersions.warnings track by $index">{{warning}}</div>
+                        <div class="table-responsive"><table class="table table-sm pv-compare-table"><thead><tr><th>Measurement / condition</th><th ng-repeat="version in projectVersions.comparison track by version.id">V{{version.version_number}} · {{version.label}}</th></tr></thead><tbody>
+                            <tr><th>Model</th><td ng-repeat="version in projectVersions.comparison">{{version.metadata.returnedModel || version.metadata.requestedModel || 'Not attributed'}}</td></tr>
+                            <tr><th>Artifact</th><td ng-repeat="version in projectVersions.comparison">{{version.kind}} · {{version.import_status}}</td></tr>
+                            <tr><th>Requirements SHA-256</th><td ng-repeat="version in projectVersions.comparison"><code>{{version.metadata.inputSha256 || 'Unknown'}}</code></td></tr>
+                            <tr><th>Generation settings</th><td ng-repeat="version in projectVersions.comparison"><pre>{{version.metadata.parameters | json}}</pre></td></tr>
+                            <tr><th>Generation time (seconds)</th><td ng-repeat="version in projectVersions.comparison">{{version.kind === 'GENERATED' &amp;&amp; version.metadata.latencyMs !== null ? (version.metadata.latencyMs / 1000 | number:2) : 'N/A · not a new generation'}}</td></tr>
+                            <tr><th>Input / completion tokens</th><td ng-repeat="version in projectVersions.comparison">{{version.kind === 'GENERATED' ? (version.metadata.usage.prompt_tokens === undefined ? 'N/A' : version.metadata.usage.prompt_tokens) : 'N/A'}} / {{version.kind === 'GENERATED' ? (version.metadata.usage.completion_tokens === undefined ? 'N/A' : version.metadata.usage.completion_tokens) : 'N/A'}}</td></tr>
+                            <tr ng-repeat="metric in projectVersions.comparisonMetrics"><th>{{metric}}</th><td ng-repeat="version in projectVersions.comparison">{{!version.metrics || ((metric === 'class' || metric === 'class_relation' || metric === 'attribute' || metric === 'operation') &amp;&amp; !version.metrics.classMetricsAvailable) ? 'N/A' : version.metrics.counts[metric]}}</td></tr>
+                        </tbody></table></div>
+                        <p class="small text-muted">These are descriptive measurements, not semantic quality scores. Use Assess source run for reviewed references, F1, expert rounds, correction time and cost. A correction retains its source model; its quality must not be attributed to a fresh model generation.</p>
+                    </section>
+                </div><div class="modal-footer"><span class="small text-muted">Archived versions remain unchanged. Save all updates the usual project workspace.</span><button class="btn btn-secondary btn-sm" data-dismiss="modal">Return to canvas</button></div>
+            </div></div>
         </div>
 
         <!-- Modal Symbols to describe use cases-->
@@ -2635,27 +2827,30 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
 
                     <div class="uml-command-bar" role="toolbar" aria-label="Project actions">
                         <button type="button" ng-click="saveModeling()" class="uml-command is-primary" title="Save all modeling changes">
-                            <i class="fas fa-save"></i><span>Save all</span>
+                            <i class="fas fa-save"></i><span>Save</span>
                         </button>
                         <button type="button" class="uml-command" ng-click="openModalTdd()" title="Generate tests from the UML model">
-                            <i class="fas fa-vial"></i><span>Generate test</span>
+                            <i class="fas fa-vial"></i><span>Tests</span>
                         </button>
                         <button type="button" class="uml-command" id="Symbols_use_cases" title="Open the use case symbol reference">
-                            <i class="fas fa-code"></i><span>Symbol guide</span>
+                            <i class="fas fa-code"></i><span>Guide</span>
                         </button>
                         <button type="button" class="uml-command" ng-click="openCaseWorkspaceImport()" title="Import diagrams, actors and use cases from JSON">
-                            <i class="fas fa-file-import"></i><span>Import JSON</span>
+                            <i class="fas fa-file-import"></i><span>Import</span>
                         </button>
                         <button type="button" class="uml-command" ng-click="openDocumentWorkspace()" title="Generate the complete CASE model from natural-language documents">
-                            <i class="fas fa-brain"></i><span>Requirements AI</span>
+                            <i class="fas fa-brain"></i><span>AI UML</span>
                         </button>
 
+                        <button type="button" class="uml-command" ng-click="openProjectModelDialog()" ng-disabled="documentWorkspace.loading" title="AI model for the next generation: {{projectVersions.effectiveModel.providerModel || 'Use Settings selection'}}"><i class="fas fa-microchip"></i><span>Model</span></button>
+                        <button type="button" class="uml-command" ng-click="openProjectVersions()" title="Open generations, corrections and model comparisons for this project"><i class="fas fa-layer-group"></i><span>History</span></button>
+                        <button type="button" class="uml-command" ng-if="assessmentPanel.activeEffort" ng-click="reopenCorrectionAudit()" title="Correction log · {{assessmentPanel.activeEffort.status}} · {{correctionAuditStatus.pending}} pending events" aria-label="Open correction log"><i class="fas fa-history"></i><span>Review</span><b class="uml-command-count" ng-if="correctionAuditStatus.pending">{{correctionAuditStatus.pending}}</b></button>
                         <span class="uml-command-divider" aria-hidden="true"></span>
 
                         <div class="btn-group uml-command-group">
                             <button type="button" class="uml-command dropdown-toggle" id="dropdownMenu2"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-cubes"></i><span>Generate</span>
+                                <i class="fas fa-cubes"></i><span>Build</span>
                             </button>
                             <div class="dropdown-menu uml-command-menu" aria-labelledby="dropdownMenu2">
                                 <span class="uml-menu-label">Generate application</span>
@@ -2679,7 +2874,7 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
                         <div class="btn-group uml-command-group">
                             <button type="button" class="uml-command dropdown-toggle" id="dropdownMenu3"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-download"></i><span>Download</span>
+                                <i class="fas fa-download"></i><span>Export</span>
                             </button>
                             <div class="dropdown-menu uml-command-menu" aria-labelledby="dropdownMenu3">
                                 <span class="uml-menu-label">Available artifacts</span>
@@ -2853,7 +3048,8 @@ public void {{methodSelected.name}}Test{{$index + 1}} () {<span ng-repeat="param
         </div>
         <script src="resources/js/js-global/js_global.js" ></script>
         <script src="resources/js/js-global/jsAlertPersonalize.js" ></script>
-        <script src="resources/js/js-uml/js_diagram_uml.js"></script>
+        <script src="resources/js/js-uml/correction-audit.js?v=20261103-correction-audit-1"></script>
+        <script src="resources/js/js-uml/js_diagram_uml.js?v=20261104-generation-errors-1"></script>
         <script src="resources/js/js-uml/js_tools_uml.js"></script>
         <script src="resources/js/js-uml/js_class_diagram.js" ></script>
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.bo.Tddt4iotsGenericBO;
 import com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ResearchPersistenceService;
+import com.ugr.microservices.depdendencies.core.tddt4iots.openai.research.ComparisonEvidenceService;
 import com.ugr.microservices.dependencies.core.tddt4iots.dto.PersonDTO;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericBasicResponse;
 import com.ugr.microservices.dependencies.core.tddt4iots.util.GenericException;
@@ -24,6 +25,44 @@ import java.util.Map;
 public class ResearchExperimentController {
     private final ResearchPersistenceService researchPersistenceService;
     private final Tddt4iotsGenericBO genericBO;
+    private final ComparisonEvidenceService comparisonEvidenceService;
+
+    @GetMapping(path = "/comparison-runs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public GenericBasicResponse<List<Map<String, Object>>> comparisonRuns(@RequestHeader String userToken, @RequestParam String projectId)
+            throws GenericException, IOException, InterruptedException {
+        PersonDTO person = genericBO.validateSession(userToken);
+        GenericBasicResponse<List<Map<String, Object>>> response = new GenericBasicResponse<>();
+        response.setData(comparisonEvidenceService.list(person.getId(), projectId));
+        return response;
+    }
+
+    @GetMapping(path = "/comparison-runs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public GenericBasicResponse<Map<String, Object>> comparisonDetail(@RequestHeader String userToken, @PathVariable java.util.UUID id)
+            throws GenericException, IOException, InterruptedException {
+        PersonDTO person = genericBO.validateSession(userToken);
+        GenericBasicResponse<Map<String, Object>> response = new GenericBasicResponse<>();
+        response.setData(comparisonEvidenceService.detail(person.getId(), id));
+        return response;
+    }
+
+    @PostMapping(path = "/comparison-runs/{id}/import", produces = MediaType.APPLICATION_JSON_VALUE)
+    public GenericBasicResponse<Boolean> comparisonImport(@RequestHeader String userToken, @PathVariable java.util.UUID id, @RequestBody JsonNode report)
+            throws GenericException, IOException, InterruptedException {
+        PersonDTO person = genericBO.validateSession(userToken);
+        comparisonEvidenceService.reportImport(person.getId(), id, report);
+        GenericBasicResponse<Boolean> response = new GenericBasicResponse<>();
+        response.setData(true);
+        return response;
+    }
+
+    @GetMapping(path = "/comparison-export.csv", produces = "text/csv")
+    public ResponseEntity<String> comparisonCsv(@RequestHeader String userToken, @RequestParam(required = false) String projectId)
+            throws GenericException, IOException, InterruptedException {
+        PersonDTO person = genericBO.validateSession(userToken);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=comparison-runs.csv")
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .body(comparisonEvidenceService.csv(person.getId(), projectId));
+    }
 
     @GetMapping(path = "/summary", produces = MediaType.APPLICATION_JSON_VALUE)
     public GenericBasicResponse<ObjectNode> summary(@RequestHeader String userToken)

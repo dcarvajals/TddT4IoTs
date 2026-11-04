@@ -102,6 +102,9 @@
     justify-content: center;
     justify-self: center;
     max-width: 100%;
+    min-width: 0;
+    width: max-content;
+    flex-wrap: wrap;
     padding: 4px;
     white-space: nowrap;
 }
@@ -134,7 +137,10 @@
 .uml-command.is-exit:hover { background: #fff4f2; border-color: #efd9d5; color: #8e3d35; }
 
 .uml-command-divider { background: #dfe5e7; height: 20px; margin: 0 2px; width: 1px; }
-.uml-command-group { position: relative; }
+.uml-command-group { position: relative; flex: 0 0 auto; }
+.uml-command { flex: 0 0 auto; }
+.uml-command-count { background: #e5f1ea; border-radius: 8px; color: #176b48; font-size: 8px; line-height: 1.4; min-width: 15px; padding: 1px 4px; text-align: center; }
+.uml-command:focus-visible { outline: 2px solid #176b48; outline-offset: 2px; }
 .uml-command.dropdown-toggle::after { margin-left: 1px; vertical-align: middle; }
 
 .uml-command-menu,
@@ -413,7 +419,7 @@
 }
 
 @media (max-width: 1050px) {
-    .uml-command-bar { justify-content: flex-start; justify-self: stretch; overflow-x: auto; }
+    .uml-command-bar { justify-content: flex-start; justify-self: stretch; width: auto; }
     .uml-ai-copy { display: none; }
     .uml-ai-toggle { padding-left: 7px; padding-right: 7px; }
     .uml-user-identity { display: none; }
@@ -862,3 +868,9 @@
     .test-studio-workspace { grid-template-columns: 220px minmax(0, 1fr); }
     .test-studio-preview { display: none; }
 }
+
+/* Project versions and explicit generation model. */
+.pv-dialog{max-width:1440px;width:96vw}.pv-content{border:0;border-radius:16px;overflow:hidden}.pv-header{background:#14364b;color:#fff;padding:22px 28px}.pv-header small,.pv-comparison-heading small{letter-spacing:.12em;font-size:10px;font-weight:700}.pv-header h5{font-size:24px;margin:5px 0}.pv-header p{font-size:12px;margin:0;color:#c5d8e4}.pv-header .close{color:#fff;opacity:1}.pv-body{padding:24px;background:#f6f9fc}.pv-body h6{font-weight:700;color:#173e54;margin-bottom:7px}.pv-setup,.pv-save{display:grid;gap:14px;align-items:center;background:#fff;border:1px solid #dce7ef;border-radius:12px;padding:18px;margin-bottom:18px}.pv-setup{grid-template-columns:1.2fr 1.5fr auto;border-left:4px solid #128575}.pv-save{grid-template-columns:1.2fr 1fr 1fr auto}.pv-setup p,.pv-save p{font-size:12px;line-height:1.5;color:#607689;margin:0}.pv-setup small{display:block;font-size:12px;color:#397063;margin-top:6px}.pv-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:18px 0}.pv-toolbar input{flex:1;min-width:180px}.pv-toolbar select{width:auto;max-width:240px}.pv-empty{text-align:center;color:#61788c;background:#fff;border:1px dashed #c7d8e5;border-radius:12px;padding:34px}.pv-empty>i{font-size:26px;color:#238a7d;margin-bottom:12px}.pv-empty p{max-width:640px;margin:10px auto;font-size:13px}.pv-table{background:#fff;font-size:12px;border:1px solid #e1e8ee}.pv-table th{background:#eaf1f6;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#456075;white-space:nowrap}.pv-table td{vertical-align:middle;padding:12px}.pv-table td small{display:block;color:#6d8192;max-width:250px;overflow-wrap:anywhere;margin-top:4px}.pv-kind{display:inline-block;margin-top:6px;padding:3px 7px;border-radius:5px;font-size:10px;font-weight:700;background:#e6edf4;color:#4d657a}.pv-generated{background:#dff3ed;color:#176d54}.pv-correction{background:#e6eafd;color:#5555a0}.pv-attempt{background:#fff0dc;color:#9c6220}.pv-current{background:#effaf7}.pv-current-label{font-size:9px;background:#167b68;color:#fff;border-radius:4px;padding:3px 5px;margin-left:4px}.pv-comparison{margin-top:24px;padding:18px;border:1px solid #cbdce8;border-radius:12px;background:#fff}.pv-comparison-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.pv-comparison-heading small{color:#217d73}.pv-compare-table{font-size:12px;table-layout:fixed}.pv-compare-table th{background:#edf4f8}.pv-compare-table td,.pv-compare-table th{overflow-wrap:anywhere;min-width:180px}.pv-compare-table code{font-size:10px}.pv-compare-table pre{font-size:10px;white-space:pre-wrap}.pv-generation-model{border:1px solid #c9dedb;background:#f1faf7;padding:14px;border-radius:9px;margin-top:16px}.pv-generation-model label{font-weight:700;font-size:12px}.pv-generation-model small{display:block;color:#39695e;margin:5px 0}@media(max-width:1000px){.pv-setup,.pv-save{grid-template-columns:1fr 1fr}.pv-save>div,.pv-setup>div:first-child{grid-column:1/-1}.pv-dialog{width:98vw}}@media(max-width:600px){.pv-setup,.pv-save{grid-template-columns:1fr}.pv-body{padding:12px}.pv-toolbar>*{width:100%;max-width:none!important}.pv-comparison{padding:10px}.pv-compare-table{table-layout:auto}}
+
+/* Model selection stays in its modal, outside the UML header grid. */
+.pm-model-modal{border:0;border-radius:14px;overflow:hidden}.pm-model-modal .modal-header{background:#14364b;color:#fff;padding:20px 24px}.pm-model-modal .modal-header small{font-size:10px;letter-spacing:.12em}.pm-model-modal h5{margin:5px 0}.pm-model-modal .modal-header p{font-size:12px;color:#c5d8e4;margin:0}.pm-model-modal .close{color:#fff;opacity:1}.pm-model-modal .modal-body{padding:24px}.pm-model-modal .modal-body>p{font-size:13px;color:#586e7e}.pm-model-preview{border:1px solid #cbded8;border-left:4px solid #16816b;border-radius:9px;background:#f3faf7;padding:16px;margin-top:18px}.pm-model-preview>span{display:block;color:#2e7464;font-size:11px}.pm-model-preview>strong{display:block;color:#173f51;font-size:17px;margin:7px 0;overflow-wrap:anywhere}.pm-model-preview dl{display:grid;grid-template-columns:120px minmax(0,1fr);gap:7px 12px;font-size:12px;margin:14px 0 0}.pm-model-preview dt{color:#647c87}.pm-model-preview dd{margin:0;overflow-wrap:anywhere}.pm-model-summary{display:flex!important;align-items:center;justify-content:space-between;gap:14px}.pm-model-summary small{display:block;color:#527563;font-size:11px}.pm-requirements-model{border:1px solid #c9dedb;border-radius:9px;padding:14px;background:#f1faf7;margin-top:14px}.pm-requirements-model strong{font-size:12px}.pm-model-summary button{flex-shrink:0}@media(max-width:600px){.pm-model-summary{align-items:flex-start;flex-direction:column}.pm-model-preview dl{grid-template-columns:1fr;gap:4px}.pm-model-preview dd{margin-bottom:6px}}

@@ -7,6 +7,10 @@ Apply the migrations in order:
 1. `001_ai_experiment_studio.sql`
 2. `002_training_monitor.sql`
 3. `003_research_runtime_integration.sql`
+4. `004_comparative_generations.sql` — opt-in evidence for the current comparison of models across separate CASE projects.
+5. `005_shared_model_catalog.sql` — direct base-model selections without training jobs and distinct base/trained registration keys in comparison evidence.
+
+The current article evaluates generations from existing models. The comparative workflow is independent of training jobs and is documented in [the study runbook](../../docs/comparative-study-runbook.md). The original training-oriented workflow and experiment matrix below are retained for other research activities; fine-tuning and ablations are not required for this study.
 
 The third migration connects the operational records with the scientific schema. After the OpenAI microservice restarts, an automatic backfill imports existing training histories and synchronizes stored checkpoints. New reviewed datasets, training jobs and CASE workspace generations are recorded at their normal application entry points.
 
@@ -39,3 +43,7 @@ Authenticated research endpoints:
 - `E5`: ablations without schema, examples, stages or validators.
 
 Recommended metric groups are `STRUCTURE`, `USE_CASE`, `CLASS`, `SEQUENCE`, `CONSISTENCY`, `OPERATIONAL` and `HUMAN`.
+
+Apply `006_comparison_assessments.sql` after 004/005 before deploying the updated generation service. It adds automatic metrics, immutable reviewed references, correspondence assessments, expert rounds, reviewer assignments, correction sessions and tariff-based cost estimates. See [assessment workflow](../../docs/research/comparison-assessments.md). No production migration is executed automatically.
+
+Apply `007_project_model_versions.sql` after 006 to enable immutable project history and corrections. Existing validated research outputs are backfilled. See [project versions](../../docs/research/project-versions.md). Rebuild shared DTOs and Java, then update web assets.

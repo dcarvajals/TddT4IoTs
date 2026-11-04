@@ -14,6 +14,9 @@ import java.util.Optional;
 @Repository
 public interface TrainingHistoryRepository extends JpaRepository<TrainingHistory, Integer> {
 
+    @Query("SELECT TH FROM TrainingHistory TH JOIN FETCH TH.idPerson JOIN FETCH TH.model MP JOIN FETCH MP.model ORDER BY TH.id DESC")
+    List<TrainingHistory> findCatalogRegistrations();
+
     @Query(value = "SELECT TH FROM TrainingHistory TH WHERE TH.dateStartTrining = :dateStartTrining AND TH.dateEndTrining = :dateEndTrining")
     List<TrainingHistory> getTrainingFromToDate (
             @Param("dateStartTrining") Date dateStartTrining,

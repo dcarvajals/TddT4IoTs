@@ -3,10 +3,14 @@ import requests
 import json
 from datetime import datetime, timezone
 import hashlib
+import time
 from pathlib import Path
-from openai import OpenAI
+from openai import OpenAI, APITimeoutError
 import httpx
 from openai_model.case_workspace_schema import CASE_WORKSPACE_RESPONSE_FORMAT
+
+# Keep Java's gRPC deadline longer than this HTTP timeout.
+INFERENCE_TIMEOUT_SECONDS = 600
 
 def train_model(json_string):
     """
@@ -213,6 +217,7 @@ def get_training_status(json_string):
     return json.dumps(result)
 
 def use_model (json_string):
+    started = time.monotonic()
     print(f"Inicia proceso para usar el modelo.");
 
     result = {
@@ -230,15 +235,23 @@ def use_model (json_string):
     messages = json_object.get('messages');
     response_schema = json_object.get('responseSchema')
     max_output_tokens = json_object.get('maxOutputTokens') or 4000
-    custom_http_client = httpx.Client(trust_env=False)
+    custom_http_client = httpx.Client(trust_env=False, timeout=float(INFERENCE_TIMEOUT_SECONDS))
 
-    print(f"Solicitud recibida: {len(messages or [])} mensajes; esquema={response_schema or 'json_object'}")
+    input_characters = sum(len(str(message.get("content", ""))) for message in (messages or []))
+    result["diagnostics"] = {"requested_model": model, "input_characters": input_characters,
+                             "timeout_seconds": INFERENCE_TIMEOUT_SECONDS, "max_output_tokens": max_output_tokens,
+                             "reasoning_effort": json_object.get("reasoningEffort") or "provider_default"}
+    print(f"Solicitud recibida: modelo={model!r}; caracteres={input_characters}; "
+          f"salida_maxima={max_output_tokens}; timeout={INFERENCE_TIMEOUT_SECONDS}s; "
+          f"razonamiento={result['diagnostics']['reasoning_effort']}; esquema={response_schema or 'json_object'}", flush=True)
 
     # Configuración del cliente de OpenAI con la clave API
     try:
         client = OpenAI(
             api_key=openai_secret_key,
-            http_client=custom_http_client
+            http_client=custom_http_client,
+            timeout=float(INFERENCE_TIMEOUT_SECONDS),
+            max_retries=0
         )
 
         # Nombre del modelo preentrenado de OpenAI
@@ -248,13 +261,15 @@ def use_model (json_string):
         response_format = (CASE_WORKSPACE_RESPONSE_FORMAT
                            if response_schema == "case_workspace"
                            else {"type": "json_object"})
-        openai_response = client.chat.completions.create(
-            model=MODEL_ENGINE,
-            response_format=response_format,
-            messages=messages,
-            max_tokens=max_output_tokens,
-            temperature=0.2
-        )
+        parameters = {"model": MODEL_ENGINE, "response_format": response_format,
+                      "max_completion_tokens": max_output_tokens}
+        temperature = json_object.get("temperature", 0.2)
+        if temperature is not None:
+            parameters["temperature"] = temperature
+        if json_object.get("reasoningEffort"):
+            parameters["reasoning_effort"] = json_object["reasoningEffort"]
+        result["request_parameters"] = parameters
+        openai_response = client.chat.completions.create(messages=messages, **parameters)
 
         # Procesar la respuesta para asegurar que sea JSON
         json_response = openai_response.choices[0].message.content
@@ -266,19 +281,38 @@ def use_model (json_string):
         result["status"] = "OK"
         result["message"] = "Transaction successfully completed"
         result["data"] = json_response
+        result["finish_reason"] = openai_response.choices[0].finish_reason
+        result["refusal"] = openai_response.choices[0].message.refusal
         if openai_response.usage:
-            result["usage"] = {
-                "prompt_tokens": openai_response.usage.prompt_tokens,
-                "completion_tokens": openai_response.usage.completion_tokens,
-                "total_tokens": openai_response.usage.total_tokens,
-            }
+            result["usage"] = _openai_object_to_dict(openai_response.usage)
         result["model"] = openai_response.model
+        if getattr(openai_response, "service_tier", None):
+            result["service_tier"] = openai_response.service_tier
         result["response_schema"] = response_schema
+        result["diagnostics"]["request_id"] = getattr(openai_response, "_request_id", None)
+        result["diagnostics"]["finish_reason"] = result["finish_reason"]
+        result["diagnostics"]["output_characters"] = len(json_response or "")
+        if result.get("usage"):
+            result["diagnostics"]["completion_tokens"] = result["usage"].get("completion_tokens")
+            result["diagnostics"]["reasoning_tokens"] = (result["usage"].get("completion_tokens_details") or {}).get("reasoning_tokens")
 
         print(f"Finaliza proceso para usar el modelo.");
 
     except Exception as e:
-        result["message"] = f"Error al crear el chat: {e}"
-        print(result["message"])
+        detail = str(e).replace(openai_secret_key, "[REDACTED]") if openai_secret_key else str(e)
+        result["diagnostics"]["error_type"] = type(e).__name__
+        result["diagnostics"]["cause_type"] = type(e.__cause__).__name__ if e.__cause__ else None
+        result["diagnostics"]["request_id"] = getattr(e, "request_id", None)
+        if isinstance(e, APITimeoutError):
+            result["message"] = (f"OpenAI no devolvió la respuesta dentro del tiempo de espera HTTP de {INFERENCE_TIMEOUT_SECONDS} segundos "
+                                 f"(modelo: {model}; causa: {result['diagnostics']['cause_type'] or 'timeout'}). "
+                                 "La solicitud no se reintentó automáticamente. Revise los diagnósticos del servicio Python.")
+        else:
+            result["message"] = f"Error al crear el chat: {detail}"
+        print(result["message"], flush=True)
+    finally:
+        result["diagnostics"]["elapsed_ms"] = round((time.monotonic() - started) * 1000)
+        print(f"Diagnóstico de generación: {json.dumps(result['diagnostics'], ensure_ascii=False)}", flush=True)
+        custom_http_client.close()
 
     return json.dumps(result)

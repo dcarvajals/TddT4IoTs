@@ -1,5 +1,6 @@
 package com.ugr.microservices.dependencies.core.tddt4iots.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Instant;
@@ -23,5 +24,6 @@ public class PersonDTO {
     private Instant dateregPerson;
     private String providerPerson;
     private String idCity;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String openaiSecretKey;
 }

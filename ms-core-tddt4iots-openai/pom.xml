@@ -23,6 +23,12 @@
 	</properties>
 	<dependencies>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- INTERNAL PROJECT -->
 		<dependency>
 			<groupId>com.ugr.microservices.dependencies.scheme.tddt4iots</groupId>

@@ -297,6 +297,7 @@ controller = app.controller("workAreaController", function ($scope) {
                         $scope.dataProject = data.data[0];
                         $scope.nameProject = $scope.dataProject.name_mp;
                         $scope.activateOpenAi = $scope.dataProject.status_openai === 'T';
+                        $scope.refreshProjectModels();
 
                         initDiagramUml(function () {
                             $scope.loadUseCase();
@@ -379,9 +380,459 @@ controller = app.controller("workAreaController", function ($scope) {
         warnings: []
     };
     $scope.documentWorkspace = {description: "", files: [], errors: [], loading: false};
+    $scope.comparisonContext = {enabled: false, experimentCode: "iot-uml-comparison", phase: "PILOT", systemCode: "", requirementsVersion: "1.0", repetition: 1, attempt: 1, maxOutputTokens: 32000, reasoningEffort: "", sendTemperature: false, temperature: 0.2};
+    $scope.comparisonRuns = [];
+    $scope.generationEvidence = null;
+    const comparisonProjectId = () => String(($scope.dataProject && $scope.dataProject.id_masterproject) || id_project || "");
+    const comparisonHeaders = () => ({userToken: store.session.get("user_tddm4iotbs").user_token});
+    $scope.loadComparisonRuns = () => {
+        if (!comparisonProjectId()) return;
+        $.ajax({method: "GET", dataType: "json", url: urlWsOpenAi + "research/comparison-runs",
+            headers: comparisonHeaders(), data: {projectId: comparisonProjectId()},
+            success: response => $scope.$applyAsync(() => { $scope.comparisonRuns = response.data || []; }),
+            error: xhr => $scope.$applyAsync(() => {
+                $scope.documentWorkspace.errors.push((xhr.responseJSON && xhr.responseJSON.message) || "Comparison history is unavailable. Check that research migration 004 is installed.");
+            })});
+    };
+    const downloadEvidenceFile = (content, name, type) => {
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(new Blob([content], {type: type}));
+        link.href = url; link.download = name; link.click(); URL.revokeObjectURL(url);
+    };
+    $scope.downloadComparisonCsv = allProjects => {
+        $.ajax({method: "GET", url: urlWsOpenAi + "research/comparison-export.csv", headers: comparisonHeaders(),
+            data: allProjects ? {} : {projectId: comparisonProjectId()},
+            success: text => downloadEvidenceFile(text, allProjects ? "comparison-all-projects.csv" : "comparison-project.csv", "text/csv;charset=utf-8"),
+            error: () => alertAll({status: 4, information: "The comparison export could not be downloaded."})});
+    };
+    $scope.downloadComparisonEvidence = run => {
+        $.ajax({method: "GET", dataType: "json", url: urlWsOpenAi + "research/comparison-runs/" + run.id,
+            headers: comparisonHeaders(),
+            success: response => downloadEvidenceFile(JSON.stringify(response.data, null, 2), "generation-" + run.id + ".json", "application/json"),
+            error: () => alertAll({status: 4, information: "The generation evidence could not be downloaded."})});
+    };
+    const reportComparisonImport = (evidence, status, validation, workspace) => {
+        if (!evidence || !evidence.runId) return;
+        $.ajax({method: "POST", contentType: "application/json", dataType: "json",
+            url: urlWsOpenAi + "research/comparison-runs/" + evidence.runId + "/import", headers: comparisonHeaders(),
+            data: JSON.stringify({status: status, errors: validation.errors || [], warnings: validation.warnings || [], workspace: workspace || null}),
+            success: () => $scope.loadComparisonRuns(),
+            error: () => {
+                // Retain the exact pre-edit snapshot locally if reporting fails; never reconstruct it after edits.
+                downloadEvidenceFile(JSON.stringify({runId: evidence.runId, status: status, validation: validation, workspace: workspace}, null, 2),
+                    "unsent-import-" + evidence.runId + ".json", "application/json");
+                alertAll({status: 4, information: "Import evidence could not be saved on the server. A recovery copy was downloaded; retain it with the experiment."});
+            }});
+    };
+    const comparisonCanvasInventory = () => {
+        const items = [];
+        const add = (id, kind, label, owner, extra) => items.push(Object.assign({id: String(id), kind: kind, label: String(label), owner: String(owner || "")}, extra || {}));
+        $scope.useCaseDiagrams.forEach(entry => {
+            const actors = entry.data.actors || [], useCases = entry.data.useCase || [];
+            actors.forEach(a => add("actor:" + entry.id + ":" + a.id, "actor", a.name, entry.id));
+            useCases.forEach(u => {
+                add("use_case:" + entry.id + ":" + u.id, "use_case", u.name, entry.id, {details: {purpose: u.porpuse || "", precondition: u.pre_condition || "", postcondition: u.post_condition || "", description: u.description_interpret || "", mainFlow: u.main_stage || [], alternatives: u.alternative_flow || []}});
+                const messages = (u.secuence_data && u.secuence_data.table_normal_flow) || [];
+                const participants = new Set();
+                messages.forEach((m, index) => {
+                    [m.from, m.to].filter(Boolean).forEach(name => participants.add(name));
+                    add("message:" + u.id + ":" + index, "message", String(m.message || "").replace(/^\d+\)\s*/, ""), u.id, {from: m.from || "", to: m.to || "", details: {type: m.message_type || "", response: m.response || "", responseType: m.response_type || ""}});
+                    if (String(m.response || "").trim()) add("message:" + u.id + ":" + index + ":response", "response", m.response, u.id, {from: m.to || "", to: m.from || "", details: {type: m.response_type || ""}});
+                });
+                participants.forEach(name => add("participant:" + u.id + ":" + name, "participant", name, u.id));
+            });
+            const endpoint = object => {
+                const actor = actors.find(a => a.obj_actor === object); if (actor) return "actor:" + entry.id + ":" + actor.id;
+                const useCase = useCases.find(u => u.obj_usecase === object); return useCase ? "use_case:" + entry.id + ":" + useCase.id : "unknown";
+            };
+            (entry.data.relations || []).forEach((r, i) => {
+                const relation = r.obj_relation || {};
+                add("uc_relation:" + entry.id + ":" + i, "uc_relation", normalizeRelationType(r.type) || String(r.type || "relation"), entry.id, {from: endpoint(relation._elemA), to: endpoint(relation._elemB)});
+            });
+        });
+        ($scope.jsonClass.diagram || []).forEach(p => (p.class || []).forEach(c => {
+            const owner = (p.packName || "") + ":" + c.className;
+            add("class:" + owner, "class", c.className, p.packName || "", {details: {visibility: c.visibility || "", modifiers: c.modifiers || ""}});
+            (c.attributes || []).forEach((a, i) => add("attribute:" + owner + ":" + i, "attribute", a.name, c.className, {details: a}));
+            (c.methods || []).forEach((m, i) => add("operation:" + owner + ":" + i, "operation", m.name, c.className, {details: m}));
+        }));
+        ($scope.jsonClass.relationships || []).forEach((r, i) => add("class_relation:" + i, "class_relation", r.typeRelatioship || r.type || "relation", "", {from: r.from || "", to: r.to || "", details: r}));
+        return JSON.parse(JSON.stringify(items));
+    };
+
+    const comparisonImportSnapshot = () => {
+        const xml = (new DOMParser()).parseFromString('<applicationtag/>', 'text/xml');
+        const graph = diagram => (new XMLSerializer()).serializeToString(diagram.getXML(xml));
+        return {
+            inventory: comparisonCanvasInventory(),
+            activeDiagramId: $scope.activeUseCaseDiagram && $scope.activeUseCaseDiagram.id,
+            testModel: angular.copy($scope.jsonTdd),
+            useCaseDiagrams: $scope.useCaseDiagrams.map(entry => ({id: entry.id, name: entry.name,
+                data: JSON.decycle(entry.data), graph: graph(entry.diagram)})),
+            classModel: JSON.parse(JSON.stringify($scope.jsonClass)), classGraph: graph(diagramClass),
+            sequences: getAllUseCases().map(useCase => ({useCaseId: useCase.id,
+                data: JSON.decycle(useCase.secuence_data), graph: graph(useCase.secuence_diagram)}))
+        };
+    };
+
+    let correctionAuditTransition = false;
+    $scope.correctionAuditStatus = {pending: 0, busy: false, error: ""};
+    const correctionAudit = UmlCorrectionAudit.create({
+        storage: {getItem: key => window.localStorage.getItem(key), setItem: (key, value) => window.localStorage.setItem(key, value)},
+        uuid: () => window.crypto.randomUUID(),
+        status: state => $scope.$evalAsync(() => Object.assign($scope.correctionAuditStatus, state)),
+        error: message => $scope.$evalAsync(() => $scope.correctionAuditStatus.error = message),
+        send: (session, changes) => new Promise((resolve, reject) => {
+            const run = $scope.assessmentPanel && $scope.assessmentPanel.run.id;
+            $.ajax({method: "POST", url: urlWsOpenAi + "research/comparison-runs/" + run + "/assessments/effort",
+                headers: comparisonHeaders(), contentType: "application/json", dataType: "json",
+                data: JSON.stringify({action: "log_batch", sessionId: session, changes}),
+                success: response => response.status === "OK" ? resolve() : reject(new Error(response.message)),
+                error: xhr => reject(new Error(xhr.responseJSON && xhr.responseJSON.message || "Automatic correction events could not be saved. Retry before leaving this page."))});
+        })
+    });
+    const captureCorrection = trigger => {
+        const p = $scope.assessmentPanel, effort = p && p.activeEffort;
+        if (correctionAuditTransition || !effort || effort.status !== "ACTIVE") return;
+        if (!$scope.generationEvidence || $scope.generationEvidence.runId !== p.run.id) {
+            $scope.correctionAuditStatus.error = "Correction tracking suspended: restore the session's original workspace before editing.";
+            return;
+        }
+        try { correctionAudit.capture(comparisonImportSnapshot(), trigger); }
+        catch (e) { $scope.correctionAuditStatus.error = e.message; }
+    };
+    $scope.reopenCorrectionAudit = () => { $("#modal_comparison_assessment").modal("show"); $scope.refreshComparisonAssessment(); };
+    $scope.flushCorrectionAudit = async () => {
+        captureCorrection("save");
+        try { await correctionAudit.flush(); $scope.$evalAsync(() => { $scope.correctionAuditStatus.error = ""; $scope.refreshComparisonAssessment(); }); }
+        catch (e) { $scope.$evalAsync(() => $scope.correctionAuditStatus.error = e.message); }
+    };
+    // Observe committed interactions; a drag is one transition, not hundreds of pointer positions.
+    let correctionCaptureTimer;
+    const observeCorrection = event => {
+        clearTimeout(correctionCaptureTimer);
+        correctionCaptureTimer = setTimeout(() => captureCorrection(event.type), 0);
+    };
+    const auditEvents = ["pointerup", "click", "keyup", "change", "drop", "umlworkspacechange"];
+    auditEvents.forEach(type => document.addEventListener(type, observeCorrection, true));
+    const correctionAuditTimer = setInterval(() => {
+        captureCorrection("periodic-check");
+        if (correctionAudit.pending) correctionAudit.flush().catch(e => $scope.$evalAsync(() => $scope.correctionAuditStatus.error = e.message));
+    }, 1500);
+    const warnUnsavedCorrections = event => {
+        captureCorrection("leave");
+        if (correctionAudit.pending) { event.preventDefault(); event.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", warnUnsavedCorrections);
+    $scope.$on("$destroy", () => {
+        clearInterval(correctionAuditTimer); clearTimeout(correctionCaptureTimer);
+        auditEvents.forEach(type => document.removeEventListener(type, observeCorrection, true));
+        window.removeEventListener("beforeunload", warnUnsavedCorrections);
+    });
+
+    $scope.assessmentPanel = null;
+    const assessmentRequest = (path, body, done) => {
+        if ($scope.assessmentPanel) $scope.assessmentPanel.error = "";
+        $.ajax({method: body === undefined ? "GET" : "POST", url: urlWsOpenAi + "research/" + path,
+            headers: comparisonHeaders(), contentType: "application/json", dataType: "json",
+            data: body === undefined ? undefined : JSON.stringify(body),
+            success: response => $scope.$applyAsync(() => {
+                if (response.status !== "OK") { correctionAuditTransition = false; if ($scope.assessmentPanel) $scope.assessmentPanel.error = response.message; return; }
+                done(response.data);
+            }),
+            error: xhr => $scope.$applyAsync(() => {
+                correctionAuditTransition = false;
+                const message = xhr.responseJSON && xhr.responseJSON.message || "Assessment request failed. Check that migration 006 and the updated backend are installed.";
+                if ($scope.assessmentPanel) $scope.assessmentPanel.error = message;
+                else alertAll({status: 4, information: message});
+            })});
+    };
+    $scope.openComparisonAssessment = run => {
+        if (correctionAuditTransition || correctionAudit.pending || ($scope.assessmentPanel && $scope.assessmentPanel.activeEffort && $scope.assessmentPanel.activeEffort.status === "ACTIVE" && $scope.assessmentPanel.run.id !== run.id)) {
+            alertAll({status: 4, information: "Pause the current correction session and save pending events before changing runs."}); return;
+        }
+        $scope.assessmentPanel = {run: run, error: "", data: null, review: {round: 1, scores: {}, rationale: ""},
+            matchingRationale: "", reviewComplete: false, changes: [], changeAction: "modify", changeDescription: "",
+            tariff: {source: "https://developers.openai.com/api/docs/pricing", effectiveDate: new Date().toISOString().slice(0,10), serviceTier: "default", contextTier: "short", region: "global", confirmApplicable: false}};
+        $("#modal_generate_case_workspace").modal("hide");
+        $("#modal_comparison_assessment").modal("show");
+        $scope.refreshComparisonAssessment();
+    };
+    $scope.refreshComparisonAssessment = () => {
+        const panel = $scope.assessmentPanel; if (!panel) return;
+        assessmentRequest("comparison-runs/" + panel.run.id + "/assessments", undefined, data => {
+            correctionAuditTransition = false;
+            panel.data = data; panel.tariff.model = data.model;
+            panel.activeEffort = data.efforts.find(e => e.reviewer_id === data.currentUserId && e.status !== "COMPLETE") || null;
+            panel.changes = panel.activeEffort && panel.activeEffort.change_log || [];
+            if (panel.activeEffort && $scope.generationEvidence && $scope.generationEvidence.runId === panel.run.id) {
+                try { correctionAudit.start(panel.activeEffort.id, comparisonImportSnapshot()); }
+                catch (e) { $scope.correctionAuditStatus.error = e.message; }
+            }
+            if (!panel.referenceId && data.references.length) panel.referenceId = data.references[0].id;
+            $scope.selectAssessmentReference();
+        });
+    };
+    $scope.selectAssessmentReference = () => {
+        const p = $scope.assessmentPanel; if (!p || !p.data) return;
+        const sameReference = p.matchingReferenceId === p.referenceId;
+        const prior = new Map((p.matchingRows || []).map(row => [row.generated.id, row.referenceId]));
+        p.reference = p.data.references.find(r => r.id === p.referenceId) || null;
+        p.matchingRows = p.data.automatic.inventory.map(g => ({generated: g, referenceId: sameReference ? (prior.get(g.id) || "") : "", candidates: p.reference ? p.reference.inventory.filter(r => r.kind === g.kind) : []}));
+        if (!sameReference) p.reviewComplete = false;
+        p.matchingReferenceId = p.referenceId;
+    };
+    $scope.downloadAssessmentInventory = () => {
+        const p = $scope.assessmentPanel;
+        downloadEvidenceFile(JSON.stringify({version: "REPLACE_WITH_REVIEWED_VERSION", provenance: "Document the reference sources, delimitations and expert review. This generated inventory is only a format example, not a validated reference.", approved: false, inventory: p.data.automatic.inventory}, null, 2), "reference-format-example.json", "application/json");
+    };
+    $scope.uploadAssessmentReference = input => {
+        const file = input.files && input.files[0]; if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { $scope.$applyAsync(() => $scope.assessmentPanel.error = "Reference exceeds 10 MB."); return; }
+        const reader = new FileReader(); reader.onload = event => {
+            try {const body = JSON.parse(event.target.result);
+                Swal.fire({title: "Register a reviewed reference?", text: "Confirm that this reference was reviewed against the requirements independently of this generated result. Its version will be immutable.", icon: "question", showCancelButton: true}).then(result => {
+                    if (result.isConfirmed) {body.approved = true; assessmentRequest("comparison-runs/" + $scope.assessmentPanel.run.id + "/assessments/reference", body, () => $scope.refreshComparisonAssessment());}
+                });
+            } catch (e) {$scope.$applyAsync(() => $scope.assessmentPanel.error = "Invalid reference JSON: " + e.message);}
+        }; reader.readAsText(file); input.value = "";
+    };
+    const saveAssessment = (action, body) => assessmentRequest("comparison-runs/" + $scope.assessmentPanel.run.id + "/assessments/" + action, body, () => $scope.refreshComparisonAssessment());
+    $scope.saveAssessmentMatching = () => {
+        const p = $scope.assessmentPanel;
+        saveAssessment("evaluate", {referenceId: p.referenceId, reviewComplete: p.reviewComplete, rationale: p.matchingRationale,
+            matches: p.matchingRows.filter(r => r.referenceId).map(r => ({generatedId: r.generated.id, referenceId: r.referenceId}))});
+    };
+    $scope.saveAssessmentReview = () => saveAssessment("review", $scope.assessmentPanel.review);
+    $scope.assignAssessmentReviewer = () => saveAssessment("assign", {reviewerId: Number($scope.assessmentPanel.reviewerId)});
+    $scope.saveAssessmentCost = () => saveAssessment("cost", $scope.assessmentPanel.tariff);
+    $scope.addAssessmentChange = () => {
+        const p = $scope.assessmentPanel; if (!p.changeDescription.trim()) return;
+        if (!p.activeEffort) {p.error = "Start a correction session before logging actions."; return;}
+        saveAssessment("effort", {action: "log", sessionId: p.activeEffort.id, change: {action: p.changeAction, description: p.changeDescription.trim()}});
+        p.changeDescription = "";
+    };
+    $scope.controlAssessmentEffort = async action => {
+        if (correctionAuditTransition) return;
+        const p = $scope.assessmentPanel;
+        if ((action === "start" || action === "complete") && (!$scope.generationEvidence || $scope.generationEvidence.runId !== p.run.id)) {
+            p.error = "Load this run's UML into the canvas before measuring corrections."; return;
+        }
+        try {
+            captureCorrection("before-" + action);
+            correctionAuditTransition = true;
+            await correctionAudit.flush();
+            if (action === "resume") correctionAudit.reset(comparisonImportSnapshot());
+            saveAssessment("effort", {action: action, sessionId: p.activeEffort && p.activeEffort.id,
+                workspace: action === "start" || action === "complete" ? comparisonImportSnapshot() : null});
+        } catch (e) { correctionAuditTransition = false; $scope.$evalAsync(() => p.error = e.message); }
+    };
+    $scope.loadAssessmentWorkspace = () => {
+        if ($scope.assessmentPanel && $scope.assessmentPanel.activeEffort && $scope.assessmentPanel.activeEffort.status === "ACTIVE") {
+            alertAll({status: 4, information: "Pause or finish the correction session before replacing its workspace."}); return;
+        }
+        const p = $scope.assessmentPanel;
+        Swal.fire({title: "Restore this run for review?", text: "This replaces the current canvas. Save any current work first. Stored original evidence will remain unchanged.", icon: "warning", showCancelButton: true}).then(result => {
+            if (!result.isConfirmed) return;
+            assessmentRequest("comparison-runs/" + p.run.id + "/review-workspace", undefined, data => {
+                try {restoreProjectSnapshot(data.initialImportedWorkspace);
+                    $scope.generationEvidence = {runId: p.run.id}; p.error = "";
+                    $scope.activeProjectVersion = {id: p.run.id, kind: "GENERATED"};
+                } catch (e) {p.error = "Could not restore UML: " + e.message;}
+            });
+        });
+    };
+    $scope.downloadAssessmentEvidence = () => downloadEvidenceFile(JSON.stringify($scope.assessmentPanel.data, null, 2), "assessments-" + $scope.assessmentPanel.run.id + ".json", "application/json");
+    $scope.downloadAssessmentCsv = () => {
+        $.ajax({method: "GET", url: urlWsOpenAi + "research/comparison-assessments.csv", headers: comparisonHeaders(),
+            success: csv => downloadEvidenceFile(csv, "comparison-assessments.csv", "text/csv"), error: () => alertAll({status: 4, information: "Assessment export failed."})});
+    };
+    $scope.loadAssignedComparisonRuns = () => assessmentRequest("assigned-comparison-runs", undefined, data => {$scope.assignedComparisonRuns = data;});
+
+    $scope.projectModelSelection = null;
+    $scope.activeProjectVersion = null;
+    $scope.projectVersions = {rows: [], filtered: [], catalog: [], modelKey: "", modelFilter: "", kindFilter: "", search: "", selected: {}, comparison: [], warnings: [], loading: false, saving: false, error: "", label: "", notes: ""};
+    const projectVersionRequest = (path, body, done) => {
+        $scope.projectVersions.error = "";
+        $.ajax({method: body === undefined ? "GET" : "POST", url: urlWsOpenAi + "research/project-versions" + path,
+            headers: comparisonHeaders(), contentType: "application/json", dataType: "json", data: body === undefined ? undefined : JSON.stringify(body),
+            success: response => $scope.$applyAsync(() => {
+                if (response.status !== "OK") {$scope.projectVersions.loading = false; $scope.projectVersions.saving = false; $scope.projectVersions.error = response.message || "Version request failed."; return;}
+                done(response.data);
+            }), error: xhr => $scope.$applyAsync(() => {
+                $scope.projectVersions.loading = false; $scope.projectVersions.saving = false;
+                $scope.projectVersions.error = xhr.responseJSON && xhr.responseJSON.message || "Project versions could not be loaded. Verify migration 007 and the updated backend.";
+            })});
+    };
+    const projectModelKey = item => item.registrationKind + ":" + item.id;
+    $scope.refreshProjectModels = (done, failed) => {
+        $.ajax({method: "GET", url: urlWsOpenAi + "model-use-tool/catalog", headers: comparisonHeaders(), dataType: "json",
+            success: response => $scope.$applyAsync(() => {
+                $scope.projectVersions.catalog = (response.data || []).map(item => Object.assign({}, item, {key: projectModelKey(item), group: item.mine ? "My registered models" : "Shared by other users", optionLabel: item.providerModel + " · " + item.ownerName + " · #" + item.id}));
+                $scope.projectVersions.globalModel = $scope.projectVersions.catalog.find(item => item.selected) || null;
+                $scope.projectVersions.modelKey = $scope.projectModelSelection ? projectModelKey({id: $scope.projectModelSelection.id, registrationKind: $scope.projectModelSelection.registrationKind}) : "";
+                $scope.projectModelChanged();
+                if (done) done();
+            }), error: () => $scope.$applyAsync(() => {
+                $scope.projectVersions.error = "The available model catalog could not be refreshed.";
+                if (failed) failed($scope.projectVersions.error);
+            })});
+    };
+    $scope.projectModelChanged = () => {
+        const state = $scope.projectVersions;
+        if (!state.modelKey) {$scope.projectModelSelection = null; state.effectiveModel = state.globalModel; return;}
+        const item = state.catalog.find(model => model.key === state.modelKey);
+        if (item) {$scope.projectModelSelection = {id: item.id, registrationKind: item.registrationKind, providerModel: item.providerModel}; state.effectiveModel = item;}
+        else state.effectiveModel = null;
+    };
+    $scope.projectModelDialog = {key: "", preview: null, loading: false, error: "", returnTo: null, serial: 0};
+    $scope.previewProjectModel = () => {
+        const dialog = $scope.projectModelDialog;
+        dialog.preview = dialog.key ? $scope.projectVersions.catalog.find(model => model.key === dialog.key) || null : $scope.projectVersions.globalModel;
+    };
+    $scope.openProjectModelDialog = origin => {
+        const dialog = $scope.projectModelDialog;
+        const serial = ++dialog.serial;
+        dialog.returnTo = {requirements: "#modal_generate_case_workspace", versions: "#modal_project_versions"}[origin] || null;
+        dialog.error = ""; dialog.loading = true;
+        const show = () => $("#modal_project_model").modal("show");
+        if (dialog.returnTo && $(dialog.returnTo).hasClass("show")) $(dialog.returnTo).one("hidden.bs.modal", show).modal("hide");
+        else show();
+        $scope.refreshProjectModels(() => {
+            if (dialog.serial !== serial) return;
+            dialog.key = $scope.projectVersions.modelKey; dialog.loading = false; $scope.previewProjectModel();
+        }, error => {if (dialog.serial === serial) {dialog.loading = false; dialog.error = error;}});
+    };
+    $scope.closeProjectModelDialog = () => {
+        const destination = $scope.projectModelDialog.returnTo;
+        $scope.projectModelDialog.serial++;
+        $scope.projectModelDialog.returnTo = null;
+        if (destination) $("#modal_project_model").one("hidden.bs.modal", () => $(destination).modal("show")).modal("hide");
+        else $("#modal_project_model").modal("hide");
+    };
+    $scope.applyProjectModel = () => {
+        const dialog = $scope.projectModelDialog;
+        if (dialog.loading || $scope.documentWorkspace.loading) return;
+        $scope.previewProjectModel();
+        if (!dialog.preview || !dialog.preview.available) {dialog.error = dialog.preview && dialog.preview.unavailableReason || "Choose an available model, or configure an available default in Settings."; return;}
+        $scope.projectVersions.modelKey = dialog.key;
+        $scope.projectModelChanged();
+        $scope.closeProjectModelDialog();
+    };
+    $scope.filterProjectVersions = () => {
+        const s = $scope.projectVersions, query = s.search.toLowerCase();
+        s.filtered = s.rows.filter(row => (!s.modelFilter || (row.metadata.returnedModel || row.metadata.requestedModel) === s.modelFilter)
+            && (!s.kindFilter || row.kind === s.kindFilter) && (!query || [row.label,row.notes,row.metadata.returnedModel,row.metadata.requestedModel,row.version_number,row.id].join(" ").toLowerCase().includes(query)));
+    };
+    $scope.loadProjectVersions = () => {
+        const s = $scope.projectVersions; s.loading = true;
+        projectVersionRequest("?projectId=" + encodeURIComponent(comparisonProjectId()), undefined, rows => {
+            s.rows = rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            s.models = Array.from(new Set(rows.map(r => r.metadata.returnedModel || r.metadata.requestedModel).filter(Boolean)));
+            if ($scope.activeProjectVersion) {
+                const active = rows.find(row => row.id === $scope.activeProjectVersion.id);
+                if (active) $scope.activeProjectVersion = {id: active.id, versionNumber: active.version_number, kind: active.kind, label: active.label};
+            }
+            s.loading = false; $scope.filterProjectVersions();
+        });
+    };
+    $scope.openProjectVersions = () => {
+        $("#modal_generate_case_workspace").modal("hide");
+        $("#modal_comparison_assessment").modal("hide");
+        $("#modal_project_versions").modal("show");
+        $scope.refreshProjectModels(); $scope.loadProjectVersions();
+    };
+    const reportProjectVersionImport = (version, status, snapshot) => {
+        if (!version || !version.id) return;
+        projectVersionRequest("/" + version.id + "/import", {status: status, workspace: snapshot || null}, () => {
+            $scope.loadProjectVersions();
+        });
+    };
+    const restoreProjectSnapshot = snapshot => {
+        const saved = angular.copy(snapshot);
+        loadWorkspaceUseCaseDiagrams({useCaseDiagrams: saved.useCaseDiagrams, activeDiagramId: saved.activeDiagramId});
+        $scope.jsonClass = saved.classModel;
+        updateClassDiagram($scope.jsonClass, "C");
+        if (saved.classGraph) {diagramClass._nodes.length = 0; diagramClass._relations.length = 0; importDiagram(diagramClass, saved.classGraph, "ClassDiagram");
+            if (typeof elementsClass !== "undefined") {elementsClass.length = 0; diagramClass._nodes.forEach(node => elementsClass.push({element: node}));}}
+        getAllUseCases().forEach(u => {
+            const seq = (saved.sequences || []).find(item => item.useCaseId === u.id);
+            if (seq) {u.secuence_data = seq.data; updateSecuenceDiagram(u.secuence_diagram, seq.data);}
+            if (seq && seq.graph) {
+                u.secuence_diagram._nodes.length = 0; u.secuence_diagram._relations.length = 0;
+                importDiagram(u.secuence_diagram, seq.graph, "SequenceDiagram");
+                u.secuence_diagram._tddSequenceElements = u.secuence_diagram._nodes.concat(u.secuence_diagram._relations).map(element => ({element: element}));
+            }
+        });
+        if (saved.testModel) {$scope.jsonTdd = saved.testModel; $scope.classTdd = saved.testModel.receiveTDDJSOM || [];}
+        $scope.editionClasDiagram = Boolean(saved.classModel.edition);
+        const entry = $scope.useCaseDiagrams.find(e => e.id === saved.activeDiagramId) || $scope.useCaseDiagrams[0];
+        if (entry) {activateUseCaseEntry(entry); $scope.changeDiagramA(entry.button);}
+        $scope.actualizarNaturalText($scope.jsonClass);
+    };
+    $scope.openProjectVersion = row => {
+        if ($scope.assessmentPanel && $scope.assessmentPanel.activeEffort && $scope.assessmentPanel.activeEffort.status === "ACTIVE") {
+            alertAll({status: 4, information: "Pause or finish the correction session before replacing its workspace."}); return;
+        }
+        Swal.fire({title: "Open this project version?", text: "This replaces the current canvas. Save your current work first. Archived versions remain unchanged.", icon: "warning", showCancelButton: true}).then(result => {
+            if (!result.isConfirmed) return;
+            projectVersionRequest("/" + row.id, undefined, data => {
+                try {
+                    if (data.snapshot) restoreProjectSnapshot(data.snapshot); else if (data.source_workspace) {
+                        const validation = validateCaseWorkspace(data.source_workspace);
+                        if (validation.errors.length) throw new Error(validation.errors.join("; "));
+                        importCaseWorkspace(data.source_workspace);
+                        if (data.import_status === "PENDING") reportProjectVersionImport({id: data.id}, "IMPORTED", comparisonImportSnapshot());
+                    } else throw new Error("This attempt has no loadable UML.");
+                    $scope.activeProjectVersion = {id: data.id, versionNumber: data.version_number, label: data.label, kind: data.kind};
+                    $scope.generationEvidence = data.run_id ? {runId: data.run_id, model: data.metadata.returnedModel || data.metadata.requestedModel} : null;
+                    if (data.metadata.requirementsVersion) $scope.comparisonContext.requirementsVersion = data.metadata.requirementsVersion;
+                    if (data.metadata.systemCode) $scope.comparisonContext.systemCode = data.metadata.systemCode;
+                    $scope.projectVersions.label = "Correction of V" + data.version_number; $scope.projectVersions.notes = "";
+                    $("#modal_project_versions").modal("hide");
+                } catch (error) {$scope.projectVersions.error = "The saved version could not be restored: " + error.message;}
+            });
+        });
+    };
+    $scope.saveProjectVersion = () => {
+        const s = $scope.projectVersions; if (s.saving) return;
+        if (!s.label.trim()) {s.error = "Enter a label for this version."; return;}
+        try {
+            const snapshot = comparisonImportSnapshot(); s.saving = true;
+            projectVersionRequest("", {projectId: comparisonProjectId(), parentId: $scope.activeProjectVersion && $scope.activeProjectVersion.id,
+                label: s.label.trim(), notes: s.notes, workspace: snapshot}, id => {
+                s.saving = false; $scope.activeProjectVersion = {id: id, kind: $scope.activeProjectVersion ? "CORRECTION" : "MANUAL", label: s.label.trim()};
+                s.notes = ""; $scope.loadProjectVersions();
+            });
+        } catch (error) {s.saving = false; s.error = "Could not capture this version: " + error.message;}
+    };
+    $scope.compareProjectVersions = () => {
+        const s = $scope.projectVersions, ids = Object.keys(s.selected).filter(id => s.selected[id]);
+        if (ids.length < 2 || ids.length > 4) {s.error = "Select between two and four versions."; return;}
+        projectVersionRequest("/compare", {ids: ids}, data => {
+            s.comparison = data; s.warnings = [];
+            if (data.some(row => row.kind !== "GENERATED")) s.warnings.push("Corrections and manual snapshots are not independent model generations. Their generation time and token use are not counted again.");
+            const inputs = new Set(data.map(row => row.metadata.inputSha256 || "unknown"));
+            if (inputs.size !== 1 || inputs.has("unknown")) s.warnings.push("These versions do not have the same verified requirements input. Do not interpret differences as a controlled model comparison.");
+            const configurations = new Set(data.map(row => JSON.stringify({parameters: {maxOutputTokens: row.metadata.parameters && row.metadata.parameters.maxOutputTokens, temperature: row.metadata.parameters && row.metadata.parameters.temperature, reasoningEffort: row.metadata.parameters && row.metadata.parameters.reasoningEffort}, prompt: row.metadata.promptVersion, schema: row.metadata.schemaVersion, phase: row.metadata.phase, sourceCommit: row.metadata.sourceCommit})));
+            if (configurations.size !== 1) s.warnings.push("Generation settings, prompt, schema, source revision or phase differ. Review these conditions before drawing conclusions.");
+            if (data.some(row => !row.metadata.sourceCommit || row.metadata.sourceCommit === "local-development")) s.warnings.push("A verified source revision was not supplied for some versions. Record the evaluated build before collecting definitive results.");
+            if (data.some(row => !row.metrics || !row.metrics.classMetricsAvailable)) s.warnings.push("Some versions do not have an imported class artifact. Unavailable counts are not zero.");
+            s.comparisonMetrics = ["actor","use_case","class","uc_relation","class_relation","attribute","operation","message","response","message_total"];
+        });
+    };
+    $scope.downloadProjectVersion = row => projectVersionRequest("/" + row.id, undefined, data => downloadEvidenceFile(JSON.stringify(data, null, 2), "project-version-" + data.version_number + ".json", "application/json"));
+    $scope.assessProjectVersion = row => {
+        $("#modal_project_versions").modal("hide");
+        $scope.openComparisonAssessment({id: row.run_id});
+    };
 
     $scope.openDocumentWorkspace = () => {
+        if ($scope.assessmentPanel && $scope.assessmentPanel.activeEffort && $scope.assessmentPanel.activeEffort.status === "ACTIVE") {
+            alertAll({status: 4, information: "Pause or finish the correction session before replacing its workspace."}); return;
+        }
         $scope.documentWorkspace = {description: "", files: [], errors: [], loading: false};
+        $scope.refreshProjectModels();
         const input = document.getElementById("naturalLanguageDocuments");
         if (input) input.value = "";
         $("#modal_generate_case_workspace").modal("show");
@@ -418,9 +869,51 @@ controller = app.controller("workAreaController", function ($scope) {
 
     $scope.removeNaturalLanguageDocument = index => $scope.documentWorkspace.files.splice(index, 1);
 
+    const showDocumentGenerationError = messages => {
+        $scope.documentWorkspace.loading = false;
+        $scope.documentWorkspace.errors = messages;
+        $("#modal_generate_case_workspace").modal("show");
+        $("#modal_generate_case_workspace .modal-body").scrollTop(0);
+    };
+
+    const documentGenerationHttpError = (xhr, textStatus) => {
+        const status = Number(xhr.status || 0);
+        let body = xhr.responseJSON;
+        if (!body && typeof xhr.responseText === "string" && xhr.responseText.trim().startsWith("{")) {
+            try { body = JSON.parse(xhr.responseText); } catch (ignored) { /* A proxy may return HTML instead of JSON. */ }
+        }
+        const detail = body && [body.message, body.detail, body.error].find(value => typeof value === "string" && value.trim());
+        const context = status ? "HTTP " + status : "No HTTP response";
+        if (detail) return context + ": " + detail.slice(0, 2000);
+        const hints = {
+            400: "The service rejected the request. Check the Java logs for validation details.",
+            401: "Your session or gateway authentication is no longer valid. Sign in again.",
+            403: "Access was denied by the service or gateway.",
+            404: "The generation endpoint was not found. Check the deployed Java version and proxy route.",
+            413: "The server or proxy rejected the request size. Check document upload limits.",
+            500: "The server failed without a readable JSON error. Check the Java logs for this generation.",
+            502: "The gateway received an invalid response from the upstream service. Check proxy and Java logs.",
+            503: "The service is temporarily unavailable. Check its running container and proxy logs.",
+            504: "The gateway timed out waiting for the service. Check proxy timeouts and Java/Python logs; generation may still be running."
+        };
+        if (!status) return context + ": " + (textStatus === "timeout" ? "The browser request timed out. Check connectivity and service logs; generation may still be running." : "The connection failed or was blocked. Check connectivity, CORS and proxy/service logs.");
+        if (textStatus === "parsererror") return context + ": The response was not valid JSON. Check the proxy route and service logs.";
+        return context + ": " + (hints[status] || "The requirements could not be analyzed. Check the response and service logs.");
+    };
+
     $scope.generateCaseWorkspaceFromDocuments = () => {
+        if ($scope.assessmentPanel && $scope.assessmentPanel.activeEffort && $scope.assessmentPanel.activeEffort.status === "ACTIVE") {
+            alertAll({status: 4, information: "Pause or finish the correction session before generating another workspace."}); return;
+        }
         const description = ($scope.documentWorkspace.description || "").trim();
         if (!description && !$scope.documentWorkspace.files.length) return;
+        if ($scope.comparisonContext.enabled && (!$scope.comparisonContext.systemCode
+                || !$scope.comparisonContext.experimentCode || !$scope.comparisonContext.requirementsVersion
+                || !Number.isInteger(Number($scope.comparisonContext.repetition)) || Number($scope.comparisonContext.repetition) < 1
+                || !Number.isInteger(Number($scope.comparisonContext.attempt)) || Number($scope.comparisonContext.attempt) < 1)) {
+            $scope.documentWorkspace.errors = ["Complete the study, system, requirements version, repetition and attempt before generating."];
+            return;
+        }
         const dataUser = store.session.get("user_tddm4iotbs");
         if (!dataUser || !dataUser.user_token) {
             $scope.documentWorkspace.errors = ["Your session has expired. Sign in again to use AI analysis."];
@@ -435,6 +928,17 @@ controller = app.controller("workAreaController", function ($scope) {
             url: urlWsOpenAi + "master-project/generate-case-workspace",
             headers: {userToken: dataUser.user_token},
             data: JSON.stringify({classDTO: {
+                projectId: comparisonProjectId(),
+                modelRegistrationId: $scope.projectModelSelection ? $scope.projectModelSelection.id : null,
+                modelRegistrationKind: $scope.projectModelSelection ? $scope.projectModelSelection.registrationKind : null,
+                maxOutputTokens: Number($scope.comparisonContext.maxOutputTokens || 32000),
+                temperature: $scope.comparisonContext.sendTemperature ? Number($scope.comparisonContext.temperature) : null,
+                reasoningEffort: $scope.comparisonContext.reasoningEffort || null,
+                research: $scope.comparisonContext.enabled ? {
+                    experimentCode: $scope.comparisonContext.experimentCode, phase: $scope.comparisonContext.phase,
+                    systemCode: $scope.comparisonContext.systemCode, requirementsVersion: $scope.comparisonContext.requirementsVersion,
+                    repetition: Number($scope.comparisonContext.repetition), attempt: Number($scope.comparisonContext.attempt)
+                } : null,
                 description: description,
                 documents: $scope.documentWorkspace.files.map(file => ({
                     fileName: file.name,
@@ -442,15 +946,28 @@ controller = app.controller("workAreaController", function ($scope) {
                     base64Content: file.base64Content
                 }))
             }}),
-            success: response => $scope.$apply(() => {
+            success: response => $scope.$applyAsync(() => {
                 $scope.documentWorkspace.loading = false;
-                if (response.status !== "OK" || !response.data) {
-                    $scope.documentWorkspace.errors = [response.message || "The AI service did not return a project model."];
+                if (!response || response.status !== "OK" || !response.data) {
+                    showDocumentGenerationError([response && response.message || "The AI service did not return a project model."]);
                     return;
                 }
-                const validation = validateCaseWorkspace(response.data);
+                let validation;
+                try {
+                    validation = validateCaseWorkspace(response.data);
+                } catch (error) {
+                    showDocumentGenerationError(["The generated response could not be processed: " + String(error.message || error)]);
+                    reportComparisonImport(response.data._research, "VALIDATION_FAILED", {errors: $scope.documentWorkspace.errors, warnings: []});
+                    reportProjectVersionImport(response.data._version, "VALIDATION_FAILED");
+                    return;
+                }
+                const evidence = response.data._research;
+                const archivedVersion = response.data._version;
+                if (evidence) $scope.loadComparisonRuns();
                 if (validation.errors.length) {
-                    $scope.documentWorkspace.errors = ["The generated model did not pass local validation."].concat(validation.errors);
+                    reportComparisonImport(evidence, "VALIDATION_FAILED", validation);
+                    reportProjectVersionImport(archivedVersion, "VALIDATION_FAILED");
+                    showDocumentGenerationError(["The generated model did not pass local validation."].concat(validation.errors));
                     return;
                 }
                 $("#modal_generate_case_workspace").modal("hide");
@@ -462,17 +979,34 @@ controller = app.controller("workAreaController", function ($scope) {
                     confirmButtonText: "Generate workspace",
                     cancelButtonText: "Review later"
                 }).then(result => {
-                    if (!result.isConfirmed) return;
+                    if (!result.isConfirmed) {
+                        reportComparisonImport(evidence, "DECLINED", validation);
+                        reportProjectVersionImport(archivedVersion, "DECLINED");
+                        return;
+                    }
                     $scope.$apply(() => {
-                        importCaseWorkspace(response.data);
-                        alertAll({status: 1, information: "The complete CASE workspace was generated from the natural-language requirements."});
+                        let imported = false;
+                        try {
+                            importCaseWorkspace(response.data);
+                            imported = true;
+                            $scope.generationEvidence = evidence || null;
+                            $scope.activeProjectVersion = archivedVersion ? {id: archivedVersion.id, kind: "GENERATED"} : null;
+                            const snapshot = evidence || archivedVersion ? comparisonImportSnapshot() : null;
+                            reportComparisonImport(evidence, "IMPORTED", validation, snapshot);
+                            reportProjectVersionImport(archivedVersion, "IMPORTED", snapshot);
+                            alertAll({status: 1, information: "The complete CASE workspace was generated from the natural-language requirements."});
+                        } catch (error) {
+                            if (!imported) {$scope.generationEvidence = null; $scope.activeProjectVersion = null;}
+                            reportComparisonImport(evidence, imported ? "CAPTURE_FAILED" : "IMPORT_FAILED", {errors: [String(error.message || error)], warnings: validation.warnings});
+                            reportProjectVersionImport(archivedVersion, imported ? "CAPTURE_FAILED" : "IMPORT_FAILED");
+                            alertAll({status: 4, information: imported ? "The UML was imported, but its initial evidence snapshot could not be captured." : "The workspace import failed. The generation evidence was retained."});
+                        }
                     });
                 });
             }),
-            error: xhr => $scope.$applyAsync(() => {
-                $scope.documentWorkspace.loading = false;
-                const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : "The requirements could not be analyzed.";
-                $scope.documentWorkspace.errors = [message];
+            error: (xhr, textStatus) => $scope.$applyAsync(() => {
+                showDocumentGenerationError([documentGenerationHttpError(xhr, textStatus)]);
+                if ($scope.comparisonContext.enabled) $scope.loadComparisonRuns();
             })
         });
     };
@@ -583,11 +1117,16 @@ controller = app.controller("workAreaController", function ($scope) {
                 });
 
                 const alternativeFlows = Array.isArray(useCase.alternativeFlows) ? useCase.alternativeFlows : [];
+                const alternativeIds = new Set();
                 alternativeFlows.forEach((flow, flowIndex) => {
                     const flowPath = useCasePath + ".alternativeFlows[" + flowIndex + "]";
                     const actor = String(flow.actor || "").trim();
                     const startStep = Number(flow.startStep);
                     const returnStep = Number(flow.returnStep);
+                    const flowId = String(flow.id || "").trim();
+                    if (!flowId) addError(flowPath + ".id", "is required.");
+                    else if (alternativeIds.has(flowId)) addError(flowPath + ".id", "must be unique in this use case.");
+                    else alternativeIds.add(flowId);
                     if (!Number.isInteger(startStep) || startStep < 1 || startStep > mainFlow.length) addError(flowPath + ".startStep", "must reference a normal-flow step.");
                     if (!String(flow.condition || "").trim()) addError(flowPath + ".condition", "is required.");
                     if (!actor) addError(flowPath + ".actor", "is required.");
@@ -597,6 +1136,9 @@ controller = app.controller("workAreaController", function ($scope) {
                     if (["return", "end"].indexOf(flow.outcome) === -1) addError(flowPath + ".outcome", "must be return or end.");
                     if (flow.outcome === "return" && (!Number.isInteger(returnStep) || returnStep < startStep || returnStep > mainFlow.length)) {
                         addError(flowPath + ".returnStep", "must be between the origin step and the last normal-flow step.");
+                    }
+                    if (flow.outcome === "end" && flow.returnStep !== null) {
+                        addError(flowPath + ".returnStep", "must be null when outcome is end.");
                     }
                 });
 
@@ -869,6 +1411,8 @@ controller = app.controller("workAreaController", function ($scope) {
             $scope.$apply(() => {
                 try {
                     importCaseWorkspace($scope.caseWorkspaceImport.payload);
+                    $scope.generationEvidence = null;
+                    $scope.activeProjectVersion = null;
                     $("#modal_import_case_workspace").modal("hide");
                     alertAll({status: 1, information: "Workspace imported. The consolidated class diagram was generated from the symbolic text."});
                 } catch (error) {
@@ -2608,6 +3152,10 @@ controller = app.controller("workAreaController", function ($scope) {
                         graph: (new XMLSerializer()).serializeToString(diagramUseCase.getXML(xml)),
                         workspace: {
                             schemaVersion: 2,
+                            projectModelSelection: angular.copy($scope.projectModelSelection),
+                            activeProjectVersion: angular.copy($scope.activeProjectVersion),
+                            comparisonContext: angular.copy($scope.comparisonContext),
+                            generationEvidence: angular.copy($scope.generationEvidence),
                             activeDiagramId: $scope.activeUseCaseDiagram ? $scope.activeUseCaseDiagram.id : null,
                             useCaseDiagrams: workspaceDiagrams
                         }
@@ -2755,8 +3303,11 @@ controller = app.controller("workAreaController", function ($scope) {
                 diagram: diagram, name: saved.name, type: "UMLUseCaseDiagram",
                 status: "C", btnactive: "btn btn-sm button-dt mr-2 mt-1"
             };
-            $scope.btnDiagramUml.unshift(button);
+            $scope.btnDiagramUml.splice(index, 0, button);
             const entry = registerUseCaseDiagram(button, saved.data || blankUseCaseData(), {id: saved.id, name: saved.name});
+            // setXML appends elements; clear the reused canvas before restoring a version.
+            diagram._nodes.length = 0;
+            diagram._relations.length = 0;
             importDiagram(diagram, graphWithCurrentProjectName(saved.graph), "UseCase");
             getDataDiagram(diagram, entry.data, entry);
         });
@@ -2784,6 +3335,11 @@ controller = app.controller("workAreaController", function ($scope) {
                             clearDiagram();
 
                             if (data.data.workspace && data.data.workspace.schemaVersion >= 2) {
+                                if (data.data.workspace.comparisonContext) $scope.comparisonContext = data.data.workspace.comparisonContext;
+                                $scope.generationEvidence = data.data.workspace.generationEvidence || null;
+                                $scope.projectModelSelection = data.data.workspace.projectModelSelection || null;
+                                $scope.activeProjectVersion = data.data.workspace.activeProjectVersion || null;
+                                $scope.refreshProjectModels();
                                 loadWorkspaceUseCaseDiagrams(data.data.workspace);
                                 $scope.loadClass();
                                 break;
@@ -2941,7 +3497,7 @@ controller = app.controller("workAreaController", function ($scope) {
                         "interaction": false,
                         "draw": false
                     });
-                    $scope.$apply(() => {
+                    const attachSequenceButton = () => {
                         const sequenceButton = {
                             diagram: secuence_diagram,
                             "name": "Secuence Diagram - " + usecaseNode.name,
@@ -2953,7 +3509,8 @@ controller = app.controller("workAreaController", function ($scope) {
                         };
                         $scope.btnDiagramUml.push(sequenceButton);
                         usecaseNode.secuence_button = sequenceButton;
-                    });
+                    };
+                    if ($scope.$root.$$phase) attachSequenceButton(); else $scope.$apply(attachSequenceButton);
                     usecaseNode.secuence_diagram = secuence_diagram;
                 }
             }

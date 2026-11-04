@@ -21,9 +21,8 @@ public class ModelUseTool {
     @JoinColumn(name = "model_id", nullable = false)
     private Model model;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "model_training_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "model_training_id")
     private TrainingHistory modelTraining;
 
     @NotNull

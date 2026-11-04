@@ -76,9 +76,58 @@ app.controller("application", function ($scope, $http) {
     $scope.baseModelSelcted = {};
     $scope.useOpenAiSelected = {};
     $scope.useOpenAi = [{name: "TRAINING", description: "This option will allow you to train models based on the base model you selected in the previous option.", value: false, pathWs: "create-train"},
-                        {name: "USE", description: "This option will only allow you to consume already trained models based on the base model you selected.", value: false, pathWs: "create-use"}]
+                        {name: "USE", description: "Use a shared model with its owner's credentials. You do not need a personal API key.", value: false, pathWs: "create-use"}]
     $scope.menuSettings = [{label: "OpenAI", icon: "fas fa-gem", active: true, visible:true},
-                           {label: "Training", icon: "fas fa-splotch", active: false, visible:true}];
+                           {label: "Training", icon: "fas fa-splotch", active: false, visible:true},
+                           {label: "Available models", icon: "fas fa-brain", active: false, visible:true}];
+    $scope.ownRegisteredModels = [];
+    $scope.sharedRegisteredModels = [];
+    $scope.modelCatalogGroups = [];
+    $scope.selectedRegisteredModel = null;
+    $scope.modelCatalogLoading = false;
+    $scope.modelCatalogSaving = false;
+    $scope.modelCatalogError = "";
+
+    $scope.loadModelCatalog = () => {
+        $scope.modelCatalogLoading = true;
+        $scope.modelCatalogError = "";
+        const user = store.session.get("user_tddm4iotbs");
+        $.ajax({method: "GET", dataType: "json", url: urlWsOpenAi + "model-use-tool/catalog",
+            headers: {userToken: user.user_token},
+            success: response => $scope.$applyAsync(() => {
+                $scope.modelCatalogLoading = false;
+                const models = response.data || [];
+                $scope.ownRegisteredModels = models.filter(model => model.mine);
+                $scope.sharedRegisteredModels = models.filter(model => !model.mine);
+                $scope.modelCatalogGroups = [{title: "My registered models", items: $scope.ownRegisteredModels},
+                    {title: "Models registered by other users", items: $scope.sharedRegisteredModels}];
+                $scope.selectedRegisteredModel = models.find(model => model.selected) || null;
+            }),
+            error: xhr => $scope.$applyAsync(() => {
+                $scope.modelCatalogLoading = false;
+                $scope.modelCatalogError = (xhr.responseJSON && xhr.responseJSON.message) || "The registered models could not be loaded.";
+            })});
+    };
+
+    $scope.useRegisteredModel = model => {
+        if (!model.available || model.selected || $scope.modelCatalogSaving) return;
+        $scope.modelCatalogSaving = true;
+        $scope.modelCatalogError = "";
+        const user = store.session.get("user_tddm4iotbs");
+        $.ajax({method: "POST", contentType: "application/json", dataType: "json", url: urlWsOpenAi + "model-use-tool/select",
+            headers: {userToken: user.user_token}, data: JSON.stringify({registrationId: model.id, registrationKind: model.registrationKind}),
+            success: response => $scope.$applyAsync(() => {
+                $scope.modelCatalogSaving = false;
+                if (response.status !== "OK") { $scope.modelCatalogError = response.message; return; }
+                $scope.selectedRegisteredModel = response.data;
+                $scope.loadModelCatalog();
+                alertAll({status: 2, information: "The selected model will be used for your next UML generations."});
+            }),
+            error: xhr => $scope.$applyAsync(() => {
+                $scope.modelCatalogSaving = false;
+                $scope.modelCatalogError = (xhr.responseJSON && xhr.responseJSON.message) || "The model could not be selected.";
+            })});
+    };
     $scope.modelPermissions = [];
     $scope.trainingHistoryValidate = {};
     $scope.trainingHistoryFromBaseModel = [];
@@ -158,6 +207,8 @@ app.controller("application", function ($scope, $http) {
     }
 
     $scope.openModalSettings = () => {
+        $scope.menuSettings.forEach((menu, index) => { menu.active = index === 2; });
+        $scope.loadModelCatalog();
         $("#modalSettings").modal();
     };
 
@@ -171,6 +222,7 @@ app.controller("application", function ($scope, $http) {
         });
 
         option.active = true;
+        if (option.label === "Available models") $scope.loadModelCatalog();
     };
 
     $scope.selectedModelBase = (modelBase) => {

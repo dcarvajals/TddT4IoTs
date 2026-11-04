@@ -792,3 +792,39 @@ body .swal2-cancel {
     padding: 9px 11px;
     vertical-align: middle;
 }
+
+/* Available models: a compact catalog with a clear default and grouped versions. */
+.settings-modal .model-catalog { background: #fafcfc; padding-bottom: 12px; }
+.settings-modal .model-catalog .settings-section-header { background: #fff; gap: 16px; }
+.settings-modal .model-catalog .settings-section-header .btn { flex-shrink: 0; }
+.settings-modal .model-catalog > p,
+.settings-modal .model-catalog > .alert { margin: 12px 19px; }
+.catalog-current { align-items: center; background: linear-gradient(120deg, #eff8f3, #fff); border: 1px solid #d8e9df; border-radius: 12px; display: flex; gap: 12px; margin: 16px 19px 10px; padding: 14px; }
+.catalog-current-icon { align-items: center; background: #176b48; border-radius: 10px; color: #fff; display: flex; flex: 0 0 38px; height: 38px; justify-content: center; }
+.catalog-current-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.catalog-current-copy > small { color: #5e7d6c; display: block; font-size: 8px; font-weight: 700; letter-spacing: .09em; }
+.catalog-current-copy > strong { color: #243c30; display: block; font-size: 13px; margin: 3px 0; }
+.catalog-current-copy > span { color: #687a70; font-size: 10px; }
+.catalog-status { border: 1px solid #e0e5e9; border-radius: 20px; color: #63717c; display: inline-flex; font-size: 9px; font-weight: 600; padding: 4px 9px; white-space: nowrap; }
+.catalog-status.is-ready { background: #edf7f1; border-color: #d2e8db; color: #216143; }
+.catalog-status.is-unavailable { background: #fff6e9; border-color: #f1dfbc; color: #805c20; }
+.settings-modal .model-catalog .settings-data-block { background: #fff; border: 1px solid #e2e9e6; border-radius: 12px; margin: 14px 19px; overflow: hidden; }
+.settings-modal .model-catalog .settings-data-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; padding: 12px 14px; }
+.settings-modal .model-catalog .settings-data-heading p { margin-bottom: 0; }
+.catalog-group-count { background: #eef2f4; border-radius: 8px; color: #566570; font-size: 10px; font-weight: 700; min-width: 26px; padding: 4px 7px; text-align: center; }
+.settings-modal .model-catalog .settings-table thead th { background: #f7f9f8; color: #68766f; font-size: 8px; }
+.settings-modal .model-catalog .settings-table tbody td { font-size: 10px; padding: 12px 11px; overflow-wrap: anywhere; }
+.settings-modal .model-catalog .settings-table tbody tr { transition: background .15s ease; }
+.settings-modal .model-catalog .settings-table tbody tr:hover { background: #f7faf8; }
+.settings-modal .model-catalog .settings-table tbody tr.is-selected { background: #eff8f3; }
+.settings-modal .model-catalog .settings-table tr.is-selected td:first-child { box-shadow: inset 3px 0 #218057; }
+.settings-modal .model-catalog .catalog-model-name strong { color: #2c4036; display: block; font-size: 11px; margin-bottom: 4px; }
+.settings-modal .model-catalog .catalog-model-name > small { color: #89938d; font-size: 9px; }
+.catalog-owner i { color: #8a9c91; margin-right: 4px; }
+.catalog-owner small { color: #176b48; display: block; margin-top: 3px; }
+.settings-modal .model-catalog .settings-table .btn { border-radius: 7px; font-size: 10px; min-width: 70px; white-space: nowrap; }
+@media (max-width: 620px) {
+    .catalog-current { flex-wrap: wrap; margin: 12px; padding: 12px; }
+    .settings-modal .model-catalog .settings-data-block { margin: 12px; }
+    .settings-modal .model-catalog > p, .settings-modal .model-catalog > .alert { margin-left: 12px; margin-right: 12px; }
+}
